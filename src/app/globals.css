@@ -5,37 +5,201 @@ body {
   background: #f6f8fa;
 }
 
-.logo {
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  color: #1f6feb;
-  font-size: 18px;
-  letter-spacing: 1px;
+/* Menu trái */
+.sider {
+  border-right: 1px solid #eef1f4;
+  position: sticky !important;
+  top: 0;
+  height: 100vh;
+  overflow: auto;
 }
 
+.sider .ant-layout-sider-trigger {
+  border-right: 1px solid #eef1f4;
+  border-top: 1px solid #eef1f4;
+  color: #59636e;
+}
+
+.brand {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px;
+  border-bottom: 1px solid #f0f2f5;
+  margin-bottom: 8px;
+}
+
+.brand.collapsed {
+  justify-content: center;
+  padding: 0;
+}
+
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #1f6feb 0%, #8250df 100%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 17px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(31, 111, 235, 0.25);
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  min-width: 0;
+}
+
+.brand-text b {
+  font-size: 15px;
+  color: #1f2328;
+}
+
+.brand-text span {
+  font-size: 12px;
+  color: #8c959f;
+  white-space: nowrap;
+}
+
+.side-menu.ant-menu {
+  border-inline-end: 0 !important;
+  padding: 0 12px 16px;
+}
+
+.side-menu.ant-menu-inline-collapsed {
+  padding: 0 8px 16px;
+}
+
+.side-menu .ant-menu-submenu-title {
+  height: 40px !important;
+  line-height: 40px !important;
+  margin-inline: 0 !important;
+  width: 100% !important;
+  font-weight: 600;
+  color: #1f2328;
+}
+
+.side-menu .ant-menu-submenu-title .anticon {
+  font-size: 16px;
+}
+
+.side-menu .ant-menu-sub.ant-menu-inline {
+  background: transparent !important;
+}
+
+/* Mục con lồng trong nhóm: chữ nhẹ hơn tiêu đề nhóm */
+.side-menu .ant-menu-sub .ant-menu-item,
+.side-menu .ant-menu-sub .ant-menu-submenu-title {
+  font-weight: 500;
+  color: #424a53;
+}
+
+.side-menu .ant-menu-submenu-selected > .ant-menu-submenu-title {
+  color: #1f6feb;
+}
+
+.side-menu .ant-menu-item {
+  height: 40px;
+  line-height: 40px;
+  margin-inline: 0 !important;
+  width: 100% !important;
+  font-weight: 500;
+  color: #424a53;
+}
+
+.side-menu .ant-menu-item .anticon {
+  font-size: 16px;
+}
+
+.side-menu .ant-menu-item-selected {
+  font-weight: 600;
+  position: relative;
+}
+
+.side-menu.ant-menu-inline .ant-menu-item-selected::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: #1f6feb;
+}
+
+/* Thanh trên */
 .topbar {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 0 16px !important;
-  height: 56px !important;
+  padding: 0 24px !important;
+  height: 64px !important;
   line-height: normal !important;
   border-bottom: 1px solid #eef1f4;
+  background: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: saturate(180%) blur(8px);
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
+.user-btn.ant-btn {
+  height: 44px;
+  padding-inline: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  border-radius: 10px;
+}
+
+.user-btn-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+}
+
+.user-btn-text b {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.user-btn-text span {
+  font-size: 12px;
+  color: #8c959f;
+}
+
 .content {
-  padding: 24px;
+  padding: 24px 28px;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 @media (max-width: 767px) {
   .content {
     padding: 16px;
+  }
+  .stat-card {
+    gap: 10px;
+  }
+  .stat-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 17px;
+    border-radius: 10px;
+  }
+  .topbar {
+    padding: 0 12px !important;
+    height: 56px !important;
+    gap: 8px;
   }
   body {
     font-size: 16px;
@@ -47,7 +211,7 @@ body {
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
 }
 
@@ -65,8 +229,38 @@ body {
 
 .panel {
   background: #fff;
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 16px 20px;
+  border: 1px solid #eef1f4;
+  box-shadow: 0 1px 2px rgba(31, 35, 40, 0.04);
+}
+
+/* Thẻ số liệu */
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.stat-card .ant-statistic-title {
+  margin-bottom: 0;
+  font-size: 13px;
+}
+
+.stat-card .ant-statistic-content {
+  font-size: 26px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .filter-bar {
@@ -115,26 +309,98 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: 62px;
+  padding-bottom: env(safe-area-inset-bottom);
   background: #fff;
   border-top: 1px solid #eef1f4;
+  box-shadow: 0 -4px 12px rgba(31, 35, 40, 0.04);
   display: flex;
   z-index: 20;
 }
 
-.bottom-nav a {
+.bottom-nav a,
+.bottom-nav button {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 3px;
   font-size: 11px;
   color: #59636e;
   min-height: 44px;
+  background: none;
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+  position: relative;
 }
 
-.bottom-nav a.active {
+.bottom-nav .anticon {
+  font-size: 19px;
+}
+
+.bottom-nav a.active,
+.bottom-nav button.active {
+  color: #1f6feb;
+  font-weight: 600;
+}
+
+.bottom-nav a.active::before,
+.bottom-nav button.active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 28px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: #1f6feb;
+}
+
+.more-group + .more-group {
+  margin-top: 16px;
+}
+
+.more-group-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #8c959f;
+  margin-bottom: 8px;
+}
+
+.more-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.more-grid a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 72px;
+  border-radius: 12px;
+  background: #f6f8fa;
+  color: #1f2328;
+  font-size: 13px;
+}
+
+.more-grid a .anticon {
+  font-size: 20px;
+  color: #59636e;
+}
+
+.more-grid a.active {
+  background: #eaf2ff;
+  color: #1f6feb;
+  font-weight: 600;
+}
+
+.more-grid a.active .anticon {
   color: #1f6feb;
 }
 

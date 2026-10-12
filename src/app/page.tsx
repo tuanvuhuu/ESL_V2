@@ -1,5 +1,6 @@
 "use client";
 
+import { CalendarOutlined, StopOutlined, SwapOutlined, UserOutlined } from "@ant-design/icons";
 import { Col, Empty, Row, Statistic, Tag } from "antd";
 import Link from "next/link";
 import { qs, useApi } from "@/client/api";
@@ -16,31 +17,28 @@ export default function TodayPage() {
   const shown = centerId ? centers.filter((c) => c.id === centerId) : centers;
   const sessions = data ?? [];
   const active = sessions.filter((s) => s.status !== "CANCELLED");
+  const cancelled = sessions.length - active.length;
+  const stats = [
+    { title: "Buổi học", value: active.length, icon: <CalendarOutlined />, color: "#1F6FEB" },
+    { title: "Học sinh theo lịch", value: active.reduce((n, s) => n + s.class._count.enrollments, 0), icon: <UserOutlined />, color: "#2DA44E" },
+    { title: "Buổi bị hủy", value: cancelled, icon: <StopOutlined />, color: "#CF222E", alert: cancelled > 0 },
+    { title: "Dạy thay", value: active.filter((s) => s.teacherId !== s.class.teacherId).length, icon: <SwapOutlined />, color: "#8250DF" },
+  ];
 
   return (
     <>
       <PageHeader title="Hôm nay" description={formatDateVN(today, true)} />
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        <Col xs={12} md={6}>
-          <div className="panel">
-            <Statistic title="Buổi học" value={active.length} />
-          </div>
-        </Col>
-        <Col xs={12} md={6}>
-          <div className="panel">
-            <Statistic title="Học sinh theo lịch" value={active.reduce((n, s) => n + s.class._count.enrollments, 0)} />
-          </div>
-        </Col>
-        <Col xs={12} md={6}>
-          <div className="panel">
-            <Statistic title="Buổi bị hủy" value={sessions.length - active.length} valueStyle={{ color: sessions.length - active.length ? "#CF222E" : undefined }} />
-          </div>
-        </Col>
-        <Col xs={12} md={6}>
-          <div className="panel">
-            <Statistic title="Dạy thay" value={active.filter((s) => s.teacherId !== s.class.teacherId).length} />
-          </div>
-        </Col>
+        {stats.map((st) => (
+          <Col key={st.title} xs={12} md={6}>
+            <div className="panel stat-card">
+              <span className="stat-icon" style={{ color: st.color, background: `${st.color}14` }}>
+                {st.icon}
+              </span>
+              <Statistic title={st.title} value={st.value} valueStyle={st.alert ? { color: st.color } : undefined} />
+            </div>
+          </Col>
+        ))}
       </Row>
       <Row gutter={[16, 16]}>
         {shown.map((c) => {
