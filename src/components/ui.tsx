@@ -41,8 +41,9 @@ export function Dash() {
 }
 
 export function PersonAvatar({ name, color, size = 32 }: { name: string; color?: string; size?: number }) {
+  const c = color ?? "#8C959F";
   return (
-    <Avatar size={size} style={{ background: color ?? "#8C959F", flexShrink: 0 }}>
+    <Avatar size={size} style={{ background: `${c}2e`, color: c, fontWeight: 600, flexShrink: 0 }}>
       {initials(name)}
     </Avatar>
   );

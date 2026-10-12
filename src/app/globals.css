@@ -844,35 +844,227 @@ body {
   border-bottom-color: #eef1f4;
 }
 
-/* Bảng Primer (PrimerGrid) */
+/* Bảng Primer (PrimerGrid) — kiểu lưới gọn: viền ô, tiêu đề xám, dòng hover */
 .primer-grid {
+  position: relative;
   background: #fff;
-  border: 1px solid #d1d9e0;
+  border: 1px solid #d8dee4;
   border-radius: 8px;
   overflow: hidden;
   font-size: 13px;
 }
 
+.primer-grid-scroll {
+  overflow: auto;
+}
+
+.primer-grid.is-loading .primer-grid-scroll {
+  opacity: 0.55;
+}
+
+.primer-grid-scroll > div,
 .primer-grid table {
-  font-size: 13px;
+  width: 100%;
+  border: 0 !important;
+  border-radius: 0 !important;
   font-family: inherit;
+  font-size: 13px;
+  color: #1f2328;
+}
+
+.primer-grid th,
+.primer-grid td {
+  padding: 7px 12px !important;
+  border-right: 1px solid #eef1f4;
+  border-bottom: 1px solid #eef1f4 !important;
+  vertical-align: middle;
+  line-height: 1.45;
+}
+
+.primer-grid th:last-child,
+.primer-grid td:last-child {
+  border-right: 0;
 }
 
 .primer-grid thead th {
   position: sticky;
   top: 0;
-  z-index: 1;
-  background: #f6f8fa;
+  z-index: 2;
+  background: #f6f8fa !important;
+  color: #59636e;
   font-size: 12px;
+  font-weight: 600;
   white-space: nowrap;
+  border-bottom: 1px solid #d8dee4 !important;
+}
+
+.primer-grid thead th button {
+  font-size: 12px;
+  font-weight: 600;
+  color: inherit;
+  padding: 0;
 }
 
 .primer-grid tbody tr:hover td {
-  background: #f3f7ff;
+  background: #f6f9ff;
+}
+
+.primer-grid tbody tr:has(input[type="checkbox"]:checked) td {
+  background: #eef4ff;
+}
+
+.primer-grid td .sub {
+  font-size: 12px;
+  line-height: 1.35;
+  color: #6e7781;
+}
+
+.primer-grid td a {
+  color: #0969da;
+}
+
+.primer-grid td a:hover {
+  text-decoration: underline;
+}
+
+/* Nhãn kiểu Primer Label: viên thuốc, viền mảnh */
+.primer-grid td .ant-tag {
+  margin-inline-end: 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  padding: 0 8px;
+  border-radius: 999px;
+}
+
+.primer-grid td .ant-avatar {
+  width: 24px !important;
+  height: 24px !important;
+  line-height: 24px !important;
+  font-size: 11px;
+}
+
+.primer-grid .person-cell {
+  gap: 8px;
+}
+
+.primer-grid td .num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Cột ⋯ cuối dòng */
+.primer-grid td:last-child .ant-btn {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  color: #59636e;
+}
+
+.primer-grid td:last-child:has([aria-label="Thao tác"]) {
+  text-align: center;
+}
+
+/* Thanh trên bảng (ngoài khung) */
+.grid-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.grid-toolbar .spacer {
+  flex: 1;
+}
+
+/* Thanh gắn liền đầu bảng: tab lọc */
+.primer-grid-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border-bottom: 1px solid #d8dee4;
+  background: #fff;
+}
+
+.pg-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+}
+
+.pg-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  color: #59636e;
+  font: inherit;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pg-tab:hover {
+  color: #1f2328;
+}
+
+.pg-tab:hover::after {
+  background: #d0d7de;
+}
+
+.pg-tab::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: transparent;
+}
+
+.pg-tab.is-on {
+  color: #1f2328;
+  font-weight: 600;
+}
+
+.pg-tab.is-on::after {
+  background: #1f6feb;
+}
+
+.pg-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pg-count {
+  display: inline-block;
+  min-width: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #eff2f5;
+  color: #59636e;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.pg-tab.is-on .pg-count {
+  background: #ddf4ff;
+  color: #0969da;
 }
 
 .primer-grid-empty {
-  padding: 32px 16px;
+  padding: 40px 16px;
   text-align: center;
   color: #59636e;
 }
@@ -888,10 +1080,9 @@ body {
 .primer-grid-footer {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 12px;
-  padding: 6px 12px;
-  border-top: 1px solid #d1d9e0;
+  padding: 8px 12px;
+  border-top: 1px solid #d8dee4;
   background: #fff;
   flex-wrap: wrap;
 }
@@ -899,19 +1090,63 @@ body {
 .primer-grid-total {
   margin-right: auto;
   color: #59636e;
+  font-size: 12px;
 }
 
-.primer-grid-scroll > div,
-.primer-grid-scroll table {
-  width: 100%;
+.primer-grid-picked {
+  color: #1f6feb;
+  font-weight: 600;
 }
 
-.primer-grid-pager nav {
-  border: 0 !important;
-  padding: 0 !important;
-  margin: 0 !important;
+.pg-pager {
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
-.primer-grid-pager [class*='Range'] {
-  display: none !important;
+.pg-btn {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #1f2328;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.pg-btn:hover:not(:disabled):not(.is-on) {
+  background: #f3f5f8;
+}
+
+.pg-btn.is-on {
+  border-color: #1f6feb;
+  color: #1f6feb;
+  font-weight: 600;
+  background: #fff;
+}
+
+.pg-btn:disabled {
+  color: #c4cbd3;
+  cursor: default;
+}
+
+.pg-gap {
+  min-width: 20px;
+  text-align: center;
+  color: #8c959f;
+}
+
+.pg-size {
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid #d8dee4;
+  border-radius: 6px;
+  background: #fff;
+  color: #1f2328;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
 }

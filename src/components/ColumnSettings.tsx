@@ -47,7 +47,7 @@ export function useColumnSettings<T>(storageKey: string, defs: ColumnDef<T>[]) {
       const pin = pinOf(col as ColumnDef<T>);
       return {
         ...col,
-        title: pin === "none" ? col.title : `${col.title} 📌`,
+        title: col.title,
         fixed: pin === "none" ? undefined : pin,
       } as ColumnType<T>;
     });

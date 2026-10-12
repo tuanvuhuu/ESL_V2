@@ -1,7 +1,7 @@
 "use client";
 
 import { DownloadOutlined, PlusOutlined } from "@ant-design/icons";
-import { App, Button, Empty, Input, Segmented, Table } from "antd";
+import { App, Button, Empty, Input } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -14,7 +14,7 @@ import { useColumnSettings, type ColumnDef } from "@/components/ColumnSettings";
 import { StatusModal } from "@/components/students/StatusModal";
 import { StudentFormModal } from "@/components/students/StudentFormModal";
 import { ActionMenu, CenterTag, Dash, PageHeader, PersonAvatar, StatusTag, TwoLine } from "@/components/ui";
-import { PrimerGrid } from "@/components/PrimerGrid";
+import { FilterTabs, PrimerGrid } from "@/components/PrimerGrid";
 import { GENDERS, STUDENT_STATUSES, optionOf } from "@/lib/constants";
 import { ageFrom, formatDateVN, todayISO } from "@/lib/dates";
 import { canCreateRecords, canEditCenter, canSeeParents } from "@/lib/permissions";
@@ -110,7 +110,7 @@ export default function StudentsPage() {
       {
         key: "actions",
         title: "",
-        width: 56,
+        width: 48,
         required: true,
         defaultPin: "right",
         render: (_, r) => {
@@ -209,27 +209,29 @@ export default function StudentsPage() {
           )
         }
       />
-      <div className="panel">
-        <div className="filter-bar">
-          <Input.Search allowClear placeholder="Tìm tên, mã, SĐT…" style={{ width: 280 }} value={q} onChange={(e) => setQ(e.target.value)} />
-          <Segmented
-            value={status}
-            onChange={(v) => setStatus(v as string)}
-            options={[
-              { value: "ALL", label: `Tất cả ${counts.ALL ?? 0}` },
-              ...STUDENT_STATUSES.map((s) => ({ value: s.value, label: `${s.label} ${counts[s.value] ?? 0}` })),
-            ]}
-          />
-          <div className="spacer" />
-          {button}
-        </div>
+      <div className="grid-toolbar">
+        <Input.Search allowClear placeholder="Tìm tên, mã, SĐT…" style={{ width: 300 }} value={q} onChange={(e) => setQ(e.target.value)} />
+        <div className="spacer" />
+        {button}
+      </div>
+      <div>
         <PrimerGrid<StudentRow>
           selectable
           rowKey="id"
           loading={loading}
           columns={columns}
           dataSource={data?.items}
-          scroll={{ x: "max-content", y: "calc(100vh - 330px)" }}
+          scroll={{ x: "max-content", y: "calc(100vh - 300px)" }}
+          toolbar={
+            <FilterTabs
+              value={status}
+              onChange={setStatus}
+              items={[
+                { value: "ALL", label: "Tất cả", count: counts.ALL ?? 0 },
+                ...STUDENT_STATUSES.map((s) => ({ value: s.value, label: s.label, color: s.color, count: counts[s.value] ?? 0 })),
+              ]}
+            />
+          }
           onChange={(_p, _f, sorter) => {
             const s = Array.isArray(sorter) ? sorter[0] : sorter;
             setSort(s?.order ? { field: String(s.columnKey), order: s.order === "ascend" ? "asc" : "desc" } : {});
