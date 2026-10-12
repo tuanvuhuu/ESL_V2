@@ -1,7 +1,7 @@
 "use client";
 
-import { PlusOutlined } from "@ant-design/icons";
-import { App, Button, Form, Input, Modal, Select, Switch, Table, Tag } from "antd";
+import { PlusOutlined } from "@/client/primer-icons";
+import { App, Button, Form, Input, Modal, Select, Switch, Table, Tag } from "@/client/primer-compat";
 import { useState } from "react";
 import { api, useApi } from "@/client/api";
 import { useCenters } from "@/client/centers";

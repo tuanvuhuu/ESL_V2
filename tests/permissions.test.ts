@@ -53,6 +53,20 @@ describe("phân quyền theo vai trò", () => {
     expect(canOpenPage(teacher, "/teachers/7")).toBe(false);
     expect(canOpenPage(teacher, "/students/3")).toBe(true);
     expect(canOpenPage(manager, "/settings")).toBe(true);
+
+    // Quyền trang mới: Tài chính, Lương, Báo cáo
+    expect(canOpenPage(manager, "/finance")).toBe(true);
+    expect(canOpenPage(officeA, "/finance")).toBe(true);
+    expect(canOpenPage(teacher, "/finance")).toBe(false);
+
+    expect(canOpenPage(manager, "/payroll")).toBe(true);
+    expect(canOpenPage(officeA, "/payroll")).toBe(true);
+    expect(canOpenPage(teacher, "/payroll")).toBe(false);
+    expect(canOpenPage(teacher, "/my/payroll")).toBe(true);
+
+    expect(canOpenPage(manager, "/reports")).toBe(true);
+    expect(canOpenPage(officeA, "/reports")).toBe(true);
+    expect(canOpenPage(teacher, "/reports")).toBe(false);
   });
 });
 

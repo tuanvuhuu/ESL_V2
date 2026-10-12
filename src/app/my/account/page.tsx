@@ -1,7 +1,7 @@
 "use client";
 
-import { KeyOutlined, LeftOutlined, LogoutOutlined, RightOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Descriptions, List, Row, Skeleton, Space, Statistic, Tag } from "antd";
+import { KeyOutlined, LeftOutlined, LogoutOutlined, RightOutlined } from "@/client/primer-icons";
+import { Button, Card, Col, Descriptions, List, Row, Skeleton, Space, Statistic, Tag } from "@/client/primer-compat";
 import dayjs from "dayjs";
 import Link from "next/link";
 import { useState } from "react";

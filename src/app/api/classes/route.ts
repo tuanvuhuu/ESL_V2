@@ -7,8 +7,10 @@ import { planClass } from "@/server/classes";
 import { prisma } from "@/server/db";
 import { allow, body, conflict, route } from "@/server/http";
 import { classSchema } from "@/server/validators";
+import { syncClassStatuses } from "@/server/lifecycle";
 
 export const GET = route(async (req, _ctx, viewer) => {
+  await syncClassStatuses();
   const sp = new URL(req.url).searchParams;
   const centerId = Number(sp.get("centerId")) || undefined;
   const status = sp.get("status") || undefined;

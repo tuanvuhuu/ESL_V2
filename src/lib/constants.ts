@@ -70,6 +70,25 @@ export const QUIT_REASONS = [
   "Khác",
 ] as const;
 
+/** Kết quả cuối khóa, giáo viên hoặc giáo vụ ghi khi khóa kết thúc (lịch sử học tập theo khóa). */
+export const COURSE_OUTCOMES = [
+  { value: "PROMOTED", label: "Đủ điều kiện lên khóa tiếp", color: "#2DA44E" },
+  { value: "COMPLETED", label: "Hoàn thành khóa", color: "#1F6FEB" },
+  { value: "REPEAT", label: "Nên học lại khóa này", color: "#D29922" },
+  { value: "DROPPED", label: "Dừng giữa khóa", color: "#8C959F" },
+] as const satisfies readonly Option[];
+
+/** Kênh liên lạc với phụ huynh. */
+export const CONTACT_CHANNELS = [
+  { value: "CALL", label: "Gọi điện", color: "#1F6FEB" },
+  { value: "ZALO", label: "Zalo / tin nhắn", color: "#0E7490" },
+  { value: "MEET", label: "Gặp trực tiếp", color: "#8250DF" },
+  { value: "OTHER", label: "Khác", color: "#59636E" },
+] as const satisfies readonly Option[];
+
+/** Chứng chỉ giáo viên hết hạn trong số ngày này thì cảnh báo (M8). */
+export const CERT_WARN_DAYS = 60;
+
 export const WEEKDAYS = [
   { value: 1, short: "T2", label: "Thứ 2" },
   { value: 2, short: "T3", label: "Thứ 3" },

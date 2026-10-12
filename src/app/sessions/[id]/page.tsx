@@ -1,7 +1,7 @@
 "use client";
 
-import { CheckOutlined, LeftOutlined, MessageOutlined } from "@ant-design/icons";
-import { Alert, App, Button, Empty, Input, Skeleton, Space, Tag } from "antd";
+import { CheckOutlined, LeftOutlined, MessageOutlined } from "@/client/primer-icons";
+import { Alert, App, Button, Empty, Input, Skeleton, Space, Tag } from "@/client/primer-compat";
 import dayjs from "dayjs";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";

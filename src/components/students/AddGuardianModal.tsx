@@ -1,6 +1,6 @@
 "use client";
 
-import { App, Checkbox, Form, Input, Modal, Select } from "antd";
+import { App, Checkbox, Form, Input, Modal, Select } from "@/client/primer-compat";
 import { useState } from "react";
 import { api, qs } from "@/client/api";
 import type { Parent } from "@/client/types";

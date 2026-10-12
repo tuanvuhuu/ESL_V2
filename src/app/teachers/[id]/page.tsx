@@ -1,7 +1,7 @@
 "use client";
 
-import { LeftOutlined, RightOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Descriptions, Empty, Row, Skeleton, Space, Table, Tabs, Tag } from "antd";
+import { LeftOutlined, RightOutlined } from "@/client/primer-icons";
+import { Button, Card, Col, Descriptions, Empty, Row, Skeleton, Space, Table, Tabs, Tag } from "@/client/primer-compat";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -12,7 +12,7 @@ import { AuditTimeline } from "@/components/AuditTimeline";
 import { AvailabilityEditor } from "@/components/staffing/AvailabilityEditor";
 import { LeavePanel } from "@/components/staffing/LeavePanel";
 import { TeacherFormModal } from "@/components/teachers/TeacherFormModal";
-import { CenterTag, Dash, PageHeader, PersonAvatar, StatusTag } from "@/components/ui";
+import { CenterTag, CertTag, Dash, PageHeader, PersonAvatar, StatusTag } from "@/components/ui";
 import { CLASS_STATUSES, EMPLOYMENTS, TEACHER_ORIGINS, TEACHER_ROLES, TEACHER_STATUSES, weekdayText, optionOf } from "@/lib/constants";
 import { addDays, formatDateVN, startOfWeek, todayISO } from "@/lib/dates";
 import { canEditCenter, canEditTeachers, canManageTeacherTime, canSeeAudit } from "@/lib/permissions";
@@ -87,6 +87,9 @@ export default function TeacherProfilePage() {
               ))}
             </Descriptions.Item>
             <Descriptions.Item label="Bằng cấp">{t.qualifications ?? <Dash />}</Descriptions.Item>
+            <Descriptions.Item label="Chứng chỉ">
+              <CertTag expiry={t.certExpiry} always />
+            </Descriptions.Item>
             <Descriptions.Item label="Bắt đầu">{t.startDate ? formatDateVN(t.startDate) : <Dash />}</Descriptions.Item>
             <Descriptions.Item label="Ghi chú">{t.note ?? <Dash />}</Descriptions.Item>
           </Descriptions>

@@ -8,8 +8,10 @@ import { prisma } from "@/server/db";
 import { body, conflict, idParam, notFound, route, type IdCtx } from "@/server/http";
 import { loadSlots, toSlot } from "@/server/slots";
 import { classUpdateSchema } from "@/server/validators";
+import { syncClassStatuses } from "@/server/lifecycle";
 
 export const GET = route<IdCtx>(async (_req, { params }, viewer) => {
+  await syncClassStatuses();
   const id = idParam((await params).id);
   await assertCanViewClass(viewer, id);
   const cls = await prisma.classGroup.findUnique({

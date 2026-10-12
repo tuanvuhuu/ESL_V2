@@ -1,4 +1,3 @@
-import { AntdRegistry } from "@ant-design/nextjs-registry";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/AppShell";
@@ -25,11 +24,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body>
-        <AntdRegistry>
-          <Providers>
-            <AppShell>{children}</AppShell>
-          </Providers>
-        </AntdRegistry>
+        <Providers>
+          <AppShell>{children}</AppShell>
+        </Providers>
       </body>
     </html>
   );

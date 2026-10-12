@@ -1,7 +1,7 @@
 "use client";
 
-import { PlusOutlined } from "@ant-design/icons";
-import { App, Button, Card, Col, Descriptions, Empty, List, Popconfirm, Row, Skeleton, Space, Table, Tabs, Tag } from "antd";
+import { PlusOutlined } from "@/client/primer-icons";
+import { App, Button, Card, Col, Descriptions, Empty, List, Popconfirm, Row, Skeleton, Space, Table, Tabs, Tag } from "@/client/primer-compat";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -12,18 +12,25 @@ import { AttendanceTag, BalanceCell, MakeupTag } from "@/components/attendance/p
 import { MakeupModal, type AbsenceLite } from "@/components/makeups/MakeupModal";
 import { TransferModal, type TransferSource } from "@/components/classes/TransferModal";
 import { AuditTimeline } from "@/components/AuditTimeline";
+import { ContactList } from "@/components/contacts/ContactList";
+import { CourseHistory } from "@/components/history/CourseHistory";
+import { OutcomeModal, type OutcomeTarget } from "@/components/history/OutcomeModal";
 import { AddGuardianModal } from "@/components/students/AddGuardianModal";
+import { EnrollModal } from "@/components/students/EnrollModal";
 import { StatusModal } from "@/components/students/StatusModal";
 import { StudentFormModal } from "@/components/students/StudentFormModal";
 import { CenterTag, Dash, PageHeader, PersonAvatar, StatusTag } from "@/components/ui";
+import { StudentFinanceTab } from "@/components/finance/StudentFinanceTab";
 import { AUDIENCES, CLASS_STATUSES, GENDERS, STUDENT_STATUSES, optionOf } from "@/lib/constants";
 import { ageFrom, formatDateVN } from "@/lib/dates";
 import { isAbsent } from "@/lib/attendance";
-import { canEditCenter, canSeeAudit, canSeeParents, isStaff } from "@/lib/permissions";
+import { canEditCenter, canSeeAudit, canSeeFinance, canSeeParents, canWriteOutcome, isStaff } from "@/lib/permissions";
 import { formatPhone } from "@/lib/text";
 
 type Detail = Student & {
   center: { id: number; name: string; color: string };
+  waitingCourseId: number | null;
+  waitingCourse: { id: number; name: string } | null;
   reservations: { id: number; startDate: string; expectedReturn: string; returnedAt: string | null; reason: string | null; createdBy: string }[];
   guardians: (Guardian & {
     parent: Guardian["parent"] & { children: { student: { id: number; code: string; fullName: string; status: string } }[] };
@@ -34,10 +41,16 @@ type Detail = Student & {
     leftAt: string | null;
     balance: Balance | null;
     attendances: AttendanceRow[];
+    transferredFromId: number | null;
     transferredFrom: { class: { id: number; code: string } } | null;
+    outcome: string | null;
+    finalComment: string | null;
+    outcomeBy: string | null;
     class: {
       id: number;
       courseId: number | null;
+      centerId: number;
+      teacherId: number;
       code: string;
       name: string;
       status: string;
@@ -81,6 +94,8 @@ export default function StudentProfilePage() {
   const [addingGuardian, setAddingGuardian] = useState(false);
   const [absence, setAbsence] = useState<AbsenceLite | null>(null);
   const [transfer, setTransfer] = useState<TransferSource | null>(null);
+  const [enrolling, setEnrolling] = useState(false);
+  const [outcome, setOutcome] = useState<OutcomeTarget | null>(null);
   const viewer = useViewer();
 
   if (loading && !s) return <Skeleton active />;
@@ -271,98 +286,78 @@ export default function StudentProfilePage() {
     </Row>
   );
 
-  const history = (
-    <Table
+  const attendanceDetail = (e: Detail["enrollments"][number]) => (
+    <Table<AttendanceRow>
       rowKey="id"
-      size="middle"
+      size="small"
       pagination={false}
-      dataSource={s.enrollments}
-      locale={{ emptyText: "Chưa học lớp nào." }}
+      dataSource={e.attendances}
       columns={[
-        { title: "Lớp", render: (_, e) => <Link href={`/classes/${e.class.id}`}>{e.class.code}</Link> },
-        { title: "Tên lớp", render: (_, e) => e.class.name },
-        { title: "Khóa", render: (_, e) => e.class.course?.name ?? <Dash /> },
-        { title: "Trung tâm", render: (_, e) => <CenterTag center={e.class.center} /> },
-        { title: "Giáo viên", render: (_, e) => e.class.teacher.displayName },
+        { title: "Buổi", render: (_, a) => a.session.index, width: 60 },
         {
-          title: "Vào lớp",
-          render: (_, e) => (
+          title: "Ngày",
+          render: (_, a) => (
             <>
-              {formatDateVN(e.joinedAt)}
-              {e.transferredFrom && <div className="sub">chuyển từ {e.transferredFrom.class.code}</div>}
+              {formatDateVN(a.session.date, true)} {a.session.startTime}
+              {a.makeupId && (
+                <div>
+                  <MakeupTag>
+                    Học bù ở {a.session.class.code}
+                    {a.makeup ? ` cho buổi ${formatDateVN(a.makeup.absence.session.date).slice(0, 5)}` : ""}
+                  </MakeupTag>
+                </div>
+              )}
             </>
           ),
         },
-        { title: "Rời lớp", render: (_, e) => (e.leftAt ? formatDateVN(e.leftAt) : <Dash />) },
-        { title: "Trạng thái lớp", render: (_, e) => <StatusTag options={CLASS_STATUSES} value={e.class.status} /> },
-        { title: "Buổi còn lại", render: (_, e) => <BalanceCell balance={e.balance} warn={!e.leftAt} /> },
+        { title: "Điểm danh", render: (_, a) => <AttendanceTag status={a.status} /> },
+        { title: "Nhận xét", render: (_, a) => a.comment ?? <Dash /> },
+        { title: "Nội dung đã dạy", render: (_, a) => a.session.lessonContent ?? <Dash /> },
         {
-          title: "Chuyên cần",
-          render: (_, e) => {
-            const own = e.attendances.filter((a) => !a.makeupId);
-            const absent = own.filter((a) => isAbsent(a.status)).length;
-            return own.length ? `${own.length - absent}/${own.length} có mặt` : <Dash />;
+          title: "Học bù",
+          render: (_, a) => {
+            if (!isAbsent(a.status) || a.makeupId) return null;
+            if (a.makeupFor) {
+              return (
+                <MakeupTag>
+                  {a.makeupFor.attendance ? "Đã bù" : "Đã xếp"} {formatDateVN(a.makeupFor.session.date).slice(0, 5)} · {a.makeupFor.session.class.code}
+                </MakeupTag>
+              );
+            }
+            return (
+              editable && (
+                <Button
+                  size="small"
+                  onClick={() =>
+                    setAbsence({ id: a.id, studentName: s.fullName, classCode: e.class.code, date: a.session.date, index: a.session.index })
+                  }
+                >
+                  Xếp học bù
+                </Button>
+              )
+            );
           },
         },
       ]}
-      expandable={{
-        rowExpandable: (e) => e.attendances.length > 0,
-        expandedRowRender: (e) => (
-          <Table<AttendanceRow>
-            rowKey="id"
-            size="small"
-            pagination={false}
-            dataSource={e.attendances}
-            columns={[
-              { title: "Buổi", render: (_, a) => a.session.index, width: 60 },
-              {
-                title: "Ngày",
-                render: (_, a) => (
-                  <>
-                    {formatDateVN(a.session.date, true)} {a.session.startTime}
-                    {a.makeupId && (
-                      <div>
-                        <MakeupTag>
-                          Học bù ở {a.session.class.code}
-                          {a.makeup ? ` cho buổi ${formatDateVN(a.makeup.absence.session.date).slice(0, 5)}` : ""}
-                        </MakeupTag>
-                      </div>
-                    )}
-                  </>
-                ),
-              },
-              { title: "Điểm danh", render: (_, a) => <AttendanceTag status={a.status} /> },
-              { title: "Nhận xét", render: (_, a) => a.comment ?? <Dash /> },
-              { title: "Nội dung đã dạy", render: (_, a) => a.session.lessonContent ?? <Dash /> },
-              {
-                title: "Học bù",
-                render: (_, a) => {
-                  if (!isAbsent(a.status) || a.makeupId) return null;
-                  if (a.makeupFor) {
-                    return (
-                      <MakeupTag>
-                        {a.makeupFor.attendance ? "Đã bù" : "Đã xếp"} {formatDateVN(a.makeupFor.session.date).slice(0, 5)} · {a.makeupFor.session.class.code}
-                      </MakeupTag>
-                    );
-                  }
-                  return (
-                    editable && (
-                      <Button
-                        size="small"
-                        onClick={() =>
-                          setAbsence({ id: a.id, studentName: s.fullName, classCode: e.class.code, date: a.session.date, index: a.session.index })
-                        }
-                      >
-                        Xếp học bù
-                      </Button>
-                    )
-                  );
-                },
-              },
-            ]}
-          />
-        ),
-      }}
+    />
+  );
+
+  const history = (
+    <CourseHistory
+      student={s}
+      enrollments={s.enrollments}
+      renderDetail={attendanceDetail}
+      canWrite={(e) => canWriteOutcome(viewer, e.class.centerId, e.class.teacherId)}
+      onOutcome={(e) =>
+        setOutcome({
+          classId: e.class.id,
+          enrollmentId: e.id,
+          studentName: s.fullName,
+          classCode: e.class.code,
+          outcome: e.outcome,
+          finalComment: e.finalComment,
+        })
+      }
     />
   );
 
@@ -377,12 +372,14 @@ export default function StudentProfilePage() {
               {s.englishName ? <span className="sub"> ({s.englishName})</span> : null}
             </span>
             <StatusTag options={STUDENT_STATUSES} value={s.status} sub={s.statusReason} />
+            {s.waitingCourse && <Tag color="gold">Chờ lớp khóa {s.waitingCourse.name}</Tag>}
           </Space>
         }
         description={`${s.code} · ${s.center.name}`}
         actions={
           editable && (
             <>
+              <Button onClick={() => setEnrolling(true)}>Ghi danh</Button>
               <Button onClick={() => setChangingStatus(true)}>Đổi trạng thái</Button>
               <Button type="primary" onClick={() => setEditing(true)}>
                 Sửa
@@ -396,6 +393,44 @@ export default function StudentProfilePage() {
           items={[
             { key: "overview", label: "Tổng quan", children: overview },
             { key: "classes", label: "Lịch sử khóa học", children: history },
+            ...(canSeeFinance(viewer)
+              ? [
+                  {
+                    key: "finance",
+                    label: "Học phí & Công nợ",
+                    children: (
+                      <StudentFinanceTab
+                        studentId={s.id}
+                        studentName={s.fullName}
+                        studentCode={s.code}
+                        enrollments={s.enrollments}
+                      />
+                    ),
+                  },
+                ]
+              : []),
+            ...(seeParents
+              ? [
+                  {
+                    key: "contacts",
+                    label: "Liên lạc",
+                    children: (
+                      <ContactList
+                        studentId={s.id}
+                        newFor={
+                          editable
+                            ? {
+                                studentId: s.id,
+                                studentName: s.fullName,
+                                parents: s.guardians.map((g) => ({ id: g.parent.id, fullName: g.parent.fullName, phone: g.parent.phone, relation: g.relation })),
+                              }
+                            : null
+                        }
+                      />
+                    ),
+                  },
+                ]
+              : []),
             ...(canSeeAudit(viewer) ? [{ key: "audit", label: "Lịch sử thay đổi", children: <AuditTimeline entity="Student" id={s.id} /> }] : []),
           ]}
         />
@@ -433,6 +468,25 @@ export default function StudentProfilePage() {
         onClose={() => setTransfer(null)}
         onSaved={() => {
           setTransfer(null);
+          void reload();
+        }}
+      />
+      {editable && (
+        <EnrollModal
+          student={s}
+          open={enrolling}
+          onClose={() => setEnrolling(false)}
+          onSaved={() => {
+            setEnrolling(false);
+            void reload();
+          }}
+        />
+      )}
+      <OutcomeModal
+        target={outcome}
+        onClose={() => setOutcome(null)}
+        onSaved={() => {
+          setOutcome(null);
           void reload();
         }}
       />

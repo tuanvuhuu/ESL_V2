@@ -1,7 +1,7 @@
 "use client";
 
-import { CheckCircleFilled, EditOutlined } from "@ant-design/icons";
-import { Button, Tag } from "antd";
+import { CheckCircleFilled, EditOutlined } from "@/client/primer-icons";
+import { Button, Tag } from "@/client/primer-compat";
 import Link from "next/link";
 import type { ScheduleSession } from "@/client/types";
 import { todayISO } from "@/lib/dates";

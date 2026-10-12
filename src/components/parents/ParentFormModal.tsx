@@ -1,6 +1,6 @@
 "use client";
 
-import { App, Form, Input, Modal } from "antd";
+import { App, Form, Input, Modal } from "@/client/primer-compat";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api";
 import type { Parent } from "@/client/types";

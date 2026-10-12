@@ -1,10 +1,12 @@
 "use client";
 
-import { Alert, App, Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, List, Modal, Row, Select, Steps, TimePicker } from "antd";
+import { Alert, App, Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, List, Row, Select, Steps, TimePicker } from "@/client/primer-compat";
+import { Button as PrimerButton } from "@primer/react";
 import dayjs, { type Dayjs } from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { ApiError, api, useApi } from "@/client/api";
 import { useCenters } from "@/client/centers";
+import { PrimerModal } from "@/components/PrimerModal";
 import type { Course, Teacher } from "@/client/types";
 import { WEEKDAYS } from "@/lib/constants";
 import { formatDateVN } from "@/lib/dates";
@@ -120,29 +122,31 @@ export function ClassFormModal({ open, onClose, onSaved }: { open: boolean; onCl
   };
 
   return (
-    <Modal
+    <PrimerModal
       open={open}
-      width={760}
-      style={{ top: 60 }}
+      width="min(880px, calc(100vw - 48px))"
       title="Mở lớp mới"
-      onCancel={onClose}
-      destroyOnHidden
-      footer={[
-        step > 0 && (
-          <Button key="back" onClick={() => setStep(step - 1)}>
-            Quay lại
-          </Button>
-        ),
-        step < 3 ? (
-          <Button key="next" type="primary" onClick={next}>
-            {step === 2 ? "Xem trước lịch" : "Tiếp"}
-          </Button>
-        ) : (
-          <Button key="ok" type="primary" loading={saving} disabled={!preview || preview.conflicts.length > 0} onClick={submit}>
-            Xác nhận mở lớp
-          </Button>
-        ),
-      ]}
+      subtitle="Thiết lập khóa học, lịch phòng, giáo viên và kiểm tra trùng lịch"
+      onClose={onClose}
+      footer={
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", width: "100%" }}>
+          <PrimerButton onClick={onClose}>Hủy</PrimerButton>
+          {step > 0 && (
+            <PrimerButton onClick={() => setStep(step - 1)}>
+              Quay lại
+            </PrimerButton>
+          )}
+          {step < 3 ? (
+            <PrimerButton variant="primary" onClick={next}>
+              {step === 2 ? "Xem trước lịch" : "Tiếp theo"}
+            </PrimerButton>
+          ) : (
+            <PrimerButton variant="primary" loading={saving} disabled={!preview || preview.conflicts.length > 0} onClick={submit}>
+              Xác nhận mở lớp
+            </PrimerButton>
+          )}
+        </div>
+      }
     >
       <Steps
         size="small"
@@ -296,6 +300,6 @@ export function ClassFormModal({ open, onClose, onSaved }: { open: boolean; onCl
           </div>
         )}
       </Form>
-    </Modal>
+    </PrimerModal>
   );
 }

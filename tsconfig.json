@@ -14,7 +14,12 @@
     "jsx": "preserve",
     "incremental": true,
     "plugins": [{ "name": "next" }],
-    "paths": { "@/*": ["./src/*"] }
+    "paths": {
+      "@/*": ["./src/*"],
+      "antd": ["./src/client/primer-compat.tsx"],
+      "antd/*": ["./src/client/primer-compat.tsx"],
+      "@ant-design/icons": ["./src/client/primer-icons.tsx"]
+    }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]

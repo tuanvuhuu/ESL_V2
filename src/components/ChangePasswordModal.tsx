@@ -1,8 +1,9 @@
 "use client";
 
-import { App, Form, Input, Modal } from "antd";
+import { App, Form, Input } from "@/client/primer-compat";
 import { useState } from "react";
 import { api } from "@/client/api";
+import { PrimerModal } from "@/components/PrimerModal";
 
 export function ChangePasswordModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { message } = App.useApp();
@@ -25,7 +26,17 @@ export function ChangePasswordModal({ open, onClose }: { open: boolean; onClose:
   };
 
   return (
-    <Modal open={open} title="Đổi mật khẩu" onCancel={onClose} onOk={submit} okText="Lưu" cancelText="Hủy" confirmLoading={saving} destroyOnHidden>
+    <PrimerModal
+      open={open}
+      title="Đổi mật khẩu"
+      subtitle="Cập nhật mật khẩu bảo mật cho tài khoản của bạn"
+      onClose={onClose}
+      onOk={submit}
+      okText="Lưu mật khẩu"
+      cancelText="Hủy"
+      confirmLoading={saving}
+      width="large"
+    >
       <Form form={form} layout="vertical" preserve={false}>
         <Form.Item name="current" label="Mật khẩu hiện tại" rules={[{ required: true, message: "Nhập mật khẩu hiện tại" }]}>
           <Input.Password autoComplete="current-password" />
@@ -47,6 +58,6 @@ export function ChangePasswordModal({ open, onClose }: { open: boolean; onClose:
           <Input.Password autoComplete="new-password" />
         </Form.Item>
       </Form>
-    </Modal>
+    </PrimerModal>
   );
 }

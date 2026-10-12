@@ -1,7 +1,7 @@
 "use client";
 
-import { PlusOutlined } from "@ant-design/icons";
-import { App, Button, Card, Col, Descriptions, Dropdown, Empty, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Skeleton, Space, Table, Tabs, Tag } from "antd";
+import { PlusOutlined } from "@/client/primer-icons";
+import { Alert, App, Button, Card, Col, Descriptions, Dropdown, Empty, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Skeleton, Space, Table, Tabs, Tag } from "@/client/primer-compat";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -10,12 +10,15 @@ import { useViewer } from "@/client/session";
 import type { Balance, Course, Room, SessionRow, StudentRow, Teacher } from "@/client/types";
 import { BalanceCell } from "@/components/attendance/parts";
 import { AuditTimeline } from "@/components/AuditTimeline";
+import { BulkModal, type BulkTarget } from "@/components/classes/BulkModal";
 import { SessionModal } from "@/components/classes/SessionModal";
+import { OutcomeTag } from "@/components/history/CourseHistory";
+import { OutcomeModal, type OutcomeTarget } from "@/components/history/OutcomeModal";
 import { TransferModal, type TransferSource } from "@/components/classes/TransferModal";
 import { CenterTag, Dash, PageHeader, StatusTag } from "@/components/ui";
 import { CLASS_STATUSES, STUDENT_STATUSES, weekdayText } from "@/lib/constants";
 import { ageFrom, formatDateVN, todayISO } from "@/lib/dates";
-import { canEditCenter, canSeeAudit, canSeeTeachers } from "@/lib/permissions";
+import { canEditCenter, canSeeAudit, canSeeTeachers, canWriteOutcome } from "@/lib/permissions";
 
 type Detail = {
   id: number;
@@ -43,6 +46,8 @@ type Detail = {
     purchasedSessions: number | null;
     adjustment: number;
     adjustmentNote: string | null;
+    outcome: string | null;
+    finalComment: string | null;
     balance: Balance | null;
     student: { id: number; code: string; fullName: string; englishName: string | null; status: string; dob: string; centerId: number };
   }[];
@@ -50,12 +55,14 @@ type Detail = {
 
 function AddStudentModal({
   classId,
+  courseId,
   defaultSessions,
   open,
   onClose,
   onSaved,
 }: {
   classId: number;
+  courseId: number | null;
   defaultSessions: number;
   open: boolean;
   onClose: () => void;
@@ -68,6 +75,10 @@ function AddStudentModal({
   const [purchased, setPurchased] = useState<number | null>(defaultSessions);
   const [saving, setSaving] = useState(false);
   const { data } = useApi<{ items: StudentRow[] }>(open ? `/api/students${qs({ q: dq, pageSize: 20 })}` : null);
+  // Học sinh đang chờ xếp lớp của khóa này (L3 bước 4) hiện đầu danh sách.
+  const { data: waiting } = useApi<{ items: StudentRow[] }>(open && courseId ? `/api/students${qs({ waitingCourseId: courseId, pageSize: 100 })}` : null);
+  const label = (s: StudentRow) => `${s.fullName} · ${s.code} · ${s.center.name} · ${STUDENT_STATUSES.find((x) => x.value === s.status)?.label}`;
+  const waitingIds = new Set((waiting?.items ?? []).map((s) => s.id));
 
   const submit = async () => {
     if (!studentId) return;
@@ -97,10 +108,15 @@ function AddStudentModal({
             value={studentId}
             onChange={setStudentId}
             placeholder="Tìm học sinh"
-            options={(data?.items ?? []).map((s) => ({
-              value: s.id,
-              label: `${s.fullName} · ${s.code} · ${s.center.name} · ${STUDENT_STATUSES.find((x) => x.value === s.status)?.label}`,
-            }))}
+            options={[
+              ...(waiting?.items.length && !dq
+                ? [{ label: `Đang chờ lớp khóa này (${waiting.items.length})`, options: waiting.items.map((s) => ({ value: s.id, label: label(s) })) }]
+                : []),
+              {
+                label: dq ? "Kết quả tìm" : "Học sinh khác",
+                options: (data?.items ?? []).filter((s) => dq || !waitingIds.has(s.id)).map((s) => ({ value: s.id, label: label(s) })),
+              },
+            ]}
           />
         </Form.Item>
         <Form.Item label="Số buổi đã mua" extra="Mặc định bằng số buổi của lớp. Số buổi còn lại tự trừ khi điểm danh.">
@@ -181,6 +197,8 @@ export default function ClassDetailPage() {
   const [editAssist, setEditAssist] = useState<number[] | null>(null);
   const [editSessions, setEditSessions] = useState<EnrollmentEdit | null>(null);
   const [transfer, setTransfer] = useState<TransferSource | null>(null);
+  const [bulk, setBulk] = useState<BulkTarget | null>(null);
+  const [outcome, setOutcome] = useState<OutcomeTarget | null>(null);
 
   if (loading && !c) return <Skeleton active />;
   if (!c) return <Empty description="Không tìm thấy lớp" />;
@@ -189,6 +207,18 @@ export default function ClassDetailPage() {
   const today = todayISO();
   const done = c.sessions.filter((s) => s.status === "SCHEDULED" && s.date < today).length;
   const scheduled = c.sessions.filter((s) => s.status === "SCHEDULED").length;
+  const writeOutcome = canWriteOutcome(viewer, c.centerId, c.teacher.id);
+  const open = c.status !== "FINISHED" && c.status !== "CANCELLED";
+  const openBulk = (action: BulkTarget["action"]) =>
+    setBulk({
+      action,
+      classId: c.id,
+      classCode: c.code,
+      centerId: c.centerId,
+      teacherId: c.teacher.id,
+      assistantIds: c.assistants.map((a) => a.teacherId),
+      upcoming: c.sessions.filter((s) => s.status === "SCHEDULED" && s.date >= today && !s.attendanceTakenAt).map((s) => s.date),
+    });
 
   const update = async (body: Record<string, unknown>, ok: string) => {
     try {
@@ -214,6 +244,16 @@ export default function ClassDetailPage() {
 
   const overview = (
     <Row gutter={[16, 16]}>
+      {c.status === "FINISHED" && (
+        <Col span={24}>
+          <Alert
+            type="info"
+            showIcon
+            message="Lớp đã kết thúc"
+            description={`${active.filter((e) => e.outcome).length}/${active.length} học sinh đã có kết quả cuối khóa. Ghi kết quả và tư vấn khóa tiếp ở tab Học sinh; học sinh chưa có lớp mới hiện ở mục "Tư vấn khóa tiếp" trang Hôm nay.`}
+          />
+        </Col>
+      )}
       <Col xs={24} lg={14}>
         <Card size="small" title="Thông tin lớp">
           <Descriptions column={{ xs: 1, md: 2 }} size="small">
@@ -266,6 +306,16 @@ export default function ClassDetailPage() {
               Đổi giáo viên cho từng buổi (dạy thay) ở tab Buổi học.
             </div>
           )}
+          {editable && open && (
+            <Space wrap style={{ marginTop: 12 }}>
+              <Button size="small" onClick={() => openBulk("teacher")}>
+                Đổi giáo viên từ ngày…
+              </Button>
+              <Button size="small" onClick={() => openBulk("shift")}>
+                Dời lịch từ ngày…
+              </Button>
+            </Space>
+          )}
         </Card>
       </Col>
     </Row>
@@ -305,10 +355,37 @@ export default function ClassDetailPage() {
           { title: "Rời lớp", render: (_, e) => (e.leftAt ? formatDateVN(e.leftAt) : <Dash />) },
           { title: "Buổi còn lại", render: (_, e) => <BalanceCell balance={e.balance} warn={!e.leftAt} /> },
           {
+            title: "Kết quả",
+            render: (_, e) => (
+              <>
+                <OutcomeTag value={e.outcome} />
+                {e.finalComment && (
+                  <div className="sub" style={{ maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={e.finalComment}>
+                    {e.finalComment}
+                  </div>
+                )}
+                {!e.outcome && !e.finalComment && <Dash />}
+              </>
+            ),
+          },
+          {
             title: "",
             render: (_, e) =>
-              editable && (
+              (editable || writeOutcome) && (
                 <Space size={0}>
+                  {writeOutcome && (
+                    <Button
+                      size="small"
+                      type="text"
+                      onClick={() =>
+                        setOutcome({ classId: c.id, enrollmentId: e.id, studentName: e.student.fullName, classCode: c.code, outcome: e.outcome, finalComment: e.finalComment })
+                      }
+                    >
+                      Kết quả
+                    </Button>
+                  )}
+                  {editable && (
+                  <>
                   <Button
                     size="small"
                     type="text"
@@ -349,6 +426,8 @@ export default function ClassDetailPage() {
                         Rời lớp
                       </Button>
                     </Popconfirm>
+                  )}
+                  </>
                   )}
                 </Space>
               ),
@@ -492,8 +571,26 @@ export default function ClassDetailPage() {
           void reload();
         }}
       />
+      <BulkModal
+        target={bulk}
+        teachers={teachers ?? []}
+        onClose={() => setBulk(null)}
+        onSaved={() => {
+          setBulk(null);
+          void reload();
+        }}
+      />
+      <OutcomeModal
+        target={outcome}
+        onClose={() => setOutcome(null)}
+        onSaved={() => {
+          setOutcome(null);
+          void reload();
+        }}
+      />
       <AddStudentModal
         classId={c.id}
+        courseId={c.course?.id ?? null}
         defaultSessions={c.totalSessions}
         open={adding}
         onClose={() => setAdding(false)}

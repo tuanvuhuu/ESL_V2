@@ -5,6 +5,7 @@ import { canArrangeMakeups } from "@/lib/permissions";
 import { balancesFor } from "@/server/attendance";
 import { prisma } from "@/server/db";
 import { allow, route } from "@/server/http";
+import { syncClassStatuses } from "@/server/lifecycle";
 
 /**
  * Danh sách cần chú ý ở Tổng quan hôm nay (M2): sắp hết / hết buổi, vắng nhiều, buổi chưa điểm danh, vắng chưa bù,
@@ -12,6 +13,7 @@ import { allow, route } from "@/server/http";
  */
 export const GET = route(async (req, _ctx, viewer) => {
   allow(canArrangeMakeups(viewer));
+  await syncClassStatuses();
   const centerId = Number(new URL(req.url).searchParams.get("centerId")) || undefined;
   const today = todayISO();
   const classWhere = centerId ? { centerId } : {};
@@ -42,7 +44,7 @@ export const GET = route(async (req, _ctx, viewer) => {
       },
     }),
   ]);
-  const [leaves, reservationsDue] = await Promise.all([
+  const [leaves, reservationsDue, followUpsDue, finished] = await Promise.all([
     prisma.teacherLeave.findMany({
       where: { fromDate: { lte: addDays(today, 14) }, toDate: { gte: today } },
       include: { teacher: { select: { id: true, displayName: true } } },
@@ -51,6 +53,24 @@ export const GET = route(async (req, _ctx, viewer) => {
       where: { returnedAt: null, expectedReturn: { lte: addDays(today, 7) }, student: centerId ? { centerId } : {} },
       include: { student: { select: { id: true, code: true, fullName: true, center: { select: { name: true, color: true } } } } },
       orderBy: { expectedReturn: "asc" },
+    }),
+    prisma.contactLog.count({ where: { followUpDate: { lte: today }, followUpDoneAt: null, student: centerId ? { centerId } : {} } }),
+    // Lớp kết thúc trong 45 ngày qua: học sinh chưa có lớp tiếp theo cần tư vấn khóa mới (L8).
+    prisma.classEnrollment.findMany({
+      where: {
+        leftAt: null,
+        class: { ...classWhere, status: "FINISHED", sessions: { some: { status: "SCHEDULED", date: { gte: addDays(today, -45) } } } },
+        student: {
+          status: { in: ["STUDYING", "FINISHED", "WAITING"] },
+          waitingCourseId: null,
+          enrollments: { none: { leftAt: null, class: { status: { in: ["PLANNED", "ACTIVE", "SUSPENDED"] } } } },
+        },
+      },
+      include: {
+        student: { select: { id: true, code: true, fullName: true, center: { select: { name: true, color: true } } } },
+        class: { select: { id: true, code: true, course: { select: { name: true } } } },
+      },
+      orderBy: { classId: "asc" },
     }),
   ]);
   const leaveSessions = leaves.length
@@ -93,5 +113,7 @@ export const GET = route(async (req, _ctx, viewer) => {
     pendingMakeups,
     needSubstitute,
     reservationsDue,
+    followUpsDue,
+    toAdvise: finished.map((e) => ({ enrollmentId: e.id, student: e.student, class: e.class, outcome: e.outcome })),
   };
 });

@@ -59,6 +59,7 @@ export type Teacher = {
   employment: string;
   status: string;
   qualifications: string | null;
+  certExpiry: string | null;
   startDate: string | null;
   note: string | null;
   centers: { centerId: number; center: CenterLite }[];

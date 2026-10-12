@@ -1,7 +1,7 @@
 "use client";
 
-import { LeftOutlined, RightOutlined } from "@ant-design/icons";
-import { Button, DatePicker, Empty, Segmented, Select, Space, Tag } from "antd";
+import { LeftOutlined, RightOutlined } from "@/client/primer-icons";
+import { Button, DatePicker, Empty, Segmented, Select, Space, Tag } from "@/client/primer-compat";
 import dayjs from "dayjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";

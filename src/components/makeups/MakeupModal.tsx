@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, App, Empty, Modal, Radio, Skeleton, Space, Tag } from "antd";
+import { Alert, App, Empty, Modal, Radio, Skeleton, Space, Tag } from "@/client/primer-compat";
 import { useEffect, useState } from "react";
 import { api, qs, useApi } from "@/client/api";
 import { CenterTag } from "@/components/ui";

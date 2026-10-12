@@ -108,3 +108,16 @@ export function findConflicts(
   }
   return out;
 }
+
+/**
+ * Trạng thái lớp tự đổi theo lịch (L8): "Dự kiến" thành "Đang học" từ ngày có buổi đầu tiên,
+ * "Dự kiến" / "Đang học" thành "Đã kết thúc" từ ngày sau buổi cuối. Tạm dừng, đã hủy giữ nguyên.
+ * `first`, `last`: ngày buổi đầu, buổi cuối chưa hủy; trống nếu không còn buổi nào.
+ */
+export function autoClassStatus(status: string, first: string | null, last: string | null, today: string): string {
+  if (status !== "PLANNED" && status !== "ACTIVE") return status;
+  if (!first || !last) return status;
+  if (last < today) return "FINISHED";
+  if (status === "PLANNED" && first <= today) return "ACTIVE";
+  return status;
+}

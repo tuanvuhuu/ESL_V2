@@ -20,14 +20,25 @@ export async function api<T = unknown>(url: string, init?: { method?: string; bo
     cache: "no-store",
   });
   const data = await res.json().catch(() => ({}));
-  if (res.status === 401 && !url.startsWith("/api/auth/") && typeof window !== "undefined") {
-    // Phiên hết hạn hoặc bị đăng xuất: về trang đăng nhập rồi quay lại trang đang xem.
-    const next = window.location.pathname + window.location.search;
-    window.location.assign(`/login?next=${encodeURIComponent(next)}`);
+  if (res.status === 401 && typeof window !== "undefined") {
+    if (url !== "/api/auth/login" && url !== "/api/auth/setup") {
+      // Xoá cookie phiên cũ đã hết hạn
+      document.cookie = "esl_session=; path=/; max-age=0";
+      if (window.location.pathname !== "/login") {
+        const next = window.location.pathname + window.location.search;
+        const target = next && next !== "/" ? `/login?next=${encodeURIComponent(next)}` : "/login";
+        window.location.assign(target);
+      }
+    }
   }
   if (!res.ok) throw new ApiError(res.status, data?.error ?? "Có lỗi xảy ra", data?.details);
   return data as T;
 }
+
+api.get = <T = unknown>(url: string) => api<T>(url);
+api.post = <T = unknown>(url: string, body?: unknown) => api<T>(url, { method: "POST", body });
+api.put = <T = unknown>(url: string, body?: unknown) => api<T>(url, { method: "PUT", body });
+api.delete = <T = unknown>(url: string) => api<T>(url, { method: "DELETE" });
 
 export function qs(params: Record<string, string | number | undefined | null | false>) {
   const sp = new URLSearchParams();

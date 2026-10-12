@@ -12,9 +12,21 @@ type Tx = Prisma.TransactionClient;
 /** Kiểm tra lớp nhận được thêm học sinh rồi tạo ghi danh. */
 export async function createEnrollment(
   tx: Tx,
-  input: { classId: number; studentId: number; joinedAt: string; purchasedSessions?: number; transferredFromId?: number; adjustmentNote?: string | null },
+  input: {
+    classId: number;
+    studentId: number;
+    joinedAt: string;
+    purchasedSessions?: number;
+    transferredFromId?: number;
+    adjustmentNote?: string | null;
+    tuitionFee?: number | null;
+    discountType?: string | null;
+    discountMode?: string | null;
+    discountValue?: number | null;
+    dueDate?: string | null;
+  },
 ) {
-  const cls = await tx.classGroup.findUnique({ where: { id: input.classId }, include: { room: true } });
+  const cls = await tx.classGroup.findUnique({ where: { id: input.classId }, include: { room: true, course: true } });
   if (!cls) throw notFound("Không tìm thấy lớp");
   if (cls.status === "CANCELLED" || cls.status === "FINISHED") throw badRequest(`Lớp ${cls.code} đã kết thúc hoặc đã hủy`);
   const already = await tx.classEnrollment.findFirst({ where: { classId: cls.id, studentId: input.studentId, leftAt: null } });
@@ -27,6 +39,7 @@ export async function createEnrollment(
     );
   }
   await assertStudentFree(tx, input.studentId, cls.id);
+  const tuitionFee = input.tuitionFee !== undefined ? input.tuitionFee : (cls.course?.tuition ?? null);
   const e = await tx.classEnrollment.create({
     data: {
       classId: cls.id,
@@ -35,6 +48,11 @@ export async function createEnrollment(
       purchasedSessions: input.purchasedSessions ?? cls.totalSessions,
       transferredFromId: input.transferredFromId,
       adjustmentNote: input.adjustmentNote,
+      tuitionFee,
+      discountType: input.discountType,
+      discountMode: input.discountMode,
+      discountValue: input.discountValue,
+      dueDate: input.dueDate,
     },
   });
   return { enrollment: e, cls };

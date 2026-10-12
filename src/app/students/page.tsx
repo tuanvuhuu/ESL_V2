@@ -1,7 +1,7 @@
 "use client";
 
-import { DownloadOutlined, PlusOutlined } from "@ant-design/icons";
-import { App, Button, Empty, Input, Segmented, Table } from "antd";
+import { DownloadOutlined, PlusOutlined, SearchOutlined } from "@/client/primer-icons";
+import { App, Button, Empty, Input, Select } from "@/client/primer-compat";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -13,7 +13,9 @@ import type { Student, StudentRow } from "@/client/types";
 import { useColumnSettings, type ColumnDef } from "@/components/ColumnSettings";
 import { StatusModal } from "@/components/students/StatusModal";
 import { StudentFormModal } from "@/components/students/StudentFormModal";
-import { ActionMenu, CenterTag, Dash, PageHeader, PersonAvatar, StatusTag, TwoLine } from "@/components/ui";
+import { StudentViewDrawer } from "@/components/students/StudentViewDrawer";
+import { ActionMenu, Dash, DotLabel, PageHeader, StatusTag, TwoLine } from "@/components/ui";
+import { PrimerGrid } from "@/components/PrimerGrid";
 import { GENDERS, STUDENT_STATUSES, optionOf } from "@/lib/constants";
 import { ageFrom, formatDateVN, todayISO } from "@/lib/dates";
 import { canCreateRecords, canEditCenter, canSeeParents } from "@/lib/permissions";
@@ -32,10 +34,11 @@ export default function StudentsPage() {
   const dq = useDebounced(q);
   const [status, setStatus] = useState<string>("ALL");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(50);
   const [sort, setSort] = useState<{ field?: string; order?: "asc" | "desc" }>({});
   const [editing, setEditing] = useState<Student | null | undefined>(undefined);
   const [statusFor, setStatusFor] = useState<{ s: StudentRow; to?: string } | null>(null);
+  const [viewing, setViewing] = useState<StudentRow | null>(null);
 
   useEffect(() => setPage(1), [dq, status, centerId]);
 
@@ -60,10 +63,34 @@ export default function StudentsPage() {
         defaultPin: "left",
         sorter: true,
         render: (_, r) => (
-          <div className="person-cell">
-            <PersonAvatar name={r.fullName} color={r.center.color} />
-            <TwoLine main={<Link href={`/students/${r.id}`}>{r.fullName}</Link>} sub={r.englishName} />
-          </div>
+          <TwoLine
+            main={
+              <button
+                type="button"
+                className="cell-main-btn"
+                onClick={() => setViewing(r)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  font: "inherit",
+                  fontWeight: 600,
+                  color: "var(--color-fg-default, #1f2328)",
+                  cursor: "pointer",
+                  textAlign: "left",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.color = "var(--color-accent-fg, #0969da)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.color = "var(--color-fg-default, #1f2328)";
+                }}
+              >
+                {r.fullName}
+              </button>
+            }
+            sub={r.englishName}
+          />
         ),
       },
       {
@@ -74,7 +101,7 @@ export default function StudentsPage() {
         render: (_, r) => <TwoLine main={<span className="num">{ageFrom(r.dob, today)} tuổi</span>} sub={formatDateVN(r.dob)} />,
       },
       { key: "gender", title: "Giới tính", width: 90, defaultHidden: true, render: (_, r) => optionOf(GENDERS, r.gender)?.label },
-      { key: "center", title: "Trung tâm", width: 140, render: (_, r) => <CenterTag center={r.center} /> },
+      { key: "center", title: "Trung tâm", width: 130, render: (_, r) => <DotLabel color={r.center.color}>{r.center.name}</DotLabel> },
       {
         key: "class",
         title: "Lớp đang học",
@@ -109,7 +136,7 @@ export default function StudentsPage() {
       {
         key: "actions",
         title: "",
-        width: 56,
+        width: 48,
         required: true,
         defaultPin: "right",
         render: (_, r) => {
@@ -119,7 +146,7 @@ export default function StudentsPage() {
             <ActionMenu
               title={`${r.fullName} · ${r.code}`}
               items={[
-                { key: "view", label: "Xem hồ sơ", onClick: () => router.push(`/students/${r.id}`) },
+                { key: "view", label: "Xem hồ sơ", onClick: () => setViewing(r) },
                 ...(editable
                   ? [
                       { key: "edit", label: "Sửa thông tin", onClick: () => setEditing(r) },
@@ -193,42 +220,54 @@ export default function StudentsPage() {
   return (
     <>
       <PageHeader
-        title="Học sinh"
-        description={canAdd ? "Quản lý hồ sơ học sinh của 4 trung tâm" : "Học sinh các lớp bạn dạy và trợ giảng"}
-        actions={
-          canAdd && (
-            <>
-              <Button icon={<DownloadOutlined />} onClick={exportCsv}>
-                Xuất Excel
-              </Button>
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing(null)}>
-                Thêm học sinh
-              </Button>
-            </>
-          )
-        }
+        title="Danh sách học sinh"
+        description={`${data?.total ?? 0} học sinh`}
       />
-      <div className="panel">
-        <div className="filter-bar">
-          <Input.Search allowClear placeholder="Tìm tên, mã, SĐT…" style={{ width: 280 }} value={q} onChange={(e) => setQ(e.target.value)} />
-          <Segmented
-            value={status}
-            onChange={(v) => setStatus(v as string)}
-            options={[
-              { value: "ALL", label: `Tất cả ${counts.ALL ?? 0}` },
-              ...STUDENT_STATUSES.map((s) => ({ value: s.value, label: `${s.label} ${counts[s.value] ?? 0}` })),
-            ]}
-          />
-          <div className="spacer" />
-          {button}
-        </div>
-        <Table<StudentRow>
+      <div>
+        <PrimerGrid<StudentRow>
+          selectable
           rowKey="id"
-          size="middle"
           loading={loading}
           columns={columns}
           dataSource={data?.items}
-          scroll={{ x: "max-content", y: "calc(100vh - 330px)" }}
+          scroll={{ x: "max-content" }}
+          toolbar={
+            <>
+              <Input
+                allowClear
+                prefix={<SearchOutlined style={{ color: "#8c959f" }} />}
+                placeholder="Tìm mã, tên, SĐT"
+                style={{ width: 260 }}
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
+              <Select
+                value={status}
+                onChange={setStatus}
+                style={{ width: 160 }}
+                popupMatchSelectWidth={false}
+                options={[
+                  { value: "ALL", label: `Tất cả (${counts.ALL ?? 0})` },
+                  ...STUDENT_STATUSES.map((s) => ({ value: s.value, label: `${s.label} (${counts[s.value] ?? 0})` })),
+                ]}
+              />
+            </>
+          }
+          actionsComponent={
+            <>
+              {button}
+              {canAdd && (
+                <>
+                  <Button icon={<DownloadOutlined />} onClick={exportCsv}>
+                    Xuất Excel
+                  </Button>
+                  <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing(null)}>
+                    Thêm học sinh
+                  </Button>
+                </>
+              )}
+            </>
+          }
           onChange={(_p, _f, sorter) => {
             const s = Array.isArray(sorter) ? sorter[0] : sorter;
             setSort(s?.order ? { field: String(s.columnKey), order: s.order === "ascend" ? "asc" : "desc" } : {});
@@ -260,7 +299,7 @@ export default function StudentsPage() {
             pageSize,
             total: data?.total ?? 0,
             showSizeChanger: true,
-            pageSizeOptions: [10, 20, 50],
+            pageSizeOptions: [10, 20, 50, 100],
             showTotal: (total, [a, b]) => `${a}–${b} trong ${total} học sinh`,
             onChange: (p, ps) => {
               setPage(ps !== pageSize ? 1 : p);
@@ -292,6 +331,14 @@ export default function StudentsPage() {
           setStatusFor(null);
           void reload();
         }}
+      />
+      <StudentViewDrawer
+        open={!!viewing}
+        student={viewing}
+        canEdit={viewing ? canEditCenter(viewer, viewing.center.id) : false}
+        onClose={() => setViewing(null)}
+        onEdit={(s) => setEditing(s)}
+        onStatus={(s) => setStatusFor({ s })}
       />
     </>
   );

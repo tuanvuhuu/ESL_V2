@@ -1,7 +1,7 @@
 "use client";
 
-import { PlusOutlined } from "@ant-design/icons";
-import { App, Button, Input, Table } from "antd";
+import { PlusOutlined, SearchOutlined } from "@/client/primer-icons";
+import { App, Button, Input } from "@/client/primer-compat";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -10,7 +10,8 @@ import { useCenters } from "@/client/centers";
 import type { CenterLite, Parent } from "@/client/types";
 import { useColumnSettings, type ColumnDef } from "@/components/ColumnSettings";
 import { ParentFormModal } from "@/components/parents/ParentFormModal";
-import { ActionMenu, CenterTag, Dash, PageHeader } from "@/components/ui";
+import { ActionMenu, Dash, DotLabel, PageHeader } from "@/components/ui";
+import { PrimerGrid } from "@/components/PrimerGrid";
 import { formatPhone } from "@/lib/text";
 
 type Row = Parent & {
@@ -59,7 +60,7 @@ export default function ParentsPage() {
         width: 180,
         render: (_, r) => {
           const uniq = new Map(r.children.map((c) => [c.student.center.id, c.student.center]));
-          return uniq.size ? Array.from(uniq.values()).map((c) => <CenterTag key={c.id} center={c} />) : <Dash />;
+          return uniq.size ? Array.from(uniq.values()).map((c) => <DotLabel key={c.id} color={c.color}>{c.name}</DotLabel>) : <Dash />;
         },
       },
       {
@@ -96,30 +97,40 @@ export default function ParentsPage() {
   return (
     <>
       <PageHeader
-        title="Phụ huynh"
-        description="Một phụ huynh có thể có nhiều con; anh chị em được nhận ra qua phụ huynh chung"
-        actions={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing(null)}>
-            Thêm phụ huynh
-          </Button>
-        }
+        title="Danh sách phụ huynh"
+        description={`${data?.length ?? 0} phụ huynh`}
       />
-      <div className="panel">
-        <div className="filter-bar">
-          <Input.Search allowClear placeholder="Tìm tên, SĐT, tên con…" style={{ width: 280 }} value={q} onChange={(e) => setQ(e.target.value)} />
-          <div className="spacer" />
-          {button}
-        </div>
-        <Table<Row>
+      <div>
+        <PrimerGrid<Row>
+          selectable
           rowKey="id"
           loading={loading}
           columns={columns}
           dataSource={data}
-          scroll={{ x: "max-content", y: "calc(100vh - 330px)" }}
+          scroll={{ x: "max-content" }}
+          toolbar={
+            <Input
+              allowClear
+              prefix={<SearchOutlined style={{ color: "#8c959f" }} />}
+              placeholder="Tìm tên, SĐT, tên con"
+              style={{ width: 280 }}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+          }
+          actionsComponent={
+            <>
+              {button}
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing(null)}>
+                Thêm phụ huynh
+              </Button>
+            </>
+          }
           locale={{ emptyText: dq ? "Không tìm thấy phụ huynh phù hợp." : "Chưa có phụ huynh nào." }}
           pagination={{
+            defaultPageSize: 50,
             showSizeChanger: true,
-            pageSizeOptions: [10, 20, 50],
+            pageSizeOptions: [10, 20, 50, 100],
             showTotal: (total, [a, b]) => `${a}–${b} trong ${total} phụ huynh`,
           }}
         />
