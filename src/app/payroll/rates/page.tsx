@@ -117,7 +117,7 @@ export default function PayrollRatesPage() {
           columns={columns}
           rowKey="id"
           loading={loading}
-          pagination={{ pageSize: 15 }}
+          pagination={{ pageSize: 50, showSizeChanger: true }}
         />
       </Card>
 

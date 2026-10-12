@@ -142,8 +142,9 @@ export default function TeachersPage() {
           scroll={{ x: "max-content", y: "calc(100vh - 330px)" }}
           locale={{ emptyText: dq || status !== "ALL" ? "Không tìm thấy giáo viên phù hợp." : "Chưa có giáo viên nào." }}
           pagination={{
+            defaultPageSize: 50,
             showSizeChanger: true,
-            pageSizeOptions: [10, 20, 50],
+            pageSizeOptions: [10, 20, 50, 100],
             showTotal: (total, [a, b]) => `${a}–${b} trong ${total} người`,
           }}
         />

@@ -148,7 +148,7 @@ export default function ClassesPage() {
           dataSource={rows}
           scroll={{ x: "max-content", y: "calc(100vh - 330px)" }}
           locale={{ emptyText: dq || status !== "ALL" ? "Không tìm thấy lớp phù hợp." : <Dash /> }}
-          pagination={{ showSizeChanger: true, pageSizeOptions: [10, 20, 50], showTotal: (t, [a, b]) => `${a}–${b} trong ${t} lớp` }}
+          pagination={{ defaultPageSize: 50, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100], showTotal: (t, [a, b]) => `${a}–${b} trong ${t} lớp` }}
         />
       </div>
       <ClassFormModal

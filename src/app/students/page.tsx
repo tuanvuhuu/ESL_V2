@@ -32,7 +32,7 @@ export default function StudentsPage() {
   const dq = useDebounced(q);
   const [status, setStatus] = useState<string>("ALL");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(50);
   const [sort, setSort] = useState<{ field?: string; order?: "asc" | "desc" }>({});
   const [editing, setEditing] = useState<Student | null | undefined>(undefined);
   const [statusFor, setStatusFor] = useState<{ s: StudentRow; to?: string } | null>(null);
@@ -260,7 +260,7 @@ export default function StudentsPage() {
             pageSize,
             total: data?.total ?? 0,
             showSizeChanger: true,
-            pageSizeOptions: [10, 20, 50],
+            pageSizeOptions: [10, 20, 50, 100],
             showTotal: (total, [a, b]) => `${a}–${b} trong ${total} học sinh`,
             onChange: (p, ps) => {
               setPage(ps !== pageSize ? 1 : p);

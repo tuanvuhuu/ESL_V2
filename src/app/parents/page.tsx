@@ -118,8 +118,9 @@ export default function ParentsPage() {
           scroll={{ x: "max-content", y: "calc(100vh - 330px)" }}
           locale={{ emptyText: dq ? "Không tìm thấy phụ huynh phù hợp." : "Chưa có phụ huynh nào." }}
           pagination={{
+            defaultPageSize: 50,
             showSizeChanger: true,
-            pageSizeOptions: [10, 20, 50],
+            pageSizeOptions: [10, 20, 50, 100],
             showTotal: (total, [a, b]) => `${a}–${b} trong ${total} phụ huynh`,
           }}
         />

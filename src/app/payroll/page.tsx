@@ -309,7 +309,7 @@ export default function PayrollPage() {
         columns={columns}
         rowKey={(r) => r.teacher.id}
         loading={loading}
-        pagination={{ pageSize: 15 }}
+        pagination={{ pageSize: 50, showSizeChanger: true }}
       />
 
       <SessionDetailModal

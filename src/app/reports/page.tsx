@@ -580,7 +580,7 @@ export default function ReportsPage() {
               dataSource={attendanceData?.items ?? []}
               rowKey={(r) => r.class.id}
               loading={loading}
-              pagination={{ pageSize: 15 }}
+              pagination={{ pageSize: 50, showSizeChanger: true }}
               columns={[
                 {
                   title: "Lớp học",

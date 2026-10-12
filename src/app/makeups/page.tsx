@@ -56,7 +56,7 @@ export default function MakeupsPage() {
       rowKey="id"
       loading={loading}
       dataSource={data?.pending ?? []}
-      pagination={{ pageSize: 20, hideOnSinglePage: true }}
+      pagination={{ pageSize: 50, hideOnSinglePage: true }}
       scroll={{ x: "max-content" }}
       locale={{ emptyText: "Không có buổi vắng nào chờ bù." }}
       columns={[
@@ -98,7 +98,7 @@ export default function MakeupsPage() {
       rowKey="id"
       loading={loading}
       dataSource={data?.booked ?? []}
-      pagination={{ pageSize: 20, hideOnSinglePage: true }}
+      pagination={{ pageSize: 50, hideOnSinglePage: true }}
       scroll={{ x: "max-content" }}
       locale={{ emptyText: "Chưa có lịch học bù sắp tới." }}
       columns={[
