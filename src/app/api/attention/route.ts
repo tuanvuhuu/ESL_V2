@@ -1,11 +1,15 @@
 import { LOW_BALANCE, isAbsent } from "@/lib/attendance";
+import { inRange } from "@/lib/availability";
 import { addDays, todayISO } from "@/lib/dates";
 import { canArrangeMakeups } from "@/lib/permissions";
 import { balancesFor } from "@/server/attendance";
 import { prisma } from "@/server/db";
 import { allow, route } from "@/server/http";
 
-/** Danh sách cần chú ý ở Tổng quan hôm nay (M2): sắp hết / hết buổi, vắng nhiều, buổi chưa điểm danh, vắng chưa bù. */
+/**
+ * Danh sách cần chú ý ở Tổng quan hôm nay (M2): sắp hết / hết buổi, vắng nhiều, buổi chưa điểm danh, vắng chưa bù,
+ * buổi 14 ngày tới của người đang nghỉ chưa có người dạy thay, bảo lưu sắp / đã đến ngày quay lại.
+ */
 export const GET = route(async (req, _ctx, viewer) => {
   allow(canArrangeMakeups(viewer));
   const centerId = Number(new URL(req.url).searchParams.get("centerId")) || undefined;
@@ -38,6 +42,33 @@ export const GET = route(async (req, _ctx, viewer) => {
       },
     }),
   ]);
+  const [leaves, reservationsDue] = await Promise.all([
+    prisma.teacherLeave.findMany({
+      where: { fromDate: { lte: addDays(today, 14) }, toDate: { gte: today } },
+      include: { teacher: { select: { id: true, displayName: true } } },
+    }),
+    prisma.reservation.findMany({
+      where: { returnedAt: null, expectedReturn: { lte: addDays(today, 7) }, student: centerId ? { centerId } : {} },
+      include: { student: { select: { id: true, code: true, fullName: true, center: { select: { name: true, color: true } } } } },
+      orderBy: { expectedReturn: "asc" },
+    }),
+  ]);
+  const leaveSessions = leaves.length
+    ? await prisma.classSession.findMany({
+        where: {
+          status: "SCHEDULED",
+          date: { gte: today, lte: addDays(today, 14) },
+          teacherId: { in: leaves.map((l) => l.teacherId) },
+          class: classWhere,
+        },
+        include: { class: { select: { id: true, code: true, centerId: true, center: { select: { name: true, color: true } } } }, teacher: { select: { displayName: true } } },
+        orderBy: [{ date: "asc" }, { startTime: "asc" }],
+      })
+    : [];
+  const needSubstitute = leaveSessions
+    .map((s) => ({ ...s, leave: leaves.find((l) => l.teacherId === s.teacherId && inRange(l, s.date)) }))
+    .filter((s) => s.leave)
+    .map(({ leave, ...s }) => ({ ...s, leaveReason: leave!.reason }));
   const balances = await balancesFor(prisma, enrollments.map((e) => e.id));
   const low = enrollments
     .map((e) => ({ enrollmentId: e.id, student: e.student, class: e.class, balance: balances.get(e.id)! }))
@@ -60,5 +91,7 @@ export const GET = route(async (req, _ctx, viewer) => {
     notTaken: pastNotTaken.slice(0, 30),
     notTakenCount: pastNotTaken.length,
     pendingMakeups,
+    needSubstitute,
+    reservationsDue,
   };
 });

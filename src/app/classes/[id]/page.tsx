@@ -11,6 +11,7 @@ import type { Balance, Course, Room, SessionRow, StudentRow, Teacher } from "@/c
 import { BalanceCell } from "@/components/attendance/parts";
 import { AuditTimeline } from "@/components/AuditTimeline";
 import { SessionModal } from "@/components/classes/SessionModal";
+import { TransferModal, type TransferSource } from "@/components/classes/TransferModal";
 import { CenterTag, Dash, PageHeader, StatusTag } from "@/components/ui";
 import { CLASS_STATUSES, STUDENT_STATUSES, weekdayText } from "@/lib/constants";
 import { ageFrom, formatDateVN, todayISO } from "@/lib/dates";
@@ -43,7 +44,7 @@ type Detail = {
     adjustment: number;
     adjustmentNote: string | null;
     balance: Balance | null;
-    student: { id: number; code: string; fullName: string; englishName: string | null; status: string; dob: string };
+    student: { id: number; code: string; fullName: string; englishName: string | null; status: string; dob: string; centerId: number };
   }[];
 };
 
@@ -179,6 +180,7 @@ export default function ClassDetailPage() {
   const [session, setSession] = useState<SessionRow | null>(null);
   const [editAssist, setEditAssist] = useState<number[] | null>(null);
   const [editSessions, setEditSessions] = useState<EnrollmentEdit | null>(null);
+  const [transfer, setTransfer] = useState<TransferSource | null>(null);
 
   if (loading && !c) return <Skeleton active />;
   if (!c) return <Empty description="Không tìm thấy lớp" />;
@@ -322,6 +324,25 @@ export default function ClassDetailPage() {
                   >
                     Số buổi
                   </Button>
+                  {!e.leftAt && (
+                    <Button
+                      size="small"
+                      type="text"
+                      onClick={() =>
+                        setTransfer({
+                          enrollmentId: e.id,
+                          classId: c.id,
+                          classCode: c.code,
+                          courseId: c.course?.id ?? null,
+                          studentName: e.student.fullName,
+                          studentCenterId: e.student.centerId,
+                          remaining: e.balance?.remaining ?? null,
+                        })
+                      }
+                    >
+                      Chuyển lớp
+                    </Button>
+                  )}
                   {!e.leftAt && (
                     <Popconfirm title={`${e.student.fullName} rời lớp ${c.code}?`} okText="Rời lớp" cancelText="Hủy" onConfirm={() => leave(e.id)}>
                       <Button size="small" danger type="text">
@@ -478,6 +499,14 @@ export default function ClassDetailPage() {
         onClose={() => setAdding(false)}
         onSaved={() => {
           setAdding(false);
+          void reload();
+        }}
+      />
+      <TransferModal
+        source={transfer}
+        onClose={() => setTransfer(null)}
+        onSaved={() => {
+          setTransfer(null);
           void reload();
         }}
       />

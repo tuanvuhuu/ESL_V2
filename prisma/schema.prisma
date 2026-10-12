@@ -12,20 +12,21 @@ datasource db {
 }
 
 model Center {
-  id        Int             @id @default(autoincrement())
-  code      String          @unique
-  name      String
-  address   String?
-  openHours String?
-  color     String          @default("#1F6FEB")
-  rooms     Room[]
-  students  Student[]
-  classes   ClassGroup[]
-  teachers  TeacherCenter[]
-  holidays  Holiday[]
-  users     User[]
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  id           Int                   @id @default(autoincrement())
+  code         String                @unique
+  name         String
+  address      String?
+  openHours    String?
+  color        String                @default("#1F6FEB")
+  rooms        Room[]
+  students     Student[]
+  availability TeacherAvailability[]
+  classes      ClassGroup[]
+  teachers     TeacherCenter[]
+  holidays     Holiday[]
+  users        User[]
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
 }
 
 model Room {
@@ -77,6 +78,7 @@ model Student {
   enrollments  ClassEnrollment[]
   attendances  Attendance[]
   makeups      Makeup[]
+  reservations Reservation[]
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
 
@@ -97,27 +99,29 @@ model StudentGuardian {
 }
 
 model Teacher {
-  id             Int              @id @default(autoincrement())
-  code           String           @unique
+  id             Int                   @id @default(autoincrement())
+  code           String                @unique
   fullName       String
   displayName    String
   phone          String?
   email          String?
-  role           String           @default("TEACHER")
-  origin         String           @default("VN")
-  employment     String           @default("PART_TIME")
-  status         String           @default("ACTIVE")
+  role           String                @default("TEACHER")
+  origin         String                @default("VN")
+  employment     String                @default("PART_TIME")
+  status         String                @default("ACTIVE")
   qualifications String?
   startDate      String?
   note           String?
-  searchText     String           @default("")
+  searchText     String                @default("")
   centers        TeacherCenter[]
-  mainClasses    ClassGroup[]     @relation("MainTeacher")
+  mainClasses    ClassGroup[]          @relation("MainTeacher")
   assistantIn    ClassAssistant[]
   sessions       ClassSession[]
+  availability   TeacherAvailability[]
+  leaves         TeacherLeave[]
   user           User?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
 }
 
 model TeacherCenter {
@@ -208,18 +212,22 @@ model ClassSession {
 }
 
 model ClassEnrollment {
-  id                Int          @id @default(autoincrement())
+  id                Int              @id @default(autoincrement())
   classId           Int
-  class             ClassGroup   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  class             ClassGroup       @relation(fields: [classId], references: [id], onDelete: Cascade)
   studentId         Int
-  student           Student      @relation(fields: [studentId], references: [id])
+  student           Student          @relation(fields: [studentId], references: [id])
   joinedAt          String
   leftAt            String?
   // Số buổi đã mua; trống = theo số buổi của lớp (dữ liệu cũ trước khi có trường này).
   purchasedSessions Int?
   // Cộng / trừ tay (tặng buổi, chuyển buổi từ khóa trước…), kèm lý do.
-  adjustment        Int          @default(0)
+  adjustment        Int              @default(0)
   adjustmentNote    String?
+  // Ghi danh cũ khi học sinh được chuyển sang lớp này (số buổi còn lại chuyển theo).
+  transferredFromId Int?             @unique
+  transferredFrom   ClassEnrollment? @relation("Transfer", fields: [transferredFromId], references: [id])
+  transferredTo     ClassEnrollment? @relation("Transfer")
   attendances       Attendance[]
 
   @@index([studentId])
@@ -318,4 +326,51 @@ model Makeup {
   createdAt  DateTime     @default(now())
 
   @@index([sessionId])
+}
+
+// Lịch rảnh hằng tuần của giáo viên / trợ giảng: một dòng = một khung giờ trong một thứ.
+// Trống trung tâm = rảnh ở mọi trung tâm mình dạy.
+model TeacherAvailability {
+  id        Int     @id @default(autoincrement())
+  teacherId Int
+  teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  // 1 = Thứ 2 … 7 = Chủ nhật
+  weekday   Int
+  startTime String
+  endTime   String
+  centerId  Int?
+  center    Center? @relation(fields: [centerId], references: [id])
+
+  @@index([teacherId])
+}
+
+// Ngày nghỉ của giáo viên / trợ giảng (từ ngày → đến ngày, tính cả hai đầu). Không có bước duyệt.
+model TeacherLeave {
+  id        Int      @id @default(autoincrement())
+  teacherId Int
+  teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  fromDate  String
+  toDate    String
+  reason    String
+  createdBy String
+  createdAt DateTime @default(now())
+
+  @@index([teacherId, fromDate])
+}
+
+// Bảo lưu: học sinh tạm dừng từ `startDate`, dự kiến quay lại `expectedReturn`.
+// `returnedAt` có giá trị khi đã học lại. Trong thời gian bảo lưu học sinh không có trong danh sách
+// điểm danh nên số buổi còn lại được giữ nguyên.
+model Reservation {
+  id             Int      @id @default(autoincrement())
+  studentId      Int
+  student        Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  startDate      String
+  expectedReturn String
+  returnedAt     String?
+  reason         String?
+  createdBy      String
+  createdAt      DateTime @default(now())
+
+  @@index([studentId])
 }

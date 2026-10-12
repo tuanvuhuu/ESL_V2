@@ -77,13 +77,22 @@ export const studentCreateSchema = z.object({
   parent: guardianInput,
 });
 
+/** Đổi trạng thái. Bảo lưu cần ngày bắt đầu và ngày dự kiến quay lại; học lại sau bảo lưu có thể chọn ngày học lại. */
 export const statusChangeSchema = z
   .object({
     status: z.enum(values(STUDENT_STATUSES)),
     reason: optText,
     note: optText,
+    startDate: isoDate().optional().nullable(),
+    expectedReturn: isoDate().optional().nullable(),
+    returnDate: isoDate().optional().nullable(),
   })
-  .refine((s) => s.status !== "QUIT" || !!s.reason, { message: "Chọn lý do nghỉ", path: ["reason"] });
+  .refine((s) => s.status !== "QUIT" || !!s.reason, { message: "Chọn lý do nghỉ", path: ["reason"] })
+  .refine((s) => s.status !== "RESERVED" || !!s.expectedReturn, { message: "Chọn ngày dự kiến quay lại", path: ["expectedReturn"] })
+  .refine((s) => s.status !== "RESERVED" || !s.expectedReturn || s.expectedReturn > (s.startDate ?? todayISO()), {
+    message: "Ngày quay lại phải sau ngày bắt đầu bảo lưu",
+    path: ["expectedReturn"],
+  });
 
 export const guardianLinkSchema = z.object({
   parentId: z.number().int().positive(),
@@ -195,6 +204,43 @@ export const attendanceSchema = z.object({
     )
     .max(200),
 });
+
+/** Chuyển học sinh sang lớp khác từ ngày `date`; số buổi còn lại đi theo. */
+export const transferSchema = z.object({
+  toClassId: z.number({ error: "Chọn lớp mới" }).int().positive(),
+  date: isoDate("Chọn ngày chuyển"),
+  note: optText,
+  /** Lớp mới ở trung tâm khác: đổi luôn trung tâm chính của học sinh. */
+  moveCenter: z.boolean().default(false),
+});
+
+/** Lịch rảnh: thay toàn bộ danh sách khung giờ. */
+export const availabilitySchema = z.object({
+  slots: z
+    .array(
+      z
+        .object({
+          weekday: z.number().int().min(1).max(7),
+          startTime: time,
+          endTime: time,
+          centerId: z.number().int().positive().optional().nullable(),
+        })
+        .refine((s) => s.startTime < s.endTime, { message: "Giờ kết thúc phải sau giờ bắt đầu", path: ["endTime"] }),
+    )
+    .max(100),
+});
+
+export const leaveSchema = z
+  .object({
+    fromDate: isoDate("Chọn ngày bắt đầu nghỉ"),
+    toDate: isoDate("Chọn ngày kết thúc nghỉ"),
+    reason: reqText("Nhập lý do nghỉ"),
+  })
+  .refine((l) => l.fromDate <= l.toDate, { message: "Ngày kết thúc phải từ ngày bắt đầu trở đi", path: ["toDate"] })
+  .refine((l) => l.fromDate <= l.toDate && Date.parse(l.toDate) - Date.parse(l.fromDate) <= 92 * 86400000, {
+    message: "Mỗi lần đăng ký nghỉ tối đa 3 tháng",
+    path: ["toDate"],
+  });
 
 export const makeupSchema = z.object({
   absenceId: z.number().int().positive(),

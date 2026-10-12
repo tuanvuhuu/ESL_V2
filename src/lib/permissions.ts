@@ -49,6 +49,13 @@ export const canSeeTeachers = (v: Viewer) => isManager(v) || isOffice(v);
 /** Thêm, sửa hồ sơ giáo viên / trợ giảng. */
 export const canEditTeachers = (v: Viewer) => isManager(v);
 
+/**
+ * Sửa lịch rảnh, đăng ký ngày nghỉ của một giáo viên / trợ giảng (DESIGN mục 7, đang theo mặc định):
+ * quản lý mọi người; giáo vụ người dạy ở trung tâm mình; giáo viên, trợ giảng của chính mình.
+ */
+export const canManageTeacherTime = (v: Viewer, teacherId: number, teacherCenterIds: number[]) =>
+  isManager(v) || (isOffice(v) && v.centerId != null && teacherCenterIds.includes(v.centerId)) || (v.teacherId != null && v.teacherId === teacherId);
+
 /** Trung tâm, phòng, ngày nghỉ, khóa học, tài khoản. */
 export const canManageSettings = (v: Viewer) => isManager(v);
 

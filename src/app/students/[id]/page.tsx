@@ -10,6 +10,7 @@ import { useViewer } from "@/client/session";
 import type { Balance, Guardian, Student } from "@/client/types";
 import { AttendanceTag, BalanceCell, MakeupTag } from "@/components/attendance/parts";
 import { MakeupModal, type AbsenceLite } from "@/components/makeups/MakeupModal";
+import { TransferModal, type TransferSource } from "@/components/classes/TransferModal";
 import { AuditTimeline } from "@/components/AuditTimeline";
 import { AddGuardianModal } from "@/components/students/AddGuardianModal";
 import { StatusModal } from "@/components/students/StatusModal";
@@ -23,6 +24,7 @@ import { formatPhone } from "@/lib/text";
 
 type Detail = Student & {
   center: { id: number; name: string; color: string };
+  reservations: { id: number; startDate: string; expectedReturn: string; returnedAt: string | null; reason: string | null; createdBy: string }[];
   guardians: (Guardian & {
     parent: Guardian["parent"] & { children: { student: { id: number; code: string; fullName: string; status: string } }[] };
   })[];
@@ -32,8 +34,10 @@ type Detail = Student & {
     leftAt: string | null;
     balance: Balance | null;
     attendances: AttendanceRow[];
+    transferredFrom: { class: { id: number; code: string } } | null;
     class: {
       id: number;
+      courseId: number | null;
       code: string;
       name: string;
       status: string;
@@ -76,6 +80,7 @@ export default function StudentProfilePage() {
   const [changingStatus, setChangingStatus] = useState(false);
   const [addingGuardian, setAddingGuardian] = useState(false);
   const [absence, setAbsence] = useState<AbsenceLite | null>(null);
+  const [transfer, setTransfer] = useState<TransferSource | null>(null);
   const viewer = useViewer();
 
   if (loading && !s) return <Skeleton active />;
@@ -130,16 +135,55 @@ export default function StudentProfilePage() {
                       <StatusTag options={CLASS_STATUSES} value={e.class.status} />
                     </Space>
                   }
-                  description={`${e.class.teacher.displayName} · ${e.class.startTime}–${e.class.endTime} · vào lớp ${formatDateVN(e.joinedAt)}`}
+                  description={`${e.class.teacher.displayName} · ${e.class.startTime}–${e.class.endTime} · vào lớp ${formatDateVN(e.joinedAt)}${e.transferredFrom ? ` (chuyển từ ${e.transferredFrom.class.code})` : ""}`}
                 />
                 <div style={{ textAlign: "right" }}>
                   <div className="sub">Buổi còn lại</div>
                   <BalanceCell balance={e.balance} />
+                  {editable && (
+                    <div>
+                      <Button
+                        size="small"
+                        type="link"
+                        style={{ padding: 0 }}
+                        onClick={() =>
+                          setTransfer({
+                            enrollmentId: e.id,
+                            classId: e.class.id,
+                            classCode: e.class.code,
+                            courseId: e.class.courseId,
+                            studentName: s.fullName,
+                            studentCenterId: s.center.id,
+                            remaining: e.balance?.remaining ?? null,
+                          })
+                        }
+                      >
+                        Chuyển lớp
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </List.Item>
             )}
           />
         </Card>
+        {s.reservations.length > 0 && (
+          <Card title="Bảo lưu" size="small" style={{ marginTop: 16 }}>
+            <List
+              size="small"
+              dataSource={s.reservations}
+              renderItem={(r) => (
+                <List.Item extra={r.returnedAt ? <Tag>Đã học lại {formatDateVN(r.returnedAt)}</Tag> : <Tag color="purple">Đang bảo lưu</Tag>}>
+                  <span>
+                    Từ <b>{formatDateVN(r.startDate)}</b> · dự kiến quay lại <b>{formatDateVN(r.expectedReturn)}</b>
+                    {r.reason ? ` · ${r.reason}` : ""} <span className="sub">· {r.createdBy}</span>
+                  </span>
+                </List.Item>
+              )}
+            />
+            <div className="sub">Trong thời gian bảo lưu không điểm danh, số buổi còn lại giữ nguyên.</div>
+          </Card>
+        )}
         <Card title="Lịch sắp tới" size="small" style={{ marginTop: 16 }}>
           <List
             size="small"
@@ -240,7 +284,15 @@ export default function StudentProfilePage() {
         { title: "Khóa", render: (_, e) => e.class.course?.name ?? <Dash /> },
         { title: "Trung tâm", render: (_, e) => <CenterTag center={e.class.center} /> },
         { title: "Giáo viên", render: (_, e) => e.class.teacher.displayName },
-        { title: "Vào lớp", render: (_, e) => formatDateVN(e.joinedAt) },
+        {
+          title: "Vào lớp",
+          render: (_, e) => (
+            <>
+              {formatDateVN(e.joinedAt)}
+              {e.transferredFrom && <div className="sub">chuyển từ {e.transferredFrom.class.code}</div>}
+            </>
+          ),
+        },
         { title: "Rời lớp", render: (_, e) => (e.leftAt ? formatDateVN(e.leftAt) : <Dash />) },
         { title: "Trạng thái lớp", render: (_, e) => <StatusTag options={CLASS_STATUSES} value={e.class.status} /> },
         { title: "Buổi còn lại", render: (_, e) => <BalanceCell balance={e.balance} warn={!e.leftAt} /> },
@@ -376,6 +428,14 @@ export default function StudentProfilePage() {
           }}
         />
       )}
+      <TransferModal
+        source={transfer}
+        onClose={() => setTransfer(null)}
+        onSaved={() => {
+          setTransfer(null);
+          void reload();
+        }}
+      />
       <AddGuardianModal
         studentId={s.id}
         open={addingGuardian}

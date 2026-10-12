@@ -47,6 +47,9 @@ async function main() {
     prisma.userSession.deleteMany(),
     prisma.user.deleteMany(),
     prisma.auditLog.deleteMany(),
+    prisma.reservation.deleteMany(),
+    prisma.teacherLeave.deleteMany(),
+    prisma.teacherAvailability.deleteMany(),
     prisma.makeup.deleteMany(),
     prisma.attendance.deleteMany(),
     prisma.classEnrollment.deleteMany(),
@@ -278,6 +281,38 @@ async function main() {
     if (absence && target) {
       await prisma.makeup.create({ data: { absenceId: absence.id, sessionId: target.id, studentId: absence.studentId, createdBy: "Giáo vụ Trung tâm A" } });
     }
+  }
+
+  // Lịch rảnh: đa số rảnh tối T2–T6 và cuối tuần; Ms Hoa chỉ rảnh tối T2–T5; Mr John chưa khai.
+  for (const t of teachers) {
+    if (t.displayName === "Mr John") continue;
+    const slots =
+      t.displayName === "Ms Hoa"
+        ? [1, 2, 3, 4].map((weekday) => ({ weekday, startTime: "18:00", endTime: "21:00" }))
+        : [
+            ...[1, 2, 3, 4, 5].map((weekday) => ({ weekday, startTime: "17:00", endTime: "21:00" })),
+            ...[6, 7].flatMap((weekday) => [
+              { weekday, startTime: "08:00", endTime: "12:00" },
+              { weekday, startTime: "14:00", endTime: "20:00" },
+            ]),
+          ];
+    await prisma.teacherAvailability.createMany({ data: slots.map((x) => ({ ...x, teacherId: t.id })) });
+  }
+
+  // Mr John nghỉ T3–T5 tuần sau: các buổi IELTS-A cần người dạy thay.
+  const nextMonday = addDays(startOfWeek(today), 7);
+  await prisma.teacherLeave.create({
+    data: { teacherId: T["Mr John"].id, fromDate: addDays(nextMonday, 1), toDate: addDays(nextMonday, 3), reason: "Việc gia đình", createdBy: "Giáo vụ Trung tâm A" },
+  });
+
+  // Học sinh đang bảo lưu: một em sắp đến ngày quay lại.
+  const reserved = await prisma.student.findMany({ where: { status: "RESERVED" }, orderBy: { id: "asc" } });
+  for (const [i, st] of reserved.entries()) {
+    const expectedReturn = addDays(today, i === 0 ? 5 : 40);
+    await prisma.reservation.create({
+      data: { studentId: st.id, startDate: addDays(today, -10), expectedReturn, reason: "Ôn thi ở trường", createdBy: "Giáo vụ" },
+    });
+    await prisma.student.update({ where: { id: st.id }, data: { statusReason: `đến ${expectedReturn.split("-").reverse().join("/")}` } });
   }
 
   // Tài khoản chạy thử, cùng mật khẩu DEMO_PASSWORD. Không dùng dữ liệu mẫu này khi chạy thật.

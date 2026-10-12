@@ -27,8 +27,10 @@ export const GET = route<IdCtx>(async (_req, { params }, viewer) => {
         },
         orderBy: { isPrimary: "desc" },
       },
+      reservations: { orderBy: { startDate: "desc" } },
       enrollments: {
         include: {
+          transferredFrom: { select: { class: { select: { id: true, code: true } } } },
           class: {
             include: {
               center: { select: { name: true, color: true } },
@@ -84,9 +86,11 @@ export const PUT = route<IdCtx>(async (req, { params }, viewer) => {
     await assertCanEditStudent(tx, viewer, id);
     const before = await tx.student.findUnique({ where: { id } });
     if (!before) throw notFound("Không tìm thấy học sinh");
-    const after = await tx.student.update({ where: { id }, data });
+    // Trạng thái đổi riêng qua /status (bảo lưu cần ngày bắt đầu, ngày quay lại).
+    const { status: _status, statusReason: _reason, ...fields } = data;
+    const after = await tx.student.update({ where: { id }, data: fields });
     await refreshStudentSearch(tx, id);
-    await logChange(tx, "Student", id, "update", diff(before, after, Object.keys(data)));
+    await logChange(tx, "Student", id, "update", diff(before, after, Object.keys(fields)));
     return after;
   });
 });

@@ -22,6 +22,12 @@ const ACTIONS: Record<string, string> = {
   sessions: "Sửa số buổi",
   "makeup-add": "Xếp học bù",
   "makeup-remove": "Bỏ lịch học bù",
+  transfer: "Chuyển lớp",
+  reserve: "Bảo lưu",
+  "reserve-end": "Học lại sau bảo lưu",
+  availability: "Sửa lịch rảnh",
+  "leave-add": "Đăng ký nghỉ",
+  "leave-remove": "Hủy đăng ký nghỉ",
 };
 
 /** Tên trường hiển thị trong lịch sử. */
@@ -32,6 +38,20 @@ const FIELDS: Record<string, string> = {
   adjustmentNote: "Lý do điều chỉnh",
   lessonContent: "Nội dung đã dạy",
   session: "Buổi",
+  carriedSessions: "Số buổi chuyển theo",
+  transferTo: "Chuyển sang lớp",
+  transferFrom: "Chuyển từ lớp",
+  date: "Ngày",
+  centerId: "Trung tâm (mã)",
+  status: "Trạng thái",
+  reason: "Lý do",
+  note: "Ghi chú",
+  student: "Học sinh",
+  startDate: "Bắt đầu",
+  expectedReturn: "Dự kiến quay lại",
+  returnedAt: "Học lại từ",
+  slots: "Khung rảnh",
+  leave: "Nghỉ",
 };
 
 const show = (v: unknown) => (v === null || v === undefined || v === "" ? "∅" : Array.isArray(v) ? v.join(", ") : String(v));

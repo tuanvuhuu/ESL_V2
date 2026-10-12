@@ -1,6 +1,7 @@
 // Danh sách điểm danh của một buổi, số buổi còn lại theo ghi danh, quyền điểm danh.
 import type { Prisma } from "@prisma/client";
 import { computeBalance, type Balance } from "@/lib/attendance";
+import { reservationCovers, type ReservationLite } from "@/lib/availability";
 import { canEditCenter, isManager, isStaff, type Viewer } from "@/lib/permissions";
 import { prisma } from "./db";
 import { allow, notFound } from "./http";
@@ -97,6 +98,16 @@ export type RosterRow = {
 };
 
 /**
+ * Không điểm danh học sinh vào ngày `date` nếu: đã nghỉ học, hoặc có lượt bảo lưu phủ ngày đó.
+ * Học sinh trạng thái bảo lưu nhưng chưa có lượt bảo lưu nào (dữ liệu cũ) thì coi như bảo lưu mọi ngày.
+ */
+export function isAway(status: string, reservations: ReservationLite[], date: string): boolean {
+  if (status === "QUIT") return true;
+  if (reservations.some((r) => reservationCovers(r, date))) return true;
+  return status === "RESERVED" && reservations.length === 0;
+}
+
+/**
  * Học sinh phải điểm danh ở buổi: đang trong lớp vào ngày đó (trừ bảo lưu, đã nghỉ),
  * cộng học sinh được xếp học bù vào buổi, cộng ai đã có điểm danh dù sau đó rời lớp.
  */
@@ -116,6 +127,10 @@ export async function rosterFor(tx: Tx, s: SessionWithClass): Promise<RosterRow[
     }),
     tx.attendance.findMany({ where: { sessionId: s.id }, include: { student: { select: studentSelect } } }),
   ]);
+  const reservations = await tx.reservation.findMany({
+    where: { studentId: { in: enrollments.map((e) => e.studentId) } },
+    select: { studentId: true, startDate: true, returnedAt: true },
+  });
   const byStudent = new Map(existing.map((a) => [a.studentId, a]));
   const rows = new Map<number, Omit<RosterRow, "balance">>();
   type Stu = (typeof enrollments)[number]["student"];
@@ -133,7 +148,7 @@ export async function rosterFor(tx: Tx, s: SessionWithClass): Promise<RosterRow[
     };
   };
   for (const e of enrollments) {
-    if (!byStudent.has(e.studentId) && (e.student.status === "RESERVED" || e.student.status === "QUIT")) continue;
+    if (!byStudent.has(e.studentId) && isAway(e.student.status, reservations.filter((r) => r.studentId === e.studentId), s.date)) continue;
     rows.set(e.studentId, { ...base(e.student, e.id), makeup: null });
   }
   for (const m of makeups) {

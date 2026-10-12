@@ -33,6 +33,11 @@ Kiểm tra trước khi đẩy code: `npm run lint && npm run typecheck && npm t
 | Số buổi còn lại | Ghi danh có số buổi đã mua và điều chỉnh tay (kèm lý do). Còn lại = đã mua − có mặt/muộn − vắng không phép ± điều chỉnh |
 | Học bù | Danh sách buổi vắng chưa bù; gợi ý buổi cùng khóa, cùng buổi số, còn chỗ, không trùng giờ, ưu tiên trung tâm chính; học sinh hiện trong danh sách điểm danh buổi đó với nhãn tím |
 | Giáo viên (điện thoại) | Hôm nay (thẻ buổi + nút Điểm danh, buổi tuần qua còn quên), Lịch tuần này / tuần sau, Lớp của tôi (chuyên cần, buổi còn lại từng em), Tài khoản (giờ dạy theo tháng, đổi mật khẩu) |
+| Lịch rảnh | Hồ sơ giáo viên › Lịch rảnh và Tài khoản của giáo viên: lưới tuần 07:00–22:00, sửa dạng danh sách khung giờ (gắn trung tâm hoặc mọi trung tâm) |
+| Đăng ký nghỉ | Chọn khoảng ngày + lý do, không cần duyệt; hiện ngay các buổi bị ảnh hưởng, mỗi buổi có nút Tìm người dạy thay. Hôm nay có mục "Cần người dạy thay" (14 ngày tới) |
+| Dạy thay | Gợi ý người dạy thay sắp theo mức phù hợp, nhãn Rảnh / Ngoài lịch rảnh / Đang nghỉ / Đang dạy lớp khác / Chưa dạy khóa này; người bận ở trung tâm khác cùng giờ không chọn được |
+| Chuyển lớp | Từ lớp hoặc hồ sơ học sinh: chọn lớp mới (cùng khóa hiện trước) và ngày chuyển; số buổi còn lại đi theo, có thể đổi luôn trung tâm chính |
+| Bảo lưu | Đổi trạng thái › Bảo lưu: ngày bắt đầu, ngày dự kiến quay lại; trong thời gian bảo lưu không có trong danh sách điểm danh nên số buổi giữ nguyên; Hôm nay có mục "Bảo lưu đến hạn" |
 | Học sinh | Danh sách theo mẫu chuẩn (tìm không dấu, lọc trạng thái có số lượng, ghim/ẩn cột, menu ⋯, xuất Excel), thêm/sửa trong popup, cảnh báo trùng hồ sơ, gợi ý phụ huynh theo SĐT, đổi trạng thái kèm lý do, hồ sơ có tab tổng quan / lịch sử lớp / lịch sử thay đổi |
 | Phụ huynh | Danh sách, hồ sơ với thẻ từng con, tự nhận anh chị em qua phụ huynh chung, tối đa 2 người giám hộ / học sinh |
 | Giáo viên | Giáo viên, trợ giảng hoặc cả hai; trung tâm dạy được; giờ dạy theo lịch trong tháng; lịch tuần gộp 4 trung tâm |
@@ -65,7 +70,7 @@ Quy tắc nằm ở `src/lib/permissions.ts`. Giáo vụ sửa được phụ hu
 
 ## Chưa có (đợt sau)
 
-Học phí, lương, báo cáo, lịch rảnh và đăng ký nghỉ của giáo viên, chuyển lớp giữ nguyên số buổi, bảo lưu có ngày quay lại, nhật ký liên lạc.
+Học phí, lương, báo cáo, nhật ký liên lạc.
 
 ## Cấu trúc
 

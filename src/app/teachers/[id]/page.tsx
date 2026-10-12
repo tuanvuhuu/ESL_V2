@@ -9,11 +9,13 @@ import { qs, useApi } from "@/client/api";
 import { useViewer } from "@/client/session";
 import type { Teacher } from "@/client/types";
 import { AuditTimeline } from "@/components/AuditTimeline";
+import { AvailabilityEditor } from "@/components/staffing/AvailabilityEditor";
+import { LeavePanel } from "@/components/staffing/LeavePanel";
 import { TeacherFormModal } from "@/components/teachers/TeacherFormModal";
 import { CenterTag, Dash, PageHeader, PersonAvatar, StatusTag } from "@/components/ui";
 import { CLASS_STATUSES, EMPLOYMENTS, TEACHER_ORIGINS, TEACHER_ROLES, TEACHER_STATUSES, weekdayText, optionOf } from "@/lib/constants";
 import { addDays, formatDateVN, startOfWeek, todayISO } from "@/lib/dates";
-import { canEditTeachers, canSeeAudit } from "@/lib/permissions";
+import { canEditCenter, canEditTeachers, canManageTeacherTime, canSeeAudit } from "@/lib/permissions";
 import { formatPhone } from "@/lib/text";
 
 type ClassLite = {
@@ -61,6 +63,11 @@ export default function TeacherProfilePage() {
   ];
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(t.weekStart, i));
+  const timeEditable = canManageTeacherTime(
+    viewer,
+    t.id,
+    t.centers.map((c) => c.centerId),
+  );
 
   const overview = (
     <Row gutter={[16, 16]}>
@@ -170,9 +177,20 @@ export default function TeacherProfilePage() {
       />
       <div className="panel">
         <Tabs
+          defaultActiveKey={typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("tab") ?? undefined) : undefined}
           items={[
             { key: "overview", label: "Tổng quan", children: overview },
             { key: "classes", label: `Lớp (${classes.length})`, children: classTable },
+            {
+              key: "availability",
+              label: "Lịch rảnh",
+              children: <AvailabilityEditor teacherId={t.id} centers={t.centers.map((c) => c.center)} editable={timeEditable} />,
+            },
+            {
+              key: "leaves",
+              label: "Ngày nghỉ",
+              children: <LeavePanel teacherId={t.id} editable={timeEditable} canArrange={(centerId) => canEditCenter(viewer, centerId)} />,
+            },
             ...(canSeeAudit(viewer) ? [{ key: "audit", label: "Lịch sử thay đổi", children: <AuditTimeline entity="Teacher" id={t.id} /> }] : []),
           ]}
         />
