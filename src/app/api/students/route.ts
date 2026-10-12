@@ -5,7 +5,7 @@ import { formatCode, normalizeQuery } from "@/lib/text";
 import { redactParent, staffStudentWhere } from "@/server/access";
 import { logChange } from "@/server/audit";
 import { prisma } from "@/server/db";
-import { allow, body, route } from "@/server/http";
+import { allow, badRequest, body, route } from "@/server/http";
 import { refreshParentSearch } from "@/server/search-text";
 import { studentCreateSchema } from "@/server/validators";
 
@@ -62,6 +62,7 @@ export const GET = route(async (req, _ctx, viewer) => {
 export const POST = route(async (req, _ctx, viewer) => {
   const { student, parent } = await body(req, studentCreateSchema);
   allow(canEditCenter(viewer, student.centerId), "Chỉ thêm được học sinh cho trung tâm mình");
+  if (student.status === "RESERVED") throw badRequest("Học sinh mới chưa bảo lưu được: thêm trước, sau đó bảo lưu ở nút Đổi trạng thái");
   return prisma.$transaction(async (tx) => {
     const existing = await tx.parent.findUnique({ where: { phone: parent.phone } });
     const p =

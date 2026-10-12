@@ -667,3 +667,53 @@ body {
   height: 100%;
   border-radius: 3px;
 }
+
+/* Lịch rảnh: mỗi thứ một dải 07:00–22:00 */
+.avail-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 760px;
+}
+
+.avail-row {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.avail-track {
+  position: relative;
+  height: 24px;
+}
+
+.avail-head .avail-track {
+  height: 16px;
+}
+
+.avail-bg {
+  background: repeating-linear-gradient(90deg, #f6f8fa 0, #f6f8fa calc(100% / 15 - 1px), #eaeef2 calc(100% / 15 - 1px), #eaeef2 calc(100% / 15));
+  border-radius: 4px;
+}
+
+.avail-hour {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: #8c959f;
+}
+
+.avail-bar {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 11px;
+  line-height: 20px;
+  padding: 0 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

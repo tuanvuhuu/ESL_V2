@@ -29,7 +29,7 @@ export const GET = route<IdCtx>(async (_req, { params }, viewer) => {
         orderBy: [{ date: "asc" }, { startTime: "asc" }],
       },
       enrollments: {
-        include: { student: { select: { id: true, code: true, fullName: true, englishName: true, status: true, dob: true } } },
+        include: { student: { select: { id: true, code: true, fullName: true, englishName: true, status: true, dob: true, centerId: true } } },
         orderBy: { joinedAt: "asc" },
       },
     },

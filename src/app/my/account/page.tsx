@@ -7,7 +7,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { qs, useApi } from "@/client/api";
 import { useSession, useViewer } from "@/client/session";
+import type { Teacher } from "@/client/types";
 import { ChangePasswordModal } from "@/components/ChangePasswordModal";
+import { AvailabilityEditor } from "@/components/staffing/AvailabilityEditor";
+import { LeavePanel } from "@/components/staffing/LeavePanel";
 import { PageHeader } from "@/components/ui";
 import { formatMinutes } from "@/lib/attendance";
 import { formatDateVN, todayISO } from "@/lib/dates";
@@ -31,13 +34,14 @@ type Hours = {
   totals: { teacher: { done: Totals; upcoming: Totals }; assistant: { done: Totals; upcoming: Totals } };
 };
 
-/** Tài khoản (G5): thông tin, giờ dạy tháng này, đổi mật khẩu. */
+/** Tài khoản (G5): thông tin, giờ dạy tháng này, đăng ký nghỉ, lịch rảnh, đổi mật khẩu. */
 export default function MyAccountPage() {
   const viewer = useViewer();
   const { logout } = useSession();
   const [month, setMonth] = useState(todayISO().slice(0, 7));
   const [changing, setChanging] = useState(false);
   const { data, loading } = useApi<Hours>(`/api/me/hours${qs({ month })}`);
+  const { data: me } = useApi<Teacher>(viewer.teacherId ? `/api/teachers/${viewer.teacherId}` : null);
   const shift = (n: number) => setMonth(dayjs(`${month}-01`).add(n, "month").format("YYYY-MM"));
   const t = data?.totals;
 
@@ -61,6 +65,16 @@ export default function MyAccountPage() {
         </Space>
       </Card>
 
+      {viewer.teacherId && (
+        <>
+          <Card size="small" title="Đăng ký nghỉ" style={{ marginBottom: 12 }}>
+            <LeavePanel teacherId={viewer.teacherId} editable canArrange={() => false} />
+          </Card>
+          <Card size="small" title="Lịch rảnh trong tuần" style={{ marginBottom: 12 }}>
+            <AvailabilityEditor teacherId={viewer.teacherId} centers={me?.centers.map((c) => c.center) ?? []} editable />
+          </Card>
+        </>
+      )}
       <Card
         size="small"
         title={`Giờ dạy tháng ${month.slice(5)}/${month.slice(0, 4)}`}
@@ -107,7 +121,7 @@ export default function MyAccountPage() {
                 )}
               />
               <div className="sub" style={{ marginTop: 8 }}>
-                Tính các buổi theo lịch (không tính buổi đã hủy). Lịch rảnh và đăng ký nghỉ sẽ có ở bản sau.
+                Tính các buổi theo lịch (không tính buổi đã hủy).
               </div>
             </>
           )

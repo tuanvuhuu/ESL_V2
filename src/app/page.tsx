@@ -1,17 +1,19 @@
 "use client";
 
 import { CalendarOutlined, CheckSquareOutlined, StopOutlined, SwapOutlined } from "@ant-design/icons";
-import { Badge, Col, Empty, List, Row, Statistic, Tabs, Tag } from "antd";
+import { Badge, Button, Col, Empty, List, Row, Statistic, Tabs, Tag } from "antd";
 import Link from "next/link";
+import { useState } from "react";
 import { qs, useApi } from "@/client/api";
 import { useCenters } from "@/client/centers";
 import { useViewer } from "@/client/session";
 import type { Balance, ScheduleSession } from "@/client/types";
 import { BalanceCell } from "@/components/attendance/parts";
 import { MySessionCard } from "@/components/my/SessionCard";
+import { SubstituteModal, type SubstituteTarget } from "@/components/staffing/SubstituteModal";
 import { PageHeader } from "@/components/ui";
 import { addDays, formatDateVN, todayISO } from "@/lib/dates";
-import { isStaff } from "@/lib/permissions";
+import { canEditCenter, isStaff } from "@/lib/permissions";
 
 export default function TodayPage() {
   const viewer = useViewer();
@@ -60,6 +62,16 @@ type Attention = {
   notTaken: (ScheduleSession & { teacher: { displayName: string } })[];
   notTakenCount: number;
   pendingMakeups: number;
+  needSubstitute: {
+    id: number;
+    date: string;
+    startTime: string;
+    endTime: string;
+    leaveReason: string;
+    teacher: { displayName: string };
+    class: { id: number; code: string; centerId: number; center: { name: string; color: string } };
+  }[];
+  reservationsDue: { id: number; expectedReturn: string; startDate: string; student: StudentLite }[];
 };
 type StudentLite = { id: number; code: string; fullName: string; center: { name: string; color: string } };
 
@@ -76,7 +88,9 @@ function OfficeToday() {
   const today = todayISO();
   const { centers, centerId } = useCenters();
   const { data } = useApi<ScheduleSession[]>(`/api/schedule${qs({ from: today, to: today, centerId })}`);
-  const { data: att } = useApi<Attention>(`/api/attention${qs({ centerId })}`);
+  const { data: att, reload: reloadAttention } = useApi<Attention>(`/api/attention${qs({ centerId })}`);
+  const [sub, setSub] = useState<SubstituteTarget | null>(null);
+  const viewer = useViewer();
   const shown = centerId ? centers.filter((c) => c.id === centerId) : centers;
   const sessions = data ?? [];
   const active = sessions.filter((s) => s.status !== "CANCELLED");
@@ -227,6 +241,61 @@ function OfficeToday() {
                 ),
               },
               {
+                key: "substitute",
+                label: <TabLabel text="Cần người dạy thay" count={att.needSubstitute.length} color="#CF222E" />,
+                children: (
+                  <List
+                    size="small"
+                    locale={{ emptyText: "14 ngày tới không có buổi nào của người đang nghỉ." }}
+                    dataSource={att.needSubstitute}
+                    renderItem={(s) => (
+                      <List.Item
+                        extra={
+                          canEditCenter(viewer, s.class.centerId) && (
+                            <Button
+                              size="small"
+                              type="primary"
+                              onClick={() => setSub({ id: s.id, date: s.date, startTime: s.startTime, endTime: s.endTime, classCode: s.class.code })}
+                            >
+                              Tìm người dạy thay
+                            </Button>
+                          )
+                        }
+                      >
+                        <span>
+                          <b>{formatDateVN(s.date, true)}</b> {s.startTime} · <Link href={`/classes/${s.class.id}`}>{s.class.code}</Link> ·{" "}
+                          {s.teacher.displayName} nghỉ <span className="sub">({s.leaveReason})</span>
+                        </span>
+                      </List.Item>
+                    )}
+                  />
+                ),
+              },
+              {
+                key: "reserve",
+                label: <TabLabel text="Bảo lưu đến hạn" count={att.reservationsDue.length} color="#8250DF" />,
+                children: (
+                  <List
+                    size="small"
+                    locale={{ emptyText: "Không có học sinh nào sắp hết bảo lưu trong 7 ngày tới." }}
+                    dataSource={att.reservationsDue}
+                    renderItem={(r) => (
+                      <List.Item
+                        extra={
+                          <Tag color={r.expectedReturn < today ? "red" : "purple"}>
+                            {r.expectedReturn < today ? "Quá hạn" : "Quay lại"} {formatDateVN(r.expectedReturn)}
+                          </Tag>
+                        }
+                      >
+                        <span>
+                          {studentLink(r.student)} <span className="sub">· bảo lưu từ {formatDateVN(r.startDate)}</span>
+                        </span>
+                      </List.Item>
+                    )}
+                  />
+                ),
+              },
+              {
                 key: "makeup",
                 label: <TabLabel text="Vắng chưa bù" count={att.pendingMakeups} color="#8250DF" />,
                 children: (
@@ -240,6 +309,14 @@ function OfficeToday() {
           />
         </div>
       )}
+      <SubstituteModal
+        session={sub}
+        onClose={() => setSub(null)}
+        onSaved={() => {
+          setSub(null);
+          void reloadAttention();
+        }}
+      />
     </>
   );
 }

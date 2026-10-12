@@ -215,11 +215,19 @@ export function StudentFormModal({ open, student, onClose, onSaved }: Props) {
             </Form.Item>
           </Col>
           <Col xs={24} md={12}>
-            <Form.Item name="status" label="Trạng thái" rules={[{ required: true }]}>
-              <Select options={STUDENT_STATUSES.map((s) => ({ value: s.value, label: s.label }))} />
+            <Form.Item
+              name="status"
+              label="Trạng thái"
+              rules={[{ required: true }]}
+              extra={student ? "Đổi trạng thái, bảo lưu ở nút Đổi trạng thái." : undefined}
+            >
+              <Select
+                disabled={!!student}
+                options={STUDENT_STATUSES.filter((s) => student || s.value !== "RESERVED").map((s) => ({ value: s.value, label: s.label }))}
+              />
             </Form.Item>
           </Col>
-          {status === "QUIT" && (
+          {status === "QUIT" && !student && (
             <Col xs={24} md={12}>
               <Form.Item name="statusReason" label="Lý do nghỉ" rules={[{ required: true, message: "Chọn lý do nghỉ" }]}>
                 <Select options={QUIT_REASONS.map((r) => ({ value: r, label: r }))} />

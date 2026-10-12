@@ -7,6 +7,7 @@ import { ApiError, api, useApi } from "@/client/api";
 import { useCenters } from "@/client/centers";
 import type { SessionRow, Teacher } from "@/client/types";
 import { formatDateVN } from "@/lib/dates";
+import { SubstituteModal } from "@/components/staffing/SubstituteModal";
 
 type Props = {
   open: boolean;
@@ -23,6 +24,7 @@ export function SessionModal({ open, session, onClose, onSaved }: Props) {
   const [form] = Form.useForm();
   const [saving, setSaving] = useState(false);
   const [blocked, setBlocked] = useState<string[] | null>(null);
+  const [finding, setFinding] = useState(false);
   const { data: teachers } = useApi<Teacher[]>(open ? "/api/teachers" : null);
 
   useEffect(() => {
@@ -151,7 +153,19 @@ export function SessionModal({ open, session, onClose, onSaved }: Props) {
                 <Form.Item name="roomId" label="Phòng" rules={[{ required: true }]}>
                   <Select options={rooms.map((r) => ({ value: r.id, label: `${r.name} (${r.capacity} chỗ)`, disabled: !r.active }))} />
                 </Form.Item>
-                <Form.Item name="teacherId" label="Người dạy" extra="Đổi người dạy = xếp dạy thay cho buổi này." rules={[{ required: true }]}>
+                <Form.Item
+                  name="teacherId"
+                  label={
+                    <Space>
+                      Người dạy
+                      <Button size="small" type="link" style={{ padding: 0 }} onClick={() => setFinding(true)}>
+                        Tìm người dạy thay
+                      </Button>
+                    </Space>
+                  }
+                  extra="Đổi người dạy = xếp dạy thay cho buổi này."
+                  rules={[{ required: true }]}
+                >
                   <Select
                     showSearch
                     optionFilterProp="label"
@@ -183,6 +197,14 @@ export function SessionModal({ open, session, onClose, onSaved }: Props) {
           </Form>
         </>
       )}
+      <SubstituteModal
+        session={finding ? { id: session.id, date: session.date, startTime: session.startTime, endTime: session.endTime, classCode: session.classCode } : null}
+        onClose={() => setFinding(false)}
+        onPick={(c) => {
+          form.setFieldValue("teacherId", c.id);
+          setFinding(false);
+        }}
+      />
     </Modal>
   );
 }
