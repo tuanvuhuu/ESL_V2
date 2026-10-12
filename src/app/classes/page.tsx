@@ -12,6 +12,7 @@ import type { CenterLite } from "@/client/types";
 import { ClassFormModal } from "@/components/classes/ClassFormModal";
 import { useColumnSettings, type ColumnDef } from "@/components/ColumnSettings";
 import { ActionMenu, CenterTag, Dash, PageHeader, StatusTag, TwoLine } from "@/components/ui";
+import { PrimerGrid } from "@/components/PrimerGrid";
 import { CLASS_STATUSES, weekdayText } from "@/lib/constants";
 import { formatDateVN } from "@/lib/dates";
 import { canCreateRecords } from "@/lib/permissions";
@@ -141,7 +142,8 @@ export default function ClassesPage() {
           <div className="spacer" />
           {button}
         </div>
-        <Table<Row>
+        <PrimerGrid<Row>
+          selectable
           rowKey="id"
           loading={loading}
           columns={columns}

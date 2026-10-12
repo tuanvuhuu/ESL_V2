@@ -843,3 +843,75 @@ body {
 .ant-table-wrapper .ant-table-tbody > tr > td {
   border-bottom-color: #eef1f4;
 }
+
+/* Bảng Primer (PrimerGrid) */
+.primer-grid {
+  background: #fff;
+  border: 1px solid #d1d9e0;
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+.primer-grid table {
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.primer-grid thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f6f8fa;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.primer-grid tbody tr:hover td {
+  background: #f3f7ff;
+}
+
+.primer-grid-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: #59636e;
+}
+
+.primer-grid-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.primer-grid-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 6px 12px;
+  border-top: 1px solid #d1d9e0;
+  background: #fff;
+  flex-wrap: wrap;
+}
+
+.primer-grid-total {
+  margin-right: auto;
+  color: #59636e;
+}
+
+.primer-grid-scroll > div,
+.primer-grid-scroll table {
+  width: 100%;
+}
+
+.primer-grid-pager nav {
+  border: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.primer-grid-pager [class*='Range'] {
+  display: none !important;
+}

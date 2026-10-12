@@ -11,6 +11,7 @@ import type { CenterLite, Parent } from "@/client/types";
 import { useColumnSettings, type ColumnDef } from "@/components/ColumnSettings";
 import { ParentFormModal } from "@/components/parents/ParentFormModal";
 import { ActionMenu, CenterTag, Dash, PageHeader } from "@/components/ui";
+import { PrimerGrid } from "@/components/PrimerGrid";
 import { formatPhone } from "@/lib/text";
 
 type Row = Parent & {
@@ -110,7 +111,8 @@ export default function ParentsPage() {
           <div className="spacer" />
           {button}
         </div>
-        <Table<Row>
+        <PrimerGrid<Row>
+          selectable
           rowKey="id"
           loading={loading}
           columns={columns}

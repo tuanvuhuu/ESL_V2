@@ -14,6 +14,7 @@ import { useColumnSettings, type ColumnDef } from "@/components/ColumnSettings";
 import { StatusModal } from "@/components/students/StatusModal";
 import { StudentFormModal } from "@/components/students/StudentFormModal";
 import { ActionMenu, CenterTag, Dash, PageHeader, PersonAvatar, StatusTag, TwoLine } from "@/components/ui";
+import { PrimerGrid } from "@/components/PrimerGrid";
 import { GENDERS, STUDENT_STATUSES, optionOf } from "@/lib/constants";
 import { ageFrom, formatDateVN, todayISO } from "@/lib/dates";
 import { canCreateRecords, canEditCenter, canSeeParents } from "@/lib/permissions";
@@ -222,9 +223,9 @@ export default function StudentsPage() {
           <div className="spacer" />
           {button}
         </div>
-        <Table<StudentRow>
+        <PrimerGrid<StudentRow>
+          selectable
           rowKey="id"
-          size="middle"
           loading={loading}
           columns={columns}
           dataSource={data?.items}

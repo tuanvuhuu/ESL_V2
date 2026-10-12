@@ -12,6 +12,7 @@ import type { Teacher } from "@/client/types";
 import { useColumnSettings, type ColumnDef } from "@/components/ColumnSettings";
 import { TeacherFormModal } from "@/components/teachers/TeacherFormModal";
 import { ActionMenu, CenterTag, CertTag, Dash, PageHeader, PersonAvatar, StatusTag, TwoLine } from "@/components/ui";
+import { PrimerGrid } from "@/components/PrimerGrid";
 import { EMPLOYMENTS, TEACHER_ORIGINS, TEACHER_ROLES, TEACHER_STATUSES, optionOf } from "@/lib/constants";
 import { canEditTeachers } from "@/lib/permissions";
 import { formatPhone } from "@/lib/text";
@@ -134,7 +135,8 @@ export default function TeachersPage() {
           <div className="spacer" />
           {button}
         </div>
-        <Table<Row>
+        <PrimerGrid<Row>
+          selectable
           rowKey="id"
           loading={loading}
           columns={columns}
