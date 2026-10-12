@@ -2,7 +2,12 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: #f6f8fa;
+  background: #fff;
+}
+
+/* Nền trắng phẳng (kiểu GitHub) */
+.ant-layout {
+  background: #fff !important;
 }
 
 /* Menu trái */
@@ -849,7 +854,7 @@ body {
   position: relative;
   background: #fff;
   border: 1px solid #d8dee4;
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
   font-size: 13px;
 }
@@ -893,20 +898,51 @@ body {
   background: #f6f8fa !important;
   color: #59636e;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   white-space: nowrap;
+  height: 36px;
   border-bottom: 1px solid #d8dee4 !important;
 }
 
 .primer-grid thead th button {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   color: inherit;
   padding: 0;
 }
 
+/* Ô tích tròn như mẫu */
+.primer-grid input[type="checkbox"] {
+  border-radius: 50% !important;
+  width: 15px;
+  height: 15px;
+}
+
+.primer-grid td a.cell-main {
+  color: #1f2328;
+  font-weight: 500;
+}
+
+.primer-grid td a.cell-main:hover {
+  color: #0969da;
+}
+
+.dot-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.dot-label > i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 .primer-grid tbody tr:hover td {
-  background: #f6f9ff;
+  background: #f6f8fa;
 }
 
 .primer-grid tbody tr:has(input[type="checkbox"]:checked) td {
@@ -920,10 +956,11 @@ body {
 }
 
 .primer-grid td a {
-  color: #0969da;
+  color: #1f2328;
 }
 
 .primer-grid td a:hover {
+  color: #0969da;
   text-decoration: underline;
 }
 

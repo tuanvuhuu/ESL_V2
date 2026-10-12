@@ -40,6 +40,16 @@ export function Dash() {
   return <span className="muted">—</span>;
 }
 
+/** Chấm màu + chữ, gọn hơn thẻ viền (dùng trong bảng). */
+export function DotLabel({ color, children }: { color?: string; children: ReactNode }) {
+  return (
+    <span className="dot-label">
+      <i style={{ background: color ?? "#8C959F" }} />
+      {children}
+    </span>
+  );
+}
+
 export function PersonAvatar({ name, color, size = 32 }: { name: string; color?: string; size?: number }) {
   const c = color ?? "#8C959F";
   return (
@@ -62,7 +72,7 @@ export function PageHeader({ title, description, actions }: { title: ReactNode; 
   return (
     <div className="page-header">
       <div>
-        <Typography.Title level={4} style={{ margin: 0, fontSize: 18 }}>
+        <Typography.Title level={4} style={{ margin: 0, fontSize: 16 }}>
           {title}
         </Typography.Title>
         {description ? <div className="page-desc">{description}</div> : null}

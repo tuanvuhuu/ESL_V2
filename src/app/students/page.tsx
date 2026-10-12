@@ -1,7 +1,7 @@
 "use client";
 
-import { DownloadOutlined, PlusOutlined } from "@ant-design/icons";
-import { App, Button, Empty, Input } from "antd";
+import { DownloadOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { App, Button, Empty, Input, Select } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -13,8 +13,8 @@ import type { Student, StudentRow } from "@/client/types";
 import { useColumnSettings, type ColumnDef } from "@/components/ColumnSettings";
 import { StatusModal } from "@/components/students/StatusModal";
 import { StudentFormModal } from "@/components/students/StudentFormModal";
-import { ActionMenu, CenterTag, Dash, PageHeader, PersonAvatar, StatusTag, TwoLine } from "@/components/ui";
-import { FilterTabs, PrimerGrid } from "@/components/PrimerGrid";
+import { ActionMenu, Dash, DotLabel, PageHeader, StatusTag, TwoLine } from "@/components/ui";
+import { PrimerGrid } from "@/components/PrimerGrid";
 import { GENDERS, STUDENT_STATUSES, optionOf } from "@/lib/constants";
 import { ageFrom, formatDateVN, todayISO } from "@/lib/dates";
 import { canCreateRecords, canEditCenter, canSeeParents } from "@/lib/permissions";
@@ -60,12 +60,7 @@ export default function StudentsPage() {
         width: 240,
         defaultPin: "left",
         sorter: true,
-        render: (_, r) => (
-          <div className="person-cell">
-            <PersonAvatar name={r.fullName} color={r.center.color} />
-            <TwoLine main={<Link href={`/students/${r.id}`}>{r.fullName}</Link>} sub={r.englishName} />
-          </div>
-        ),
+        render: (_, r) => <TwoLine main={<Link className="cell-main" href={`/students/${r.id}`}>{r.fullName}</Link>} sub={r.englishName} />,
       },
       {
         key: "dob",
@@ -75,7 +70,7 @@ export default function StudentsPage() {
         render: (_, r) => <TwoLine main={<span className="num">{ageFrom(r.dob, today)} tuổi</span>} sub={formatDateVN(r.dob)} />,
       },
       { key: "gender", title: "Giới tính", width: 90, defaultHidden: true, render: (_, r) => optionOf(GENDERS, r.gender)?.label },
-      { key: "center", title: "Trung tâm", width: 140, render: (_, r) => <CenterTag center={r.center} /> },
+      { key: "center", title: "Trung tâm", width: 130, render: (_, r) => <DotLabel color={r.center.color}>{r.center.name}</DotLabel> },
       {
         key: "class",
         title: "Lớp đang học",
@@ -194,26 +189,42 @@ export default function StudentsPage() {
   return (
     <>
       <PageHeader
-        title="Học sinh"
-        description={canAdd ? "Quản lý hồ sơ học sinh của 4 trung tâm" : "Học sinh các lớp bạn dạy và trợ giảng"}
+        title="Danh sách học sinh"
+        description={`${data?.total ?? 0} học sinh`}
         actions={
-          canAdd && (
-            <>
-              <Button icon={<DownloadOutlined />} onClick={exportCsv}>
-                Xuất Excel
-              </Button>
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing(null)}>
-                Thêm học sinh
-              </Button>
-            </>
-          )
+          <>
+            <Input
+              allowClear
+              prefix={<SearchOutlined style={{ color: "#8c959f" }} />}
+              placeholder="Tìm mã, tên, SĐT"
+              style={{ width: 220 }}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+            <Select
+              value={status}
+              onChange={setStatus}
+              style={{ width: 160 }}
+              popupMatchSelectWidth={false}
+              options={[
+                { value: "ALL", label: `Tất cả (${counts.ALL ?? 0})` },
+                ...STUDENT_STATUSES.map((s) => ({ value: s.value, label: `${s.label} (${counts[s.value] ?? 0})` })),
+              ]}
+            />
+            {button}
+            {canAdd && (
+              <>
+                <Button icon={<DownloadOutlined />} onClick={exportCsv}>
+                  Xuất Excel
+                </Button>
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing(null)}>
+                  Thêm học sinh
+                </Button>
+              </>
+            )}
+          </>
         }
       />
-      <div className="grid-toolbar">
-        <Input.Search allowClear placeholder="Tìm tên, mã, SĐT…" style={{ width: 300 }} value={q} onChange={(e) => setQ(e.target.value)} />
-        <div className="spacer" />
-        {button}
-      </div>
       <div>
         <PrimerGrid<StudentRow>
           selectable
@@ -221,17 +232,7 @@ export default function StudentsPage() {
           loading={loading}
           columns={columns}
           dataSource={data?.items}
-          scroll={{ x: "max-content", y: "calc(100vh - 300px)" }}
-          toolbar={
-            <FilterTabs
-              value={status}
-              onChange={setStatus}
-              items={[
-                { value: "ALL", label: "Tất cả", count: counts.ALL ?? 0 },
-                ...STUDENT_STATUSES.map((s) => ({ value: s.value, label: s.label, color: s.color, count: counts[s.value] ?? 0 })),
-              ]}
-            />
-          }
+          scroll={{ x: "max-content", y: "calc(100vh - 250px)" }}
           onChange={(_p, _f, sorter) => {
             const s = Array.isArray(sorter) ? sorter[0] : sorter;
             setSort(s?.order ? { field: String(s.columnKey), order: s.order === "ascend" ? "asc" : "desc" } : {});
