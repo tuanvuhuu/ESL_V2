@@ -17,6 +17,21 @@ const ACTIONS: Record<string, string> = {
   "session-change": "Đổi buổi học",
   "guardian-add": "Thêm phụ huynh",
   "guardian-remove": "Gỡ phụ huynh",
+  attendance: "Điểm danh",
+  "attendance-update": "Sửa điểm danh",
+  sessions: "Sửa số buổi",
+  "makeup-add": "Xếp học bù",
+  "makeup-remove": "Bỏ lịch học bù",
+};
+
+/** Tên trường hiển thị trong lịch sử. */
+const FIELDS: Record<string, string> = {
+  class: "Lớp",
+  purchasedSessions: "Số buổi đã mua",
+  adjustment: "Điều chỉnh",
+  adjustmentNote: "Lý do điều chỉnh",
+  lessonContent: "Nội dung đã dạy",
+  session: "Buổi",
 };
 
 const show = (v: unknown) => (v === null || v === undefined || v === "" ? "∅" : Array.isArray(v) ? v.join(", ") : String(v));
@@ -35,7 +50,7 @@ export function AuditTimeline({ entity, id }: { entity: string; id: number }) {
             </div>
             {Object.entries(r.changes).map(([k, [a, b]]) => (
               <div key={k} className="sub">
-                {k}: {show(a)} → {show(b)}
+                {FIELDS[k] ?? k}: {show(a)} → {show(b)}
               </div>
             ))}
           </div>

@@ -2,6 +2,7 @@ import { todayISO } from "@/lib/dates";
 import { findConflicts } from "@/lib/schedule";
 import { diff, logChange } from "@/server/audit";
 import { assertCanEditClass, assertCanViewClass } from "@/server/access";
+import { balancesFor } from "@/server/attendance";
 import { validateRefs } from "@/server/classes";
 import { prisma } from "@/server/db";
 import { body, conflict, idParam, notFound, route, type IdCtx } from "@/server/http";
@@ -20,7 +21,11 @@ export const GET = route<IdCtx>(async (_req, { params }, viewer) => {
       teacher: { select: { id: true, displayName: true, fullName: true } },
       assistants: { include: { teacher: { select: { id: true, displayName: true } } } },
       sessions: {
-        include: { room: { select: { name: true } }, teacher: { select: { id: true, displayName: true } } },
+        include: {
+          room: { select: { name: true } },
+          teacher: { select: { id: true, displayName: true } },
+          _count: { select: { attendances: true, makeups: true } },
+        },
         orderBy: [{ date: "asc" }, { startTime: "asc" }],
       },
       enrollments: {
@@ -30,7 +35,8 @@ export const GET = route<IdCtx>(async (_req, { params }, viewer) => {
     },
   });
   if (!cls) throw notFound("Không tìm thấy lớp");
-  return cls;
+  const balances = await balancesFor(prisma, cls.enrollments.map((e) => e.id));
+  return { ...cls, enrollments: cls.enrollments.map((e) => ({ ...e, balance: balances.get(e.id) ?? null })) };
 });
 
 export const PUT = route<IdCtx>(async (req, { params }, viewer) => {

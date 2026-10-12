@@ -7,7 +7,9 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { api, useApi } from "@/client/api";
 import { useViewer } from "@/client/session";
-import type { Guardian, Student } from "@/client/types";
+import type { Balance, Guardian, Student } from "@/client/types";
+import { AttendanceTag, BalanceCell, MakeupTag } from "@/components/attendance/parts";
+import { MakeupModal, type AbsenceLite } from "@/components/makeups/MakeupModal";
 import { AuditTimeline } from "@/components/AuditTimeline";
 import { AddGuardianModal } from "@/components/students/AddGuardianModal";
 import { StatusModal } from "@/components/students/StatusModal";
@@ -15,7 +17,8 @@ import { StudentFormModal } from "@/components/students/StudentFormModal";
 import { CenterTag, Dash, PageHeader, PersonAvatar, StatusTag } from "@/components/ui";
 import { AUDIENCES, CLASS_STATUSES, GENDERS, STUDENT_STATUSES, optionOf } from "@/lib/constants";
 import { ageFrom, formatDateVN } from "@/lib/dates";
-import { canEditCenter, canSeeAudit, canSeeParents } from "@/lib/permissions";
+import { isAbsent } from "@/lib/attendance";
+import { canEditCenter, canSeeAudit, canSeeParents, isStaff } from "@/lib/permissions";
 import { formatPhone } from "@/lib/text";
 
 type Detail = Student & {
@@ -27,6 +30,8 @@ type Detail = Student & {
     id: number;
     joinedAt: string;
     leftAt: string | null;
+    balance: Balance | null;
+    attendances: AttendanceRow[];
     class: {
       id: number;
       code: string;
@@ -46,10 +51,21 @@ type Detail = Student & {
     startTime: string;
     endTime: string;
     status: string;
+    makeup: boolean;
     class: { code: string; name: string };
     room: { name: string };
     teacher: { displayName: string };
   }[];
+};
+
+type AttendanceRow = {
+  id: number;
+  status: string;
+  comment: string | null;
+  makeupId: number | null;
+  session: { id: number; index: number; date: string; startTime: string; endTime: string; lessonContent: string | null; class: { code: string } };
+  makeup: { absence: { status: string; session: { date: string } } } | null;
+  makeupFor: { id: number; session: { date: string; startTime: string; class: { code: string } }; attendance: { status: string } | null } | null;
 };
 
 export default function StudentProfilePage() {
@@ -59,6 +75,7 @@ export default function StudentProfilePage() {
   const [editing, setEditing] = useState(false);
   const [changingStatus, setChangingStatus] = useState(false);
   const [addingGuardian, setAddingGuardian] = useState(false);
+  const [absence, setAbsence] = useState<AbsenceLite | null>(null);
   const viewer = useViewer();
 
   if (loading && !s) return <Skeleton active />;
@@ -115,6 +132,10 @@ export default function StudentProfilePage() {
                   }
                   description={`${e.class.teacher.displayName} · ${e.class.startTime}–${e.class.endTime} · vào lớp ${formatDateVN(e.joinedAt)}`}
                 />
+                <div style={{ textAlign: "right" }}>
+                  <div className="sub">Buổi còn lại</div>
+                  <BalanceCell balance={e.balance} />
+                </div>
               </List.Item>
             )}
           />
@@ -130,6 +151,7 @@ export default function StudentProfilePage() {
                   <b>{formatDateVN(u.date, true)}</b> · {u.startTime}–{u.endTime} · {u.class.code} · phòng {u.room.name} · {u.teacher.displayName}
                 </span>
                 {u.status === "CANCELLED" && <Tag color="red">Đã hủy</Tag>}
+                {u.makeup && <MakeupTag />}
               </List.Item>
             )}
           />
@@ -221,7 +243,74 @@ export default function StudentProfilePage() {
         { title: "Vào lớp", render: (_, e) => formatDateVN(e.joinedAt) },
         { title: "Rời lớp", render: (_, e) => (e.leftAt ? formatDateVN(e.leftAt) : <Dash />) },
         { title: "Trạng thái lớp", render: (_, e) => <StatusTag options={CLASS_STATUSES} value={e.class.status} /> },
+        { title: "Buổi còn lại", render: (_, e) => <BalanceCell balance={e.balance} warn={!e.leftAt} /> },
+        {
+          title: "Chuyên cần",
+          render: (_, e) => {
+            const own = e.attendances.filter((a) => !a.makeupId);
+            const absent = own.filter((a) => isAbsent(a.status)).length;
+            return own.length ? `${own.length - absent}/${own.length} có mặt` : <Dash />;
+          },
+        },
       ]}
+      expandable={{
+        rowExpandable: (e) => e.attendances.length > 0,
+        expandedRowRender: (e) => (
+          <Table<AttendanceRow>
+            rowKey="id"
+            size="small"
+            pagination={false}
+            dataSource={e.attendances}
+            columns={[
+              { title: "Buổi", render: (_, a) => a.session.index, width: 60 },
+              {
+                title: "Ngày",
+                render: (_, a) => (
+                  <>
+                    {formatDateVN(a.session.date, true)} {a.session.startTime}
+                    {a.makeupId && (
+                      <div>
+                        <MakeupTag>
+                          Học bù ở {a.session.class.code}
+                          {a.makeup ? ` cho buổi ${formatDateVN(a.makeup.absence.session.date).slice(0, 5)}` : ""}
+                        </MakeupTag>
+                      </div>
+                    )}
+                  </>
+                ),
+              },
+              { title: "Điểm danh", render: (_, a) => <AttendanceTag status={a.status} /> },
+              { title: "Nhận xét", render: (_, a) => a.comment ?? <Dash /> },
+              { title: "Nội dung đã dạy", render: (_, a) => a.session.lessonContent ?? <Dash /> },
+              {
+                title: "Học bù",
+                render: (_, a) => {
+                  if (!isAbsent(a.status) || a.makeupId) return null;
+                  if (a.makeupFor) {
+                    return (
+                      <MakeupTag>
+                        {a.makeupFor.attendance ? "Đã bù" : "Đã xếp"} {formatDateVN(a.makeupFor.session.date).slice(0, 5)} · {a.makeupFor.session.class.code}
+                      </MakeupTag>
+                    );
+                  }
+                  return (
+                    editable && (
+                      <Button
+                        size="small"
+                        onClick={() =>
+                          setAbsence({ id: a.id, studentName: s.fullName, classCode: e.class.code, date: a.session.date, index: a.session.index })
+                        }
+                      >
+                        Xếp học bù
+                      </Button>
+                    )
+                  );
+                },
+              },
+            ]}
+          />
+        ),
+      }}
     />
   );
 
@@ -254,7 +343,7 @@ export default function StudentProfilePage() {
         <Tabs
           items={[
             { key: "overview", label: "Tổng quan", children: overview },
-            { key: "classes", label: "Lịch sử lớp học", children: history },
+            { key: "classes", label: "Lịch sử khóa học", children: history },
             ...(canSeeAudit(viewer) ? [{ key: "audit", label: "Lịch sử thay đổi", children: <AuditTimeline entity="Student" id={s.id} /> }] : []),
           ]}
         />
@@ -277,6 +366,16 @@ export default function StudentProfilePage() {
           void reload();
         }}
       />
+      {!isStaff(viewer) && (
+        <MakeupModal
+          absence={absence}
+          onClose={() => setAbsence(null)}
+          onSaved={() => {
+            setAbsence(null);
+            void reload();
+          }}
+        />
+      )}
       <AddGuardianModal
         studentId={s.id}
         open={addingGuardian}

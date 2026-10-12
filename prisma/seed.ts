@@ -47,6 +47,8 @@ async function main() {
     prisma.userSession.deleteMany(),
     prisma.user.deleteMany(),
     prisma.auditLog.deleteMany(),
+    prisma.makeup.deleteMany(),
+    prisma.attendance.deleteMany(),
     prisma.classEnrollment.deleteMany(),
     prisma.classSession.deleteMany(),
     prisma.classAssistant.deleteMany(),
@@ -187,6 +189,8 @@ async function main() {
     { name: "IELTS-C", center: "C", room: "P101", teacher: "Mr John", assistants: ["Huy"], course: 3, weekdays: [6], time: ["14:00", "16:00"] },
     { name: "KID1-Bears", center: "D", room: "P101", teacher: "Ms Emily", assistants: ["Ngọc Anh"], course: 0, weekdays: [2, 4, 6], time: ["17:30", "19:00"] },
   ];
+  const today = todayISO();
+  const created: { id: number; code: string; course: number; teacher: string }[] = [];
   for (const [i, c] of CLASSES.entries()) {
     const center = byCode[c.center];
     const room = center.rooms.find((r) => r.name === c.room)!;
@@ -226,11 +230,53 @@ async function main() {
         },
       },
     });
+    created.push({ id: cls.id, code: cls.code, course: c.course, teacher: c.teacher });
+    const past = dates.filter((d) => d < today).length;
     const pool = students.filter((s) => s.centerCode === c.center && s.status === "WAITING").slice(0, 5);
-    for (const s of pool) {
-      await prisma.classEnrollment.create({ data: { classId: cls.id, studentId: s.id, joinedAt: start } });
+    for (const [k, s] of pool.entries()) {
+      // Vài học sinh mua ít buổi để thấy cảnh báo sắp hết / hết buổi.
+      const purchasedSessions = k === 0 ? past + 2 : k === 1 && i % 2 === 0 ? past : course.totalSessions;
+      await prisma.classEnrollment.create({ data: { classId: cls.id, studentId: s.id, joinedAt: start, purchasedSessions } });
       await prisma.student.update({ where: { id: s.id }, data: { status: "STUDYING" } });
       s.status = "STUDYING";
+    }
+  }
+
+  // Điểm danh các buổi đã qua; để trống buổi hôm qua của vài lớp để thấy "chưa điểm danh".
+  const yesterday = addDays(today, -1);
+  for (const [i, c] of created.entries()) {
+    const sessions = await prisma.classSession.findMany({ where: { classId: c.id, date: { lt: today } }, orderBy: { index: "asc" } });
+    const enrollments = await prisma.classEnrollment.findMany({ where: { classId: c.id } });
+    for (const s of sessions) {
+      if (s.date === yesterday && i % 3 === 0) continue;
+      for (const [k, e] of enrollments.entries()) {
+        const n = k + s.index * 3 + i;
+        const status = n % 11 === 0 ? "EXCUSED" : n % 13 === 5 ? "UNEXCUSED" : n % 7 === 3 ? "LATE" : "PRESENT";
+        await prisma.attendance.create({
+          data: {
+            sessionId: s.id,
+            studentId: e.studentId,
+            enrollmentId: e.id,
+            status,
+            comment: n % 5 === 0 ? "Tích cực phát biểu" : null,
+            takenBy: c.teacher,
+          },
+        });
+      }
+      await prisma.classSession.update({
+        where: { id: s.id },
+        data: { attendanceTakenAt: new Date(`${s.date}T${s.endTime}:00+07:00`), attendanceBy: c.teacher, lessonContent: `Unit ${Math.ceil(s.index / 3)} – bài ${((s.index - 1) % 3) + 1}` },
+      });
+    }
+  }
+
+  // Một lịch học bù: buổi vắng có phép đầu tiên của lớp KID1-Lions, bù ở KID1-Bears (cùng khóa Kids 1).
+  const [lions, bears] = [created.find((c) => c.code.startsWith("A") && c.course === 0), created.find((c) => c.code.startsWith("D") && c.course === 0)];
+  if (lions && bears) {
+    const absence = await prisma.attendance.findFirst({ where: { status: "EXCUSED", session: { classId: lions.id } }, include: { session: true } });
+    const target = await prisma.classSession.findFirst({ where: { classId: bears.id, date: { gte: today } }, orderBy: { date: "asc" } });
+    if (absence && target) {
+      await prisma.makeup.create({ data: { absenceId: absence.id, sessionId: target.id, studentId: absence.studentId, createdBy: "Giáo vụ Trung tâm A" } });
     }
   }
 
