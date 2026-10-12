@@ -6,6 +6,7 @@ import { useState } from "react";
 import { api, useApi } from "@/client/api";
 import { useCenters } from "@/client/centers";
 import type { Center, Course, Room } from "@/client/types";
+import { UsersTab } from "@/components/settings/UsersTab";
 import { CenterTag, Dash, PageHeader } from "@/components/ui";
 import { formatDateVN } from "@/lib/dates";
 import { formatMoney } from "@/lib/text";
@@ -262,13 +263,14 @@ function CoursesTab() {
 export default function SettingsPage() {
   return (
     <>
-      <PageHeader title="Cài đặt" description="Trung tâm, phòng học, ngày nghỉ lễ và khóa học" />
+      <PageHeader title="Cài đặt" description="Trung tâm, phòng học, ngày nghỉ lễ, khóa học và tài khoản" />
       <div className="panel">
         <Tabs
           items={[
             { key: "centers", label: "Trung tâm & phòng", children: <CentersTab /> },
             { key: "holidays", label: "Ngày nghỉ lễ", children: <HolidaysTab /> },
             { key: "courses", label: "Khóa học", children: <CoursesTab /> },
+            { key: "users", label: "Tài khoản", children: <UsersTab /> },
           ]}
         />
       </div>

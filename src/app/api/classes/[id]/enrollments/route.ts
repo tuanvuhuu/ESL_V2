@@ -1,15 +1,17 @@
 import { todayISO } from "@/lib/dates";
 import { logChange } from "@/server/audit";
+import { assertCanEditClass } from "@/server/access";
 import { assertStudentFree } from "@/server/classes";
 import { prisma } from "@/server/db";
 import { badRequest, body, conflict, idParam, notFound, route, type IdCtx } from "@/server/http";
 import { enrollSchema } from "@/server/validators";
 
 /** Xếp học sinh vào lớp. */
-export const POST = route<IdCtx>(async (req, { params }) => {
+export const POST = route<IdCtx>(async (req, { params }, viewer) => {
   const classId = idParam((await params).id);
   const { studentId, joinedAt } = await body(req, enrollSchema);
   return prisma.$transaction(async (tx) => {
+    await assertCanEditClass(tx, viewer, classId);
     const cls = await tx.classGroup.findUnique({ where: { id: classId }, include: { room: true } });
     if (!cls) throw notFound("Không tìm thấy lớp");
     if (cls.status === "CANCELLED" || cls.status === "FINISHED") throw badRequest("Lớp đã kết thúc hoặc đã hủy");

@@ -1,12 +1,14 @@
 import type { Prisma } from "@prisma/client";
+import { canEditCenter, isStaff } from "@/lib/permissions";
 import { formatCode, normalizeVi } from "@/lib/text";
+import { staffClassWhere } from "@/server/access";
 import { logChange } from "@/server/audit";
 import { planClass } from "@/server/classes";
 import { prisma } from "@/server/db";
-import { body, conflict, route } from "@/server/http";
+import { allow, body, conflict, route } from "@/server/http";
 import { classSchema } from "@/server/validators";
 
-export const GET = route(async (req) => {
+export const GET = route(async (req, _ctx, viewer) => {
   const sp = new URL(req.url).searchParams;
   const centerId = Number(sp.get("centerId")) || undefined;
   const status = sp.get("status") || undefined;
@@ -14,6 +16,7 @@ export const GET = route(async (req) => {
   const where: Prisma.ClassGroupWhereInput = {
     ...(centerId ? { centerId } : {}),
     ...(status ? { status } : {}),
+    ...(isStaff(viewer) ? staffClassWhere(viewer) : {}),
   };
   const rows = await prisma.classGroup.findMany({
     where,
@@ -38,8 +41,9 @@ export const GET = route(async (req) => {
   }));
 });
 
-export const POST = route(async (req) => {
+export const POST = route(async (req, _ctx, viewer) => {
   const input = await body(req, classSchema);
+  allow(canEditCenter(viewer, input.centerId), "Chỉ mở được lớp ở trung tâm mình");
   return prisma.$transaction(async (tx) => {
     const plan = await planClass(tx, input);
     if (plan.conflicts.length > 0) {

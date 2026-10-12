@@ -1,9 +1,11 @@
+import { canCreateRecords } from "@/lib/permissions";
 import { normalizeVi } from "@/lib/text";
 import { prisma } from "@/server/db";
-import { route } from "@/server/http";
+import { allow, route } from "@/server/http";
 
 /** Hồ sơ có cùng họ tên (không dấu) và ngày sinh, để cảnh báo trùng trước khi lưu. */
-export const GET = route(async (req) => {
+export const GET = route(async (req, _ctx, viewer) => {
+  allow(canCreateRecords(viewer));
   const sp = new URL(req.url).searchParams;
   const name = normalizeVi(sp.get("name"));
   const dob = sp.get("dob") ?? "";

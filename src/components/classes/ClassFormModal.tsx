@@ -19,7 +19,7 @@ type Preview = {
 
 export function ClassFormModal({ open, onClose, onSaved }: { open: boolean; onClose: () => void; onSaved: (id: number) => void }) {
   const { message } = App.useApp();
-  const { centers, centerId } = useCenters();
+  const { centers, editableCenters, defaultEditableCenterId } = useCenters();
   const [form] = Form.useForm();
   const [step, setStep] = useState(0);
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -42,7 +42,7 @@ export function ClassFormModal({ open, onClose, onSaved }: { open: boolean; onCl
     setStep(0);
     setPreview(null);
     form.setFieldsValue({
-      centerId: centerId || centers[0]?.id,
+      centerId: defaultEditableCenterId,
       weekdays: [1, 3, 5],
       time: [dayjs("18:00", "HH:mm"), dayjs("19:30", "HH:mm")],
       startDate: dayjs(),
@@ -50,7 +50,7 @@ export function ClassFormModal({ open, onClose, onSaved }: { open: boolean; onCl
       maxStudents: 12,
       assistantIds: [],
     });
-  }, [open, form, centerId, centers]);
+  }, [open, form, defaultEditableCenterId]);
 
   const payload = () => {
     const v = form.getFieldsValue(true);
@@ -161,7 +161,7 @@ export function ClassFormModal({ open, onClose, onSaved }: { open: boolean; onCl
             <Col xs={24} md={12}>
               <Form.Item name="centerId" label="Trung tâm" rules={[{ required: true, message: "Chọn trung tâm" }]}>
                 <Select
-                  options={centers.map((c) => ({ value: c.id, label: c.name }))}
+                  options={editableCenters.map((c) => ({ value: c.id, label: c.name }))}
                   onChange={() => form.setFieldsValue({ roomId: undefined, teacherId: undefined, assistantIds: [] })}
                 />
               </Form.Item>

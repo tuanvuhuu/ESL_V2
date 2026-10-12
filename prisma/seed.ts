@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { addDays, startOfWeek, todayISO } from "../src/lib/dates";
 import { generateSessionDates } from "../src/lib/schedule";
 import { buildSearchText, formatCode } from "../src/lib/text";
+import { hashPassword } from "../src/server/auth";
 
 const prisma = new PrismaClient();
 
@@ -32,6 +33,8 @@ const TEACHERS = [
   { fullName: "Đỗ Ngọc Anh", displayName: "Ngọc Anh", role: "ASSISTANT", origin: "VN", employment: "PART_TIME", centers: ["D"] },
 ];
 
+const DEMO_PASSWORD = "matkhau123";
+
 const LAST = ["Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh", "Phan", "Vũ", "Võ", "Đặng", "Bùi", "Đỗ"];
 const MID = ["Minh", "Gia", "Bảo", "Ngọc", "Khánh", "Thảo", "Anh", "Đức", "Hải", "Thanh"];
 const FIRST_M = ["An", "Khoa", "Huy", "Phúc", "Nam", "Long", "Quân", "Tùng"];
@@ -41,6 +44,8 @@ const EN_F = ["Anna", "Lily", "Emma", "Mia", "Sophie", "Zoe"];
 
 async function main() {
   await prisma.$transaction([
+    prisma.userSession.deleteMany(),
+    prisma.user.deleteMany(),
     prisma.auditLog.deleteMany(),
     prisma.classEnrollment.deleteMany(),
     prisma.classSession.deleteMany(),
@@ -229,8 +234,19 @@ async function main() {
     }
   }
 
+  // Tài khoản chạy thử, cùng mật khẩu DEMO_PASSWORD. Không dùng dữ liệu mẫu này khi chạy thật.
+  const passwordHash = await hashPassword(DEMO_PASSWORD);
+  const users = [
+    { username: "quanly", fullName: "Quản lý", role: "MANAGER" },
+    ...centers.map((c) => ({ username: `giaovu.${c.code.toLowerCase()}`, fullName: `Giáo vụ ${c.name}`, role: "OFFICE", centerId: c.id })),
+    { username: "lan", fullName: T["Ms Lan"].fullName, role: "TEACHER", teacherId: T["Ms Lan"].id },
+    { username: "thu", fullName: T["Thư"].fullName, role: "ASSISTANT", teacherId: T["Thư"].id },
+  ];
+  for (const u of users) await prisma.user.create({ data: { ...u, passwordHash } });
+
   const counts = await Promise.all([prisma.student.count(), prisma.parent.count(), prisma.teacher.count(), prisma.classSession.count()]);
   console.log(`Đã tạo: ${counts[0]} học sinh, ${counts[1]} phụ huynh, ${counts[2]} giáo viên, ${counts[3]} buổi học.`);
+  console.log(`Tài khoản chạy thử (mật khẩu ${DEMO_PASSWORD}): ${users.map((u) => u.username).join(", ")}`);
 }
 
 main()

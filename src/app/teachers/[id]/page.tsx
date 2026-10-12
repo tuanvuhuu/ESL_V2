@@ -6,12 +6,14 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { qs, useApi } from "@/client/api";
+import { useViewer } from "@/client/session";
 import type { Teacher } from "@/client/types";
 import { AuditTimeline } from "@/components/AuditTimeline";
 import { TeacherFormModal } from "@/components/teachers/TeacherFormModal";
 import { CenterTag, Dash, PageHeader, PersonAvatar, StatusTag } from "@/components/ui";
 import { CLASS_STATUSES, EMPLOYMENTS, TEACHER_ORIGINS, TEACHER_ROLES, TEACHER_STATUSES, weekdayText, optionOf } from "@/lib/constants";
 import { addDays, formatDateVN, startOfWeek, todayISO } from "@/lib/dates";
+import { canEditTeachers, canSeeAudit } from "@/lib/permissions";
 import { formatPhone } from "@/lib/text";
 
 type ClassLite = {
@@ -48,6 +50,7 @@ export default function TeacherProfilePage() {
   const [week, setWeek] = useState(startOfWeek(todayISO()));
   const { data: t, loading, reload } = useApi<Detail>(`/api/teachers/${id}${qs({ week })}`);
   const [editing, setEditing] = useState(false);
+  const viewer = useViewer();
 
   if (loading && !t) return <Skeleton active />;
   if (!t) return <Empty description="Không tìm thấy giáo viên" />;
@@ -158,9 +161,11 @@ export default function TeacherProfilePage() {
         }
         description={`${t.code} · ${optionOf(TEACHER_ROLES, t.role)?.label}`}
         actions={
-          <Button type="primary" onClick={() => setEditing(true)}>
-            Sửa
-          </Button>
+          canEditTeachers(viewer) && (
+            <Button type="primary" onClick={() => setEditing(true)}>
+              Sửa
+            </Button>
+          )
         }
       />
       <div className="panel">
@@ -168,7 +173,7 @@ export default function TeacherProfilePage() {
           items={[
             { key: "overview", label: "Tổng quan", children: overview },
             { key: "classes", label: `Lớp (${classes.length})`, children: classTable },
-            { key: "audit", label: "Lịch sử thay đổi", children: <AuditTimeline entity="Teacher" id={t.id} /> },
+            ...(canSeeAudit(viewer) ? [{ key: "audit", label: "Lịch sử thay đổi", children: <AuditTimeline entity="Teacher" id={t.id} /> }] : []),
           ]}
         />
       </div>

@@ -1,14 +1,16 @@
 import { todayISO } from "@/lib/dates";
 import { findConflicts } from "@/lib/schedule";
 import { diff, logChange } from "@/server/audit";
+import { assertCanEditClass, assertCanViewClass } from "@/server/access";
 import { validateRefs } from "@/server/classes";
 import { prisma } from "@/server/db";
 import { body, conflict, idParam, notFound, route, type IdCtx } from "@/server/http";
 import { loadSlots, toSlot } from "@/server/slots";
 import { classUpdateSchema } from "@/server/validators";
 
-export const GET = route<IdCtx>(async (_req, { params }) => {
+export const GET = route<IdCtx>(async (_req, { params }, viewer) => {
   const id = idParam((await params).id);
+  await assertCanViewClass(viewer, id);
   const cls = await prisma.classGroup.findUnique({
     where: { id },
     include: {
@@ -31,10 +33,11 @@ export const GET = route<IdCtx>(async (_req, { params }) => {
   return cls;
 });
 
-export const PUT = route<IdCtx>(async (req, { params }) => {
+export const PUT = route<IdCtx>(async (req, { params }, viewer) => {
   const id = idParam((await params).id);
   const data = await body(req, classUpdateSchema);
   return prisma.$transaction(async (tx) => {
+    await assertCanEditClass(tx, viewer, id);
     const before = await tx.classGroup.findUnique({ where: { id }, include: { assistants: true } });
     if (!before) throw notFound("Không tìm thấy lớp");
     const { assistantIds, ...fields } = data;

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { ZodError, type ZodType } from "zod";
+import type { Viewer } from "@/lib/permissions";
+import { getViewer, runAsActor } from "./auth";
 
 export class HttpError extends Error {
   constructor(
@@ -13,16 +15,33 @@ export class HttpError extends Error {
 
 export const badRequest = (message: string, details?: unknown) => new HttpError(400, message, details);
 export const notFound = (what = "Không tìm thấy dữ liệu") => new HttpError(404, what);
+export const unauthorized = () => new HttpError(401, "Phiên đăng nhập đã hết, đăng nhập lại để tiếp tục");
+export const forbidden = (message = "Tài khoản của bạn không có quyền làm việc này") => new HttpError(403, message);
+/** Chặn nếu điều kiện quyền không đạt. */
+export function allow(ok: boolean, message?: string): asserts ok {
+  if (!ok) throw forbidden(message);
+}
 /** Bị chặn theo quy tắc nghiệp vụ (trùng phòng, trùng người dạy…). */
 export const conflict = (message: string, details?: unknown) => new HttpError(409, message, details);
 
-type Handler<C> = (req: Request, ctx: C) => Promise<unknown>;
+type Handler<C> = (req: Request, ctx: C, viewer: Viewer) => Promise<unknown>;
+type PublicHandler<C> = (req: Request, ctx: C) => Promise<unknown>;
 
-/** Bọc route handler: trả JSON, đổi lỗi thành thông báo tiếng Việt. */
+/** Bọc route handler: bắt buộc đăng nhập, trả JSON, đổi lỗi thành thông báo tiếng Việt. */
 export function route<C = unknown>(fn: Handler<C>) {
+  return publicRoute<C>(async (req, ctx) => {
+    const viewer = await getViewer(req);
+    if (!viewer) throw unauthorized();
+    return runAsActor(viewer.fullName, () => fn(req, ctx, viewer));
+  });
+}
+
+/** Như `route` nhưng không cần đăng nhập (đăng nhập, tạo tài khoản đầu tiên). */
+export function publicRoute<C = unknown>(fn: PublicHandler<C>) {
   return async (req: Request, ctx: C) => {
     try {
       const data = await fn(req, ctx);
+      if (data instanceof Response) return data;
       return NextResponse.json(data ?? { ok: true });
     } catch (err) {
       if (err instanceof HttpError) {

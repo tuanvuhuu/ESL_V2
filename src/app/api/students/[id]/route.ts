@@ -1,3 +1,4 @@
+import { assertCanEditStudent, assertCanViewStudent, redactParent } from "@/server/access";
 import { diff, logChange } from "@/server/audit";
 import { prisma } from "@/server/db";
 import { body, idParam, notFound, route, type IdCtx } from "@/server/http";
@@ -5,8 +6,9 @@ import { refreshStudentSearch } from "@/server/search-text";
 import { studentSchema } from "@/server/validators";
 import { todayISO } from "@/lib/dates";
 
-export const GET = route<IdCtx>(async (_req, { params }) => {
+export const GET = route<IdCtx>(async (_req, { params }, viewer) => {
   const id = idParam((await params).id);
+  await assertCanViewStudent(viewer, id);
   const s = await prisma.student.findUnique({
     where: { id },
     include: {
@@ -49,13 +51,14 @@ export const GET = route<IdCtx>(async (_req, { params }) => {
     orderBy: [{ date: "asc" }, { startTime: "asc" }],
     take: 20,
   });
-  return { ...s, upcoming };
+  return { ...s, guardians: s.guardians.map((g) => ({ ...g, parent: redactParent(viewer, g.parent) })), upcoming };
 });
 
-export const PUT = route<IdCtx>(async (req, { params }) => {
+export const PUT = route<IdCtx>(async (req, { params }, viewer) => {
   const id = idParam((await params).id);
   const data = await body(req, studentSchema);
   return prisma.$transaction(async (tx) => {
+    await assertCanEditStudent(tx, viewer, id);
     const before = await tx.student.findUnique({ where: { id } });
     if (!before) throw notFound("Không tìm thấy học sinh");
     const after = await tx.student.update({ where: { id }, data });

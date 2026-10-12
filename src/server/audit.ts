@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { currentActor } from "./auth";
 import { prisma } from "./db";
 
 type Tx = Prisma.TransactionClient | typeof prisma;
@@ -23,5 +24,5 @@ export async function logChange(
   changes: Record<string, unknown> = {},
 ) {
   if (action === "update" && Object.keys(changes).length === 0) return;
-  await tx.auditLog.create({ data: { entity, entityId, action, changes: JSON.stringify(changes) } });
+  await tx.auditLog.create({ data: { entity, entityId, action, changes: JSON.stringify(changes), actor: currentActor() } });
 }
