@@ -25,6 +25,10 @@ model Center {
   teachers     TeacherCenter[]
   holidays     Holiday[]
   users        User[]
+  payments     Payment[]
+  refunds      Refund[]
+  payrollPeriods PayrollPeriod[]
+  expenses     Expense[]
   createdAt    DateTime              @default(now())
   updatedAt    DateTime              @updatedAt
 }
@@ -84,6 +88,8 @@ model Student {
   makeups         Makeup[]
   reservations    Reservation[]
   contacts        ContactLog[]
+  payments        Payment[]
+  refunds         Refund[]
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 
@@ -126,6 +132,10 @@ model Teacher {
   sessions       ClassSession[]
   availability   TeacherAvailability[]
   leaves         TeacherLeave[]
+  overlapPolicy  String                @default("SINGLE")
+  overlapRatio   Float?                @default(1.5)
+  rates          TeacherRate[]
+  payrollPeriods PayrollPeriod[]
   user           User?
   createdAt      DateTime              @default(now())
   updatedAt      DateTime              @updatedAt
@@ -241,7 +251,14 @@ model ClassEnrollment {
   finalComment      String?
   outcomeBy         String?
   outcomeAt         DateTime?
+  tuitionFee        Int?
+  discountType      String?
+  discountMode      String?
+  discountValue     Int?
+  dueDate           String?
   attendances       Attendance[]
+  payments          Payment[]
+  refunds           Refund[]
 
   @@index([studentId])
   @@index([classId])
@@ -408,3 +425,133 @@ model ContactLog {
   @@index([studentId])
   @@index([followUpDate])
 }
+
+// Phiếu thu học phí (Tổng quan yêu cầu mục 3.7). Không được xóa, chỉ hủy kèm lý do.
+model Payment {
+  id           Int             @id @default(autoincrement())
+  code         String          @unique
+  enrollmentId Int
+  enrollment   ClassEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  studentId    Int
+  student      Student         @relation(fields: [studentId], references: [id])
+  centerId     Int
+  center       Center          @relation(fields: [centerId], references: [id])
+  amount       Int
+  date         String
+  method       String          @default("CASH")
+  status       String          @default("VALID")
+  cancelReason String?
+  cancelledAt  DateTime?
+  cancelledBy  String?
+  note         String?
+  createdBy    String
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([enrollmentId])
+  @@index([studentId])
+  @@index([centerId, date])
+}
+
+// Hoàn tiền học phí (Tổng quan yêu cầu mục 3.7). Chỉ Quản lý duyệt.
+model Refund {
+  id             Int             @id @default(autoincrement())
+  code           String          @unique
+  enrollmentId   Int
+  enrollment     ClassEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  studentId      Int
+  student        Student         @relation(fields: [studentId], references: [id])
+  centerId       Int
+  center         Center          @relation(fields: [centerId], references: [id])
+  amount         Int
+  date           String
+  reason         String
+  unusedSessions Int?
+  status         String          @default("VALID")
+  cancelReason   String?
+  cancelledAt    DateTime?
+  cancelledBy    String?
+  approvedBy     String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([enrollmentId])
+  @@index([studentId])
+  @@index([centerId, date])
+}
+
+// Đơn giá giờ dạy theo từng người, riêng cho vai trò giáo viên và trợ giảng.
+model TeacherRate {
+  id            Int      @id @default(autoincrement())
+  teacherId     Int
+  teacher       Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  role          String   @default("TEACHER")
+  hourlyRate    Int      @default(0)
+  effectiveDate String
+  note          String?
+  createdAt     DateTime @default(now())
+
+  @@index([teacherId, role])
+}
+
+// Bảng lương tháng của giáo viên / trợ giảng (Tổng quan yêu cầu mục 3.7).
+model PayrollPeriod {
+  id           Int                 @id @default(autoincrement())
+  month        String
+  teacherId    Int
+  teacher      Teacher             @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  centerId     Int?
+  center       Center?             @relation(fields: [centerId], references: [id])
+  status       String              @default("DRAFT")
+  totalHours   Float               @default(0)
+  teachingPay  Int                 @default(0)
+  bonusPay     Int                 @default(0)
+  allowancePay Int                 @default(0)
+  penaltyPay   Int                 @default(0)
+  finalPay     Int                 @default(0)
+  lockedAt     DateTime?
+  lockedBy     String?
+  paidAt       DateTime?
+  paidBy       String?
+  note         String?
+  adjustments  PayrollAdjustment[]
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  @@unique([month, teacherId])
+  @@index([month])
+}
+
+// Dòng điều chỉnh trong bảng lương tháng: thưởng, phụ cấp, phạt.
+model PayrollAdjustment {
+  id              Int           @id @default(autoincrement())
+  payrollPeriodId Int
+  payrollPeriod   PayrollPeriod @relation(fields: [payrollPeriodId], references: [id], onDelete: Cascade)
+  type            String
+  amount          Int
+  note            String
+  createdBy       String
+  createdAt       DateTime      @default(now())
+
+  @@index([payrollPeriodId])
+}
+
+// Chi phí hoạt động của trung tâm (Tổng quan yêu cầu mục 3.7).
+model Expense {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique
+  centerId  Int
+  center    Center   @relation(fields: [centerId], references: [id])
+  category  String
+  amount    Int
+  date      String
+  payer     String
+  note      String?
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([centerId, date])
+  @@index([category])
+}
+

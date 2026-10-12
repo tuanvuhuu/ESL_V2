@@ -1,11 +1,15 @@
 "use client";
 
 import {
+  AccountBookOutlined,
   AppstoreOutlined,
+  BarChartOutlined,
   BookOutlined,
   CalendarOutlined,
   ControlOutlined,
+  DollarOutlined,
   DownOutlined,
+  FileTextOutlined,
   HomeOutlined,
   IdcardOutlined,
   KeyOutlined,
@@ -18,6 +22,7 @@ import {
   TeamOutlined,
   UserOutlined,
   UsergroupAddOutlined,
+  WalletOutlined,
 } from "@ant-design/icons";
 import { AutoComplete, Avatar, Button, Drawer, Dropdown, Grid, Input, Layout, Menu, Result, Select, Spin } from "antd";
 import Link from "next/link";
@@ -68,6 +73,32 @@ const NAV: NavGroup[] = [
     ],
   },
   {
+    key: "finance",
+    label: "Tài chính",
+    icon: <DollarOutlined />,
+    items: [
+      { key: "/finance", icon: <FileTextOutlined />, label: "Thu học phí" },
+      { key: "/finance/debts", icon: <WalletOutlined />, label: "Công nợ" },
+      { key: "/finance/expenses", icon: <AccountBookOutlined />, label: "Chi phí" },
+    ],
+  },
+  {
+    key: "payroll",
+    label: "Lương",
+    icon: <AccountBookOutlined />,
+    items: [
+      { key: "/payroll", icon: <CalendarOutlined />, label: "Bảng lương tháng" },
+      { key: "/payroll/rates", icon: <SettingOutlined />, label: "Đơn giá giờ" },
+    ],
+  },
+  {
+    key: "reports",
+    label: "Báo cáo",
+    icon: <BarChartOutlined />,
+    single: true,
+    items: [{ key: "/reports", icon: <BarChartOutlined />, label: "Báo cáo & Thống kê" }],
+  },
+  {
     key: "system",
     label: "Hệ thống",
     icon: <ControlOutlined />,
@@ -82,11 +113,12 @@ const NAV: NavGroup[] = [
   },
 ];
 
-/** Giáo viên, trợ giảng (DESIGN 4.2): 4 mục Hôm nay · Lịch · Lớp của tôi · Tài khoản. */
+/** Giáo viên, trợ giảng (DESIGN 4.2): 5 mục Hôm nay · Lịch · Lớp của tôi · Lương của tôi · Tài khoản. */
 const STAFF_NAV: NavItem[] = [
   { key: "/", icon: <HomeOutlined />, label: "Hôm nay" },
   { key: "/my/schedule", icon: <CalendarOutlined />, label: "Lịch" },
   { key: "/my/classes", icon: <ReadOutlined />, label: "Lớp của tôi" },
+  { key: "/my/payroll", icon: <DollarOutlined />, label: "Lương của tôi" },
   { key: "/my/account", icon: <IdcardOutlined />, label: "Tài khoản" },
 ];
 

@@ -29,6 +29,11 @@ export async function api<T = unknown>(url: string, init?: { method?: string; bo
   return data as T;
 }
 
+api.get = <T = unknown>(url: string) => api<T>(url);
+api.post = <T = unknown>(url: string, body?: unknown) => api<T>(url, { method: "POST", body });
+api.put = <T = unknown>(url: string, body?: unknown) => api<T>(url, { method: "PUT", body });
+api.delete = <T = unknown>(url: string) => api<T>(url, { method: "DELETE" });
+
 export function qs(params: Record<string, string | number | undefined | null | false>) {
   const sp = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== null && v !== "" && v !== false && v !== 0) sp.set(k, String(v));

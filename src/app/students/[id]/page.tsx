@@ -20,10 +20,11 @@ import { EnrollModal } from "@/components/students/EnrollModal";
 import { StatusModal } from "@/components/students/StatusModal";
 import { StudentFormModal } from "@/components/students/StudentFormModal";
 import { CenterTag, Dash, PageHeader, PersonAvatar, StatusTag } from "@/components/ui";
+import { StudentFinanceTab } from "@/components/finance/StudentFinanceTab";
 import { AUDIENCES, CLASS_STATUSES, GENDERS, STUDENT_STATUSES, optionOf } from "@/lib/constants";
 import { ageFrom, formatDateVN } from "@/lib/dates";
 import { isAbsent } from "@/lib/attendance";
-import { canEditCenter, canSeeAudit, canSeeParents, canWriteOutcome, isStaff } from "@/lib/permissions";
+import { canEditCenter, canSeeAudit, canSeeFinance, canSeeParents, canWriteOutcome, isStaff } from "@/lib/permissions";
 import { formatPhone } from "@/lib/text";
 
 type Detail = Student & {
@@ -392,6 +393,22 @@ export default function StudentProfilePage() {
           items={[
             { key: "overview", label: "Tổng quan", children: overview },
             { key: "classes", label: "Lịch sử khóa học", children: history },
+            ...(canSeeFinance(viewer)
+              ? [
+                  {
+                    key: "finance",
+                    label: "Học phí & Công nợ",
+                    children: (
+                      <StudentFinanceTab
+                        studentId={s.id}
+                        studentName={s.fullName}
+                        studentCode={s.code}
+                        enrollments={s.enrollments}
+                      />
+                    ),
+                  },
+                ]
+              : []),
             ...(seeParents
               ? [
                   {

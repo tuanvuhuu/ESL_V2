@@ -78,10 +78,32 @@ export const canWriteOutcome = (v: Viewer, classCenterId: number, classTeacherId
 /** Nhật ký liên lạc, việc cần gọi lại: xem như phụ huynh; ghi thì theo trung tâm của học sinh (canEditCenter). */
 export const canSeeContacts = (v: Viewer) => canSeeParents(v);
 
+/** Tài chính: xem phiếu thu, công nợ, chi phí. */
+export const canSeeFinance = (v: Viewer) => isManager(v) || isOffice(v);
+
+/** Sửa/tạo phiếu thu, chi phí của trung tâm: Quản lý hoặc Giáo vụ cùng trung tâm. */
+export const canManageFinance = (v: Viewer, centerId: number | null | undefined) => canEditCenter(v, centerId);
+
+/** Duyệt hoàn tiền: chỉ Quản lý (Tổng quan yêu cầu mục 3.7). */
+export const canApproveRefund = (v: Viewer) => isManager(v);
+
+/** Bảng lương: Quản lý (toàn bộ), Giáo vụ (trung tâm mình), Giáo viên/Trợ giảng (chỉ cá nhân). */
+export const canSeePayroll = (v: Viewer) => isManager(v) || isOffice(v);
+
+/** Chốt lương, sửa đơn giá giờ và cấu hình trùng giờ: chỉ Quản lý. */
+export const canManagePayroll = (v: Viewer) => isManager(v);
+
+/** Báo cáo: Quản lý và Giáo vụ. */
+export const canSeeReports = (v: Viewer) => isManager(v) || isOffice(v);
+
 /** Trang đầu tiên sau khi đăng nhập và các mục menu được thấy. */
 export function canOpenPage(v: Viewer, path: string): boolean {
   if (path.startsWith("/settings")) return canManageSettings(v);
+  if (path.startsWith("/my/payroll")) return isStaff(v) && v.teacherId != null;
   if (path.startsWith("/my")) return isStaff(v) && v.teacherId != null;
+  if (path.startsWith("/finance")) return canSeeFinance(v);
+  if (path.startsWith("/payroll")) return canSeePayroll(v);
+  if (path.startsWith("/reports")) return canSeeReports(v);
   if (path.startsWith("/makeups")) return canArrangeMakeups(v);
   if (path.startsWith("/parents")) return canSeeParents(v);
   if (path.startsWith("/followups")) return canSeeContacts(v);
