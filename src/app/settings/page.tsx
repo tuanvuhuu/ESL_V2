@@ -1,11 +1,13 @@
 "use client";
 
 import { PlusOutlined } from "@ant-design/icons";
-import { App, Button, ColorPicker, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Select, Switch, Table, Tabs, Tag } from "antd";
-import { useState } from "react";
+import { App, Button, ColorPicker, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Select, Spin, Switch, Table, Tabs, Tag } from "antd";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState, type ReactNode } from "react";
 import { api, useApi } from "@/client/api";
 import { useCenters } from "@/client/centers";
 import type { Center, Course, Room } from "@/client/types";
+import { SETTINGS_TABS } from "@/components/AppShell";
 import { UsersTab } from "@/components/settings/UsersTab";
 import { CenterTag, Dash, PageHeader } from "@/components/ui";
 import { formatDateVN } from "@/lib/dates";
@@ -260,19 +262,34 @@ function CoursesTab() {
   );
 }
 
+/** Tab đang mở nằm trên đường dẫn (?tab=) để menu trái chọn đúng mục cấp 3. */
+function SettingsTabs() {
+  const router = useRouter();
+  const tab = useSearchParams().get("tab");
+  const active = SETTINGS_TABS.some((t) => t.key === tab) ? tab! : SETTINGS_TABS[0].key;
+  const content: Record<string, ReactNode> = {
+    centers: <CentersTab />,
+    holidays: <HolidaysTab />,
+    courses: <CoursesTab />,
+    users: <UsersTab />,
+  };
+  return (
+    <Tabs
+      activeKey={active}
+      onChange={(k) => router.replace(`/settings?tab=${k}`, { scroll: false })}
+      items={SETTINGS_TABS.map((t) => ({ key: t.key, label: t.label, children: content[t.key] }))}
+    />
+  );
+}
+
 export default function SettingsPage() {
   return (
     <>
       <PageHeader title="Cài đặt" description="Trung tâm, phòng học, ngày nghỉ lễ, khóa học và tài khoản" />
       <div className="panel">
-        <Tabs
-          items={[
-            { key: "centers", label: "Trung tâm & phòng", children: <CentersTab /> },
-            { key: "holidays", label: "Ngày nghỉ lễ", children: <HolidaysTab /> },
-            { key: "courses", label: "Khóa học", children: <CoursesTab /> },
-            { key: "users", label: "Tài khoản", children: <UsersTab /> },
-          ]}
-        />
+        <Suspense fallback={<Spin />}>
+          <SettingsTabs />
+        </Suspense>
       </div>
     </>
   );

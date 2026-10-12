@@ -76,17 +76,32 @@ body {
   padding: 0 8px 16px;
 }
 
-.side-menu .ant-menu-item-group-title {
-  font-size: 11px;
+.side-menu .ant-menu-submenu-title {
+  height: 40px !important;
+  line-height: 40px !important;
+  margin-inline: 0 !important;
+  width: 100% !important;
   font-weight: 600;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  color: #8c959f;
-  padding: 16px 12px 6px !important;
+  color: #1f2328;
 }
 
-.side-menu .ant-menu-item-group:first-child .ant-menu-item-group-title {
-  padding-top: 4px !important;
+.side-menu .ant-menu-submenu-title .anticon {
+  font-size: 16px;
+}
+
+.side-menu .ant-menu-sub.ant-menu-inline {
+  background: transparent !important;
+}
+
+/* Mục con lồng trong nhóm: chữ nhẹ hơn tiêu đề nhóm */
+.side-menu .ant-menu-sub .ant-menu-item,
+.side-menu .ant-menu-sub .ant-menu-submenu-title {
+  font-weight: 500;
+  color: #424a53;
+}
+
+.side-menu .ant-menu-submenu-selected > .ant-menu-submenu-title {
+  color: #1f6feb;
 }
 
 .side-menu .ant-menu-item {
@@ -116,11 +131,6 @@ body {
   width: 3px;
   border-radius: 0 3px 3px 0;
   background: #1f6feb;
-}
-
-.side-menu .ant-menu-item-divider {
-  margin: 8px 12px;
-  border-color: #eef1f4;
 }
 
 /* Thanh trên */
