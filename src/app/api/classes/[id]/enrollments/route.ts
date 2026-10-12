@@ -9,10 +9,23 @@ import { enrollSchema } from "@/server/validators";
 /** Xếp học sinh vào lớp. */
 export const POST = route<IdCtx>(async (req, { params }, viewer) => {
   const classId = idParam((await params).id);
-  const { studentId, joinedAt, purchasedSessions } = await body(req, enrollSchema);
+  const { studentId, joinedAt, purchasedSessions, tuitionFee, discountType, discountMode, discountValue, dueDate } = await body(
+    req,
+    enrollSchema,
+  );
   return prisma.$transaction(async (tx) => {
     await assertCanEditClass(tx, viewer, classId);
-    const { enrollment: e, cls } = await createEnrollment(tx, { classId, studentId, joinedAt: joinedAt ?? todayISO(), purchasedSessions });
+    const { enrollment: e, cls } = await createEnrollment(tx, {
+      classId,
+      studentId,
+      joinedAt: joinedAt ?? todayISO(),
+      purchasedSessions,
+      tuitionFee,
+      discountType,
+      discountMode,
+      discountValue,
+      dueDate,
+    });
     const student = await tx.student.findUniqueOrThrow({ where: { id: studentId } });
     // Đã có lớp thì không còn chờ xếp lớp nữa.
     if (student.waitingCourseId) await tx.student.update({ where: { id: studentId }, data: { waitingCourseId: null } });

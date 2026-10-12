@@ -36,7 +36,7 @@ export const GET = route<IdCtx>(async (_req, { params }, viewer) => {
             include: {
               center: { select: { name: true, color: true } },
               teacher: { select: { displayName: true } },
-              course: { select: { name: true } },
+              course: { select: { name: true, tuition: true } },
             },
           },
           attendances: {

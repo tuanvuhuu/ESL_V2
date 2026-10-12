@@ -172,6 +172,11 @@ export const enrollSchema = z.object({
   studentId: z.number().int().positive(),
   joinedAt: isoDate().optional(),
   purchasedSessions: z.number().int().min(0, "Số buổi không hợp lệ").max(500).optional(),
+  tuitionFee: z.number().int().min(0).optional().nullable(),
+  discountType: z.enum(["SIBLING", "ALUMNI", "EARLY_BIRD", "SCHOLARSHIP", "PROMOTION"]).optional().nullable(),
+  discountMode: z.enum(["PERCENT", "AMOUNT"]).optional().nullable(),
+  discountValue: z.number().int().min(0).optional().nullable(),
+  dueDate: isoDate().optional().nullable(),
 });
 
 /** Sửa số buổi đã mua và điều chỉnh tay; điều chỉnh khác 0 thì bắt buộc ghi lý do. */
