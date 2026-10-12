@@ -86,9 +86,15 @@ export type SessionRow = {
   teacherId: number;
   status: string;
   note: string | null;
+  lessonContent?: string | null;
+  attendanceTakenAt?: string | null;
+  attendanceBy?: string | null;
   room: { id?: number; name: string };
   teacher: { id: number; displayName: string };
+  _count?: { attendances: number; makeups: number };
 };
+
+export type { Balance } from "@/lib/attendance";
 
 export type ScheduleSession = SessionRow & {
   class: {

@@ -12,20 +12,20 @@ datasource db {
 }
 
 model Center {
-  id        Int      @id @default(autoincrement())
-  code      String   @unique
+  id        Int             @id @default(autoincrement())
+  code      String          @unique
   name      String
   address   String?
   openHours String?
-  color     String   @default("#1F6FEB")
+  color     String          @default("#1F6FEB")
   rooms     Room[]
   students  Student[]
   classes   ClassGroup[]
   teachers  TeacherCenter[]
   holidays  Holiday[]
   users     User[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 }
 
 model Room {
@@ -75,6 +75,8 @@ model Student {
   searchText   String            @default("")
   guardians    StudentGuardian[]
   enrollments  ClassEnrollment[]
+  attendances  Attendance[]
+  makeups      Makeup[]
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
 
@@ -177,35 +179,48 @@ model ClassAssistant {
 }
 
 model ClassSession {
-  id        Int        @id @default(autoincrement())
-  classId   Int
-  class     ClassGroup @relation(fields: [classId], references: [id], onDelete: Cascade)
-  index     Int
-  date      String
-  startTime String
-  endTime   String
-  roomId    Int
-  room      Room       @relation(fields: [roomId], references: [id])
+  id                Int          @id @default(autoincrement())
+  classId           Int
+  class             ClassGroup   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  index             Int
+  date              String
+  startTime         String
+  endTime           String
+  roomId            Int
+  room              Room         @relation(fields: [roomId], references: [id])
   // Người dạy thực tế của buổi (mặc định là giáo viên chính, đổi khi dạy thay).
-  teacherId Int
-  teacher   Teacher    @relation(fields: [teacherId], references: [id])
-  status    String     @default("SCHEDULED")
-  note      String?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  teacherId         Int
+  teacher           Teacher      @relation(fields: [teacherId], references: [id])
+  status            String       @default("SCHEDULED")
+  note              String?
+  // Một dòng nội dung đã dạy, giáo viên ghi khi điểm danh.
+  lessonContent     String?
+  // Lần điểm danh gần nhất; trống = chưa điểm danh.
+  attendanceTakenAt DateTime?
+  attendanceBy      String?
+  attendances       Attendance[]
+  makeups           Makeup[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 
   @@index([date])
   @@index([classId, index])
 }
 
 model ClassEnrollment {
-  id        Int        @id @default(autoincrement())
-  classId   Int
-  class     ClassGroup @relation(fields: [classId], references: [id], onDelete: Cascade)
-  studentId Int
-  student   Student    @relation(fields: [studentId], references: [id])
-  joinedAt  String
-  leftAt    String?
+  id                Int          @id @default(autoincrement())
+  classId           Int
+  class             ClassGroup   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  studentId         Int
+  student           Student      @relation(fields: [studentId], references: [id])
+  joinedAt          String
+  leftAt            String?
+  // Số buổi đã mua; trống = theo số buổi của lớp (dữ liệu cũ trước khi có trường này).
+  purchasedSessions Int?
+  // Cộng / trừ tay (tặng buổi, chuyển buổi từ khóa trước…), kèm lý do.
+  adjustment        Int          @default(0)
+  adjustmentNote    String?
+  attendances       Attendance[]
 
   @@index([studentId])
   @@index([classId])
@@ -263,4 +278,44 @@ model UserSession {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+// Điểm danh một học sinh trong một buổi. Trạng thái: PRESENT, LATE, EXCUSED, UNEXCUSED
+// (src/lib/attendance.ts). Buổi trừ vào ghi danh `enrollmentId`; học bù trừ vào ghi danh của buổi vắng gốc.
+model Attendance {
+  id           Int             @id @default(autoincrement())
+  sessionId    Int
+  session      ClassSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  studentId    Int
+  student      Student         @relation(fields: [studentId], references: [id])
+  enrollmentId Int
+  enrollment   ClassEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  status       String
+  comment      String?
+  // Có giá trị khi đây là buổi học bù: buổi vắng gốc được bù.
+  makeupId     Int?            @unique
+  makeup       Makeup?         @relation("MakeupAttendance", fields: [makeupId], references: [id])
+  makeupFor    Makeup?         @relation("MakeupSource")
+  takenBy      String
+  updatedAt    DateTime        @updatedAt
+
+  @@unique([sessionId, studentId])
+  @@index([enrollmentId])
+  @@index([studentId])
+}
+
+// Xếp học bù: buổi vắng `absenceId` được bù ở buổi `sessionId` (thường của lớp khác cùng khóa).
+model Makeup {
+  id         Int          @id @default(autoincrement())
+  absenceId  Int          @unique
+  absence    Attendance   @relation("MakeupSource", fields: [absenceId], references: [id], onDelete: Cascade)
+  sessionId  Int
+  session    ClassSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  studentId  Int
+  student    Student      @relation(fields: [studentId], references: [id])
+  attendance Attendance?  @relation("MakeupAttendance")
+  createdBy  String
+  createdAt  DateTime     @default(now())
+
+  @@index([sessionId])
 }

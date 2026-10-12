@@ -11,6 +11,7 @@ import {
   KeyOutlined,
   LogoutOutlined,
   ReadOutlined,
+  ScheduleOutlined,
   SettingOutlined,
   SolutionOutlined,
   TeamOutlined,
@@ -51,6 +52,7 @@ const NAV: NavGroup[] = [
     items: [
       { key: "/schedule", icon: <CalendarOutlined />, label: "Lịch học" },
       { key: "/classes", icon: <ReadOutlined />, label: "Lớp học" },
+      { key: "/makeups", icon: <ScheduleOutlined />, label: "Học bù" },
     ],
   },
   {
@@ -78,19 +80,20 @@ const NAV: NavGroup[] = [
   },
 ];
 
+/** Giáo viên, trợ giảng (DESIGN 4.2): 4 mục Hôm nay · Lịch · Lớp của tôi · Tài khoản. */
+const STAFF_NAV: NavItem[] = [
+  { key: "/", icon: <HomeOutlined />, label: "Hôm nay" },
+  { key: "/my/schedule", icon: <CalendarOutlined />, label: "Lịch" },
+  { key: "/my/classes", icon: <ReadOutlined />, label: "Lớp của tôi" },
+  { key: "/my/account", icon: <IdcardOutlined />, label: "Tài khoản" },
+];
+
 /** Menu theo vai trò: mục không có quyền thì ẩn hẳn (DESIGN mục 7). */
 function navFor(v: Viewer): NavGroup[] {
-  const groups = NAV.map((g) => ({ ...g, items: g.items.filter((n) => canOpenPage(v, n.key)) }));
   if (isStaff(v) && v.teacherId) {
-    // Giáo viên, trợ giảng: hồ sơ và lịch dạy của mình.
-    groups.push({
-      key: "me",
-      label: "Cá nhân",
-      icon: <IdcardOutlined />,
-      single: true,
-      items: [{ key: `/teachers/${v.teacherId}`, icon: <IdcardOutlined />, label: "Của tôi" }],
-    });
+    return STAFF_NAV.map((n) => ({ key: n.key, label: n.label, icon: n.icon, single: true, items: [n] }));
   }
+  const groups = NAV.map((g) => ({ ...g, items: g.items.filter((n) => canOpenPage(v, n.key)) }));
   return groups.filter((g) => g.items.length > 0);
 }
 

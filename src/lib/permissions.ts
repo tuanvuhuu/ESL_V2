@@ -55,12 +55,17 @@ export const canManageSettings = (v: Viewer) => isManager(v);
 /** Lịch sử thay đổi. */
 export const canSeeAudit = (v: Viewer) => isManager(v) || isOffice(v);
 
-/** Điểm danh buổi học lớp mình (màn hình điểm danh làm ở đợt sau). */
+/** Điểm danh (người dạy, trợ giảng của buổi; giáo vụ trung tâm của lớp). Kiểm tra theo buổi ở src/server/attendance.ts. */
 export const canTakeAttendance = (v: Viewer) => isManager(v) || isOffice(v) || isStaff(v);
+
+/** Xếp học bù, xem danh sách cần chú ý. */
+export const canArrangeMakeups = (v: Viewer) => isManager(v) || isOffice(v);
 
 /** Trang đầu tiên sau khi đăng nhập và các mục menu được thấy. */
 export function canOpenPage(v: Viewer, path: string): boolean {
   if (path.startsWith("/settings")) return canManageSettings(v);
+  if (path.startsWith("/my")) return isStaff(v) && v.teacherId != null;
+  if (path.startsWith("/makeups")) return canArrangeMakeups(v);
   if (path.startsWith("/parents")) return canSeeParents(v);
   if (path.startsWith("/teachers/")) return canSeeTeachers(v) || Number(path.split("/")[2]) === v.teacherId;
   if (path.startsWith("/teachers")) return canSeeTeachers(v);

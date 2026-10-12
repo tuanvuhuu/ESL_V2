@@ -25,6 +25,7 @@ export const GET = route(async (req, _ctx, viewer) => {
         : {}),
     },
     include: {
+      _count: { select: { makeups: true, attendances: true } },
       room: { select: { id: true, name: true } },
       teacher: { select: { id: true, displayName: true } },
       class: {

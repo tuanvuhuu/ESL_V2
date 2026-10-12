@@ -9,7 +9,7 @@ import { enrollSchema } from "@/server/validators";
 /** Xếp học sinh vào lớp. */
 export const POST = route<IdCtx>(async (req, { params }, viewer) => {
   const classId = idParam((await params).id);
-  const { studentId, joinedAt } = await body(req, enrollSchema);
+  const { studentId, joinedAt, purchasedSessions } = await body(req, enrollSchema);
   return prisma.$transaction(async (tx) => {
     await assertCanEditClass(tx, viewer, classId);
     const cls = await tx.classGroup.findUnique({ where: { id: classId }, include: { room: true } });
@@ -25,13 +25,13 @@ export const POST = route<IdCtx>(async (req, { params }, viewer) => {
       );
     }
     await assertStudentFree(tx, studentId, classId);
-    const e = await tx.classEnrollment.create({ data: { classId, studentId, joinedAt: joinedAt ?? todayISO() } });
+    const e = await tx.classEnrollment.create({ data: { classId, studentId, joinedAt: joinedAt ?? todayISO(), purchasedSessions: purchasedSessions ?? cls.totalSessions } });
     const student = await tx.student.findUniqueOrThrow({ where: { id: studentId } });
     if (student.status === "WAITING") {
       await tx.student.update({ where: { id: studentId }, data: { status: "STUDYING" } });
       await logChange(tx, "Student", studentId, "status", { status: ["WAITING", "STUDYING"] });
     }
-    await logChange(tx, "Student", studentId, "enroll", { class: [null, cls.code] });
+    await logChange(tx, "Student", studentId, "enroll", { class: [null, cls.code], purchasedSessions: [null, e.purchasedSessions] });
     await logChange(tx, "Class", classId, "enroll", { student: [null, student.fullName] });
     return e;
   });

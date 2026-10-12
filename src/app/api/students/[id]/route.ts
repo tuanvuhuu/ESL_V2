@@ -1,5 +1,6 @@
 import { assertCanEditStudent, assertCanViewStudent, redactParent } from "@/server/access";
 import { diff, logChange } from "@/server/audit";
+import { balancesFor } from "@/server/attendance";
 import { prisma } from "@/server/db";
 import { body, idParam, notFound, route, type IdCtx } from "@/server/http";
 import { refreshStudentSearch } from "@/server/search-text";
@@ -35,6 +36,14 @@ export const GET = route<IdCtx>(async (_req, { params }, viewer) => {
               course: { select: { name: true } },
             },
           },
+          attendances: {
+            include: {
+              session: { select: { id: true, index: true, date: true, startTime: true, endTime: true, lessonContent: true, class: { select: { code: true } } } },
+              makeup: { select: { absence: { select: { status: true, session: { select: { date: true } } } } } },
+              makeupFor: { select: { id: true, session: { select: { date: true, startTime: true, class: { select: { code: true } } } }, attendance: { select: { status: true } } } },
+            },
+            orderBy: { session: { date: "asc" } },
+          },
         },
         orderBy: { joinedAt: "desc" },
       },
@@ -51,7 +60,21 @@ export const GET = route<IdCtx>(async (_req, { params }, viewer) => {
     orderBy: [{ date: "asc" }, { startTime: "asc" }],
     take: 20,
   });
-  return { ...s, guardians: s.guardians.map((g) => ({ ...g, parent: redactParent(viewer, g.parent) })), upcoming };
+  const balances = await balancesFor(prisma, s.enrollments.map((e) => e.id));
+  // Buổi học bù sắp tới cũng hiện trong lịch.
+  const makeupSessions = await prisma.classSession.findMany({
+    where: { date: { gte: today }, makeups: { some: { studentId: id } } },
+    include: { class: { select: { code: true, name: true } }, room: { select: { name: true } }, teacher: { select: { displayName: true } } },
+  });
+  const allUpcoming = [...upcoming.map((u) => ({ ...u, makeup: false })), ...makeupSessions.map((u) => ({ ...u, makeup: true }))]
+    .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime))
+    .slice(0, 20);
+  return {
+    ...s,
+    enrollments: s.enrollments.map((e) => ({ ...e, balance: balances.get(e.id) ?? null })),
+    upcoming: allUpcoming,
+    guardians: s.guardians.map((g) => ({ ...g, parent: redactParent(viewer, g.parent) })),
+  };
 });
 
 export const PUT = route<IdCtx>(async (req, { params }, viewer) => {

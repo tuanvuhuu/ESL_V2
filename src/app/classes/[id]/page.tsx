@@ -1,13 +1,14 @@
 "use client";
 
 import { PlusOutlined } from "@ant-design/icons";
-import { App, Button, Card, Col, Descriptions, Dropdown, Empty, Form, Modal, Popconfirm, Row, Select, Skeleton, Space, Table, Tabs, Tag } from "antd";
+import { App, Button, Card, Col, Descriptions, Dropdown, Empty, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Skeleton, Space, Table, Tabs, Tag } from "antd";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { api, qs, useApi, useDebounced } from "@/client/api";
 import { useViewer } from "@/client/session";
-import type { Course, Room, SessionRow, StudentRow, Teacher } from "@/client/types";
+import type { Balance, Course, Room, SessionRow, StudentRow, Teacher } from "@/client/types";
+import { BalanceCell } from "@/components/attendance/parts";
 import { AuditTimeline } from "@/components/AuditTimeline";
 import { SessionModal } from "@/components/classes/SessionModal";
 import { CenterTag, Dash, PageHeader, StatusTag } from "@/components/ui";
@@ -38,15 +39,32 @@ type Detail = {
     id: number;
     joinedAt: string;
     leftAt: string | null;
+    purchasedSessions: number | null;
+    adjustment: number;
+    adjustmentNote: string | null;
+    balance: Balance | null;
     student: { id: number; code: string; fullName: string; englishName: string | null; status: string; dob: string };
   }[];
 };
 
-function AddStudentModal({ classId, open, onClose, onSaved }: { classId: number; open: boolean; onClose: () => void; onSaved: () => void }) {
+function AddStudentModal({
+  classId,
+  defaultSessions,
+  open,
+  onClose,
+  onSaved,
+}: {
+  classId: number;
+  defaultSessions: number;
+  open: boolean;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
   const { message } = App.useApp();
   const [q, setQ] = useState("");
   const dq = useDebounced(q);
   const [studentId, setStudentId] = useState<number>();
+  const [purchased, setPurchased] = useState<number | null>(defaultSessions);
   const [saving, setSaving] = useState(false);
   const { data } = useApi<{ items: StudentRow[] }>(open ? `/api/students${qs({ q: dq, pageSize: 20 })}` : null);
 
@@ -54,9 +72,10 @@ function AddStudentModal({ classId, open, onClose, onSaved }: { classId: number;
     if (!studentId) return;
     setSaving(true);
     try {
-      await api(`/api/classes/${classId}/enrollments`, { body: { studentId } });
+      await api(`/api/classes/${classId}/enrollments`, { body: { studentId, purchasedSessions: purchased ?? defaultSessions } });
       message.success("Đã xếp học sinh vào lớp");
       setStudentId(undefined);
+      setPurchased(defaultSessions);
       onSaved();
     } catch (e) {
       message.error((e as Error).message);
@@ -83,7 +102,66 @@ function AddStudentModal({ classId, open, onClose, onSaved }: { classId: number;
             }))}
           />
         </Form.Item>
+        <Form.Item label="Số buổi đã mua" extra="Mặc định bằng số buổi của lớp. Số buổi còn lại tự trừ khi điểm danh.">
+          <InputNumber min={0} max={500} value={purchased} onChange={setPurchased} style={{ width: 160 }} addonAfter="buổi" />
+        </Form.Item>
       </Form>
+    </Modal>
+  );
+}
+
+type EnrollmentEdit = { id: number; name: string; purchasedSessions: number; adjustment: number; adjustmentNote: string | null };
+
+/** Sửa số buổi đã mua và điều chỉnh tay (kèm lý do). */
+function SessionsModal({ classId, value, onClose, onSaved }: { classId: number; value: EnrollmentEdit | null; onClose: () => void; onSaved: () => void }) {
+  const { message } = App.useApp();
+  const [form] = Form.useForm();
+  const [saving, setSaving] = useState(false);
+  return (
+    <Modal
+      open={!!value}
+      title={value ? `Số buổi · ${value.name}` : ""}
+      okText="Lưu"
+      cancelText="Hủy"
+      onCancel={onClose}
+      confirmLoading={saving}
+      destroyOnHidden
+      onOk={() => form.submit()}
+    >
+      {value && (
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={value}
+          onFinish={async (v) => {
+            setSaving(true);
+            try {
+              await api(`/api/classes/${classId}/enrollments/${value.id}`, { method: "PATCH", body: { ...v, adjustment: v.adjustment ?? 0 } });
+              message.success("Đã cập nhật số buổi");
+              onSaved();
+            } catch (e) {
+              message.error((e as Error).message);
+            } finally {
+              setSaving(false);
+            }
+          }}
+        >
+          <Form.Item name="purchasedSessions" label="Số buổi đã mua" rules={[{ required: true, message: "Nhập số buổi đã mua" }]}>
+            <InputNumber min={0} max={500} style={{ width: 160 }} addonAfter="buổi" />
+          </Form.Item>
+          <Form.Item name="adjustment" label="Điều chỉnh tay" extra="Số dương: cộng thêm (tặng buổi, chuyển từ khóa trước). Số âm: trừ bớt.">
+            <InputNumber min={-500} max={500} style={{ width: 160 }} addonAfter="buổi" />
+          </Form.Item>
+          <Form.Item
+            name="adjustmentNote"
+            label="Lý do điều chỉnh"
+            dependencies={["adjustment"]}
+            rules={[({ getFieldValue }) => ({ required: !!getFieldValue("adjustment"), message: "Ghi lý do điều chỉnh" })]}
+          >
+            <Input maxLength={200} placeholder="VD: Tặng 2 buổi khi đăng ký sớm" />
+          </Form.Item>
+        </Form>
+      )}
     </Modal>
   );
 }
@@ -100,6 +178,7 @@ export default function ClassDetailPage() {
   const [adding, setAdding] = useState(false);
   const [session, setSession] = useState<SessionRow | null>(null);
   const [editAssist, setEditAssist] = useState<number[] | null>(null);
+  const [editSessions, setEditSessions] = useState<EnrollmentEdit | null>(null);
 
   if (loading && !c) return <Skeleton active />;
   if (!c) return <Empty description="Không tìm thấy lớp" />;
@@ -222,16 +301,35 @@ export default function ClassDetailPage() {
           { title: "Trạng thái", render: (_, e) => <StatusTag options={STUDENT_STATUSES} value={e.student.status} /> },
           { title: "Vào lớp", render: (_, e) => formatDateVN(e.joinedAt) },
           { title: "Rời lớp", render: (_, e) => (e.leftAt ? formatDateVN(e.leftAt) : <Dash />) },
+          { title: "Buổi còn lại", render: (_, e) => <BalanceCell balance={e.balance} warn={!e.leftAt} /> },
           {
             title: "",
             render: (_, e) =>
-              editable &&
-              !e.leftAt && (
-                <Popconfirm title={`${e.student.fullName} rời lớp ${c.code}?`} okText="Rời lớp" cancelText="Hủy" onConfirm={() => leave(e.id)}>
-                  <Button size="small" danger type="text">
-                    Rời lớp
+              editable && (
+                <Space size={0}>
+                  <Button
+                    size="small"
+                    type="text"
+                    onClick={() =>
+                      setEditSessions({
+                        id: e.id,
+                        name: e.student.fullName,
+                        purchasedSessions: e.purchasedSessions ?? c.totalSessions,
+                        adjustment: e.adjustment,
+                        adjustmentNote: e.adjustmentNote,
+                      })
+                    }
+                  >
+                    Số buổi
                   </Button>
-                </Popconfirm>
+                  {!e.leftAt && (
+                    <Popconfirm title={`${e.student.fullName} rời lớp ${c.code}?`} okText="Rời lớp" cancelText="Hủy" onConfirm={() => leave(e.id)}>
+                      <Button size="small" danger type="text">
+                        Rời lớp
+                      </Button>
+                    </Popconfirm>
+                  )}
+                </Space>
               ),
           },
         ]}
@@ -278,6 +376,26 @@ export default function ClassDetailPage() {
               <Tag color="blue">Sắp diễn ra</Tag>
             ),
         },
+        {
+          title: "Điểm danh",
+          render: (_, s) =>
+            s.status === "CANCELLED" ? (
+              <Dash />
+            ) : s.attendanceTakenAt ? (
+              <Link href={`/sessions/${s.id}`}>
+                <Tag color="green">Đã điểm danh</Tag>
+              </Link>
+            ) : s.date <= today ? (
+              <Link href={`/sessions/${s.id}`}>
+                <Tag color="orange">Chưa điểm danh</Tag>
+              </Link>
+            ) : s._count?.makeups ? (
+              <Tag color="purple">{s._count.makeups} học bù</Tag>
+            ) : (
+              <Dash />
+            ),
+        },
+        { title: "Nội dung đã dạy", render: (_, s) => s.lessonContent ?? <Dash /> },
         { title: "Ghi chú", render: (_, s) => s.note ?? <Dash /> },
         ...(editable
           ? [
@@ -344,8 +462,18 @@ export default function ClassDetailPage() {
           ]}
         />
       </div>
+      <SessionsModal
+        classId={c.id}
+        value={editSessions}
+        onClose={() => setEditSessions(null)}
+        onSaved={() => {
+          setEditSessions(null);
+          void reload();
+        }}
+      />
       <AddStudentModal
         classId={c.id}
+        defaultSessions={c.totalSessions}
         open={adding}
         onClose={() => setAdding(false)}
         onSaved={() => {

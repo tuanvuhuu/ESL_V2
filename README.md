@@ -28,7 +28,11 @@ Kiểm tra trước khi đẩy code: `npm run lint && npm run typecheck && npm t
 
 | Màn hình | Nội dung |
 |---|---|
-| Hôm nay | Buổi học hôm nay theo từng trung tâm, số buổi hủy, dạy thay |
+| Hôm nay | Buổi học hôm nay theo từng trung tâm, số buổi chưa điểm danh, hủy, dạy thay; danh sách cần chú ý: sắp hết buổi (≤ 3), hết buổi vẫn đi học, vắng nhiều, buổi chưa điểm danh, vắng chưa bù |
+| Điểm danh | Mở từ thẻ buổi: mặc định có mặt, chạm đổi Có mặt → Muộn → Vắng có phép → Vắng không phép; nhận xét ngắn (có câu mẫu), một dòng nội dung đã dạy; sửa lại được, mỗi thay đổi vào lịch sử |
+| Số buổi còn lại | Ghi danh có số buổi đã mua và điều chỉnh tay (kèm lý do). Còn lại = đã mua − có mặt/muộn − vắng không phép ± điều chỉnh |
+| Học bù | Danh sách buổi vắng chưa bù; gợi ý buổi cùng khóa, cùng buổi số, còn chỗ, không trùng giờ, ưu tiên trung tâm chính; học sinh hiện trong danh sách điểm danh buổi đó với nhãn tím |
+| Giáo viên (điện thoại) | Hôm nay (thẻ buổi + nút Điểm danh, buổi tuần qua còn quên), Lịch tuần này / tuần sau, Lớp của tôi (chuyên cần, buổi còn lại từng em), Tài khoản (giờ dạy theo tháng, đổi mật khẩu) |
 | Học sinh | Danh sách theo mẫu chuẩn (tìm không dấu, lọc trạng thái có số lượng, ghim/ẩn cột, menu ⋯, xuất Excel), thêm/sửa trong popup, cảnh báo trùng hồ sơ, gợi ý phụ huynh theo SĐT, đổi trạng thái kèm lý do, hồ sơ có tab tổng quan / lịch sử lớp / lịch sử thay đổi |
 | Phụ huynh | Danh sách, hồ sơ với thẻ từng con, tự nhận anh chị em qua phụ huynh chung, tối đa 2 người giám hộ / học sinh |
 | Giáo viên | Giáo viên, trợ giảng hoặc cả hai; trung tâm dạy được; giờ dạy theo lịch trong tháng; lịch tuần gộp 4 trung tâm |
@@ -49,7 +53,7 @@ Kiểm tra trước khi đẩy code: `npm run lint && npm run typecheck && npm t
 | Cài đặt, tài khoản | ✓ | – | – | – |
 | Lịch sử thay đổi | ✓ | ✓ | – | – |
 
-Quy tắc nằm ở `src/lib/permissions.ts`. Giáo vụ sửa được phụ huynh có con ở trung tâm mình. Trợ giảng sẽ được điểm danh khi có màn hình điểm danh.
+Quy tắc nằm ở `src/lib/permissions.ts`. Giáo vụ sửa được phụ huynh có con ở trung tâm mình. Điểm danh: người dạy và trợ giảng của buổi, giáo vụ trung tâm của lớp, quản lý; chỉ từ ngày học trở đi. Xếp học bù: giáo vụ trung tâm chính của học sinh và quản lý.
 
 **Quy tắc đang áp dụng** (theo tài liệu yêu cầu, mục 5):
 
@@ -61,7 +65,7 @@ Quy tắc nằm ở `src/lib/permissions.ts`. Giáo vụ sửa được phụ hu
 
 ## Chưa có (đợt sau)
 
-Điểm danh và số buổi còn lại, học phí, lương, báo cáo, lịch rảnh và ngày nghỉ của giáo viên, học bù/học ké.
+Học phí, lương, báo cáo, lịch rảnh và đăng ký nghỉ của giáo viên, chuyển lớp giữ nguyên số buổi, bảo lưu có ngày quay lại, nhật ký liên lạc.
 
 ## Cấu trúc
 

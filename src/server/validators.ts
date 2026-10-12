@@ -10,6 +10,7 @@ import {
   TEACHER_STATUSES,
   values,
 } from "@/lib/constants";
+import { ATTENDANCE_STATUSES } from "@/lib/attendance";
 import { isValidISODate, isValidTime, todayISO } from "@/lib/dates";
 import { isValidPhone, normalizePhone } from "@/lib/text";
 
@@ -158,6 +159,46 @@ export const sessionUpdateSchema = z.discriminatedUnion("action", [
 export const enrollSchema = z.object({
   studentId: z.number().int().positive(),
   joinedAt: isoDate().optional(),
+  purchasedSessions: z.number().int().min(0, "Số buổi không hợp lệ").max(500).optional(),
+});
+
+/** Sửa số buổi đã mua và điều chỉnh tay; điều chỉnh khác 0 thì bắt buộc ghi lý do. */
+export const enrollmentUpdateSchema = z
+  .object({
+    purchasedSessions: z.number({ error: "Nhập số buổi đã mua" }).int().min(0, "Số buổi không hợp lệ").max(500),
+    adjustment: z.number().int().min(-500).max(500).default(0),
+    adjustmentNote: optText,
+  })
+  .refine((e) => e.adjustment === 0 || !!e.adjustmentNote, { message: "Ghi lý do điều chỉnh", path: ["adjustmentNote"] });
+
+export const attendanceSchema = z.object({
+  lessonContent: z
+    .string()
+    .trim()
+    .max(300, "Nội dung đã dạy tối đa 300 ký tự")
+    .optional()
+    .nullable()
+    .transform((v) => (v ? v : null)),
+  items: z
+    .array(
+      z.object({
+        studentId: z.number().int().positive(),
+        status: z.enum(values(ATTENDANCE_STATUSES)),
+        comment: z
+          .string()
+          .trim()
+          .max(200, "Nhận xét tối đa 200 ký tự")
+          .optional()
+          .nullable()
+          .transform((v) => (v ? v : null)),
+      }),
+    )
+    .max(200),
+});
+
+export const makeupSchema = z.object({
+  absenceId: z.number().int().positive(),
+  sessionId: z.number({ error: "Chọn buổi học bù" }).int().positive(),
 });
 
 export const centerSchema = z.object({
