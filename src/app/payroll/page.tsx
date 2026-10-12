@@ -257,7 +257,7 @@ export default function PayrollPage() {
     <div style={{ padding: "0 0 24px 0" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 4px 0" }}>Bảng lương giáo viên & trợ giảng</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px 0" }}>Bảng lương giáo viên & trợ giảng</h1>
           <div style={{ color: "#59636E" }}>
             Tự động tổng hợp giờ dạy theo buổi thực tế, xử lý trùng giờ và chốt lương hàng tháng
           </div>
@@ -268,7 +268,7 @@ export default function PayrollPage() {
         <Col xs={24} sm={8}>
           <Card size="small" style={{ borderRadius: 8 }}>
             <div style={{ color: "#59636E", fontSize: 13 }}>Tổng quỹ lương tháng {month}</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: "#1F6FEB", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "#1F6FEB", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(totalPayroll)}
             </div>
           </Card>
@@ -276,7 +276,7 @@ export default function PayrollPage() {
         <Col xs={24} sm={8}>
           <Card size="small" style={{ borderRadius: 8 }}>
             <div style={{ color: "#59636E", fontSize: 13 }}>Tổng giờ dạy thực tế</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
               {formatHours(totalHours)}
             </div>
           </Card>
@@ -284,7 +284,7 @@ export default function PayrollPage() {
         <Col xs={24} sm={8}>
           <Card size="small" style={{ borderRadius: 8 }}>
             <div style={{ color: "#59636E", fontSize: 13 }}>Đã thanh toán</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: "#1F2328", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "#1F2328", fontVariantNumeric: "tabular-nums" }}>
               {paidCount} / {payrollList.length} người
             </div>
           </Card>

@@ -200,7 +200,7 @@ export default function FinancePage() {
     <div style={{ padding: "0 0 24px 0" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 4px 0" }}>Quản lý thu học phí</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px 0" }}>Quản lý thu học phí</h1>
           <div style={{ color: "#59636E" }}>Lập, in và theo dõi phiếu thu học phí của học sinh các trung tâm</div>
         </div>
       </div>
@@ -209,7 +209,7 @@ export default function FinancePage() {
         <Col xs={24} sm={8}>
           <Card size="small" style={{ borderRadius: 8 }}>
             <div style={{ color: "#59636E", fontSize: 13 }}>Tổng thực thu ({payments.filter(p => p.status === "VALID").length} phiếu)</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(totalAmount)}
             </div>
           </Card>
@@ -217,7 +217,7 @@ export default function FinancePage() {
         <Col xs={24} sm={8}>
           <Card size="small" style={{ borderRadius: 8 }}>
             <div style={{ color: "#59636E", fontSize: 13 }}>Thu tiền mặt</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: "#D29922", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#D29922", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(cashAmount)}
             </div>
           </Card>
@@ -225,7 +225,7 @@ export default function FinancePage() {
         <Col xs={24} sm={8}>
           <Card size="small" style={{ borderRadius: 8 }}>
             <div style={{ color: "#59636E", fontSize: 13 }}>Thu chuyển khoản</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: "#1F6FEB", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#1F6FEB", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(transferAmount)}
             </div>
           </Card>

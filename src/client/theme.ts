@@ -14,7 +14,7 @@ export const theme: ThemeConfig = {
     colorBorderSecondary: "#EEF1F4",
     borderRadius: 6,
     borderRadiusLG: 8,
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: "'Be Vietnam Pro', Inter, -apple-system, 'Segoe UI', Roboto, sans-serif",
   },
   components: {

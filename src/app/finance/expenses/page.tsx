@@ -127,7 +127,7 @@ export default function ExpensesPage() {
     <div style={{ padding: "0 0 24px 0" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 4px 0" }}>Quản lý chi phí trung tâm</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px 0" }}>Quản lý chi phí trung tâm</h1>
           <div style={{ color: "#59636E" }}>Theo dõi các khoản chi phí hoạt động, mặt bằng, điện nước, marketing theo trung tâm</div>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
@@ -139,7 +139,7 @@ export default function ExpensesPage() {
         <Col xs={24} sm={8}>
           <Card size="small" style={{ borderRadius: 8 }}>
             <div style={{ color: "#59636E", fontSize: 13 }}>Tổng chi phí ({expenses.length} khoản)</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: "#CF222E", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "#CF222E", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(totalExpense)}
             </div>
           </Card>

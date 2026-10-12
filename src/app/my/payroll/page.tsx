@@ -44,7 +44,7 @@ export default function MyPayrollPage() {
   return (
     <div style={{ padding: "0 0 32px 0" }}>
       <div style={{ marginBottom: 16 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 4px 0" }}>Bảng giờ dạy & Lương cá nhân</h1>
+        <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px 0" }}>Bảng giờ dạy & Lương cá nhân</h1>
         <div style={{ color: "#59636E" }}>
           Xem chi tiết số giờ dạy thực tế, các buổi dạy và mức lương tạm tính trong tháng
         </div>
@@ -71,7 +71,7 @@ export default function MyPayrollPage() {
         <Col xs={12} sm={6}>
           <Card size="small" style={{ borderRadius: 8 }}>
             <div style={{ color: "#59636E", fontSize: 13 }}>Tổng số giờ</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: "#1F2328", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#1F2328", fontVariantNumeric: "tabular-nums" }}>
               {formatHours(data?.totalHours ?? 0)}
             </div>
           </Card>
@@ -79,7 +79,7 @@ export default function MyPayrollPage() {
         <Col xs={12} sm={6}>
           <Card size="small" style={{ borderRadius: 8 }}>
             <div style={{ color: "#59636E", fontSize: 13 }}>Tiền dạy các buổi</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(data?.totalTeachingPay ?? 0)}
             </div>
           </Card>
@@ -87,7 +87,7 @@ export default function MyPayrollPage() {
         <Col xs={12} sm={6}>
           <Card size="small" style={{ borderRadius: 8 }}>
             <div style={{ color: "#59636E", fontSize: 13 }}>Thưởng / Phạt</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: "#D29922", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#D29922", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency((period?.bonusPay ?? 0) + (period?.allowancePay ?? 0) - (period?.penaltyPay ?? 0))}
             </div>
           </Card>

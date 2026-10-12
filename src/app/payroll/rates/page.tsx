@@ -105,7 +105,7 @@ export default function PayrollRatesPage() {
   return (
     <div style={{ padding: "0 0 24px 0" }}>
       <div style={{ marginBottom: 16 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 4px 0" }}>Cài đặt đơn giá giờ & tính lương</h1>
+        <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px 0" }}>Cài đặt đơn giá giờ & tính lương</h1>
         <div style={{ color: "#59636E" }}>
           Quản lý lịch sử đơn giá theo giờ riêng cho vai trò giáo viên và trợ giảng, có ngày bắt đầu hiệu lực
         </div>

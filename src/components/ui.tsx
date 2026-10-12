@@ -61,7 +61,7 @@ export function PageHeader({ title, description, actions }: { title: ReactNode; 
   return (
     <div className="page-header">
       <div>
-        <Typography.Title level={4} style={{ margin: 0, fontSize: 20 }}>
+        <Typography.Title level={4} style={{ margin: 0, fontSize: 18 }}>
           {title}
         </Typography.Title>
         {description ? <div className="page-desc">{description}</div> : null}

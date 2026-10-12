@@ -136,7 +136,7 @@ export default function ReportsPage() {
     <div style={{ padding: "0 0 32px 0" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 4px 0" }}>Báo cáo & Thống kê hệ thống</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px 0" }}>Báo cáo & Thống kê hệ thống</h1>
           <div style={{ color: "#59636E" }}>Số liệu tổng hợp 4 trung tâm: hôm nay, doanh thu, lãi lỗ, giáo viên và chuyên cần</div>
         </div>
       </div>
@@ -176,7 +176,7 @@ export default function ReportsPage() {
             <Col xs={24} sm={6}>
               <Card size="small" style={{ borderRadius: 8 }}>
                 <div style={{ color: "#59636E", fontSize: 13 }}>Số buổi học hôm nay</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: "#1F6FEB", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "#1F6FEB", fontVariantNumeric: "tabular-nums" }}>
                   {dashboardData?.sessionsCount ?? 0} buổi
                 </div>
               </Card>
@@ -184,7 +184,7 @@ export default function ReportsPage() {
             <Col xs={24} sm={6}>
               <Card size="small" style={{ borderRadius: 8 }}>
                 <div style={{ color: "#59636E", fontSize: 13 }}>Đã điểm danh</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
                   {dashboardData?.takenSessions ?? 0} / {dashboardData?.sessionsCount ?? 0} buổi
                 </div>
               </Card>
@@ -192,7 +192,7 @@ export default function ReportsPage() {
             <Col xs={24} sm={6}>
               <Card size="small" style={{ borderRadius: 8 }}>
                 <div style={{ color: "#59636E", fontSize: 13 }}>Lượt học sinh có mặt</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
                   {dashboardData?.attendance?.present ?? 0} ({dashboardData?.attendance?.late ?? 0} muộn)
                 </div>
               </Card>
@@ -200,7 +200,7 @@ export default function ReportsPage() {
             <Col xs={24} sm={6}>
               <Card size="small" style={{ borderRadius: 8 }}>
                 <div style={{ color: "#59636E", fontSize: 13 }}>Tiền thu trong ngày</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
                   {formatCurrency(dashboardData?.revenueToday ?? 0)}
                 </div>
               </Card>
@@ -268,7 +268,7 @@ export default function ReportsPage() {
             <Col xs={24} sm={8}>
               <Card size="small" style={{ borderRadius: 8 }}>
                 <div style={{ color: "#59636E", fontSize: 13 }}>Tổng thực thu</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
                   {formatCurrency(revenueData?.summary?.totalPaid ?? 0)}
                 </div>
               </Card>
@@ -276,7 +276,7 @@ export default function ReportsPage() {
             <Col xs={24} sm={8}>
               <Card size="small" style={{ borderRadius: 8 }}>
                 <div style={{ color: "#59636E", fontSize: 13 }}>Tổng hoàn tiền</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: "#CF222E", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "#CF222E", fontVariantNumeric: "tabular-nums" }}>
                   {formatCurrency(revenueData?.summary?.totalRefund ?? 0)}
                 </div>
               </Card>
@@ -284,7 +284,7 @@ export default function ReportsPage() {
             <Col xs={24} sm={8}>
               <Card size="small" style={{ borderRadius: 8 }}>
                 <div style={{ color: "#59636E", fontSize: 13 }}>Doanh thu thuần (Net)</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: "#1F6FEB", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "#1F6FEB", fontVariantNumeric: "tabular-nums" }}>
                   {formatCurrency(revenueData?.summary?.totalNet ?? 0)}
                 </div>
               </Card>
@@ -368,7 +368,7 @@ export default function ReportsPage() {
             <Col xs={24} sm={6}>
               <Card size="small" style={{ borderRadius: 8 }}>
                 <div style={{ color: "#59636E", fontSize: 13 }}>Doanh thu thuần</div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: "#1F6FEB", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ fontSize: 17, fontWeight: 700, color: "#1F6FEB", fontVariantNumeric: "tabular-nums" }}>
                   {formatCurrency(profitLossData?.summary?.netRevenue ?? 0)}
                 </div>
               </Card>
@@ -376,7 +376,7 @@ export default function ReportsPage() {
             <Col xs={24} sm={6}>
               <Card size="small" style={{ borderRadius: 8 }}>
                 <div style={{ color: "#59636E", fontSize: 13 }}>Chi lương GV/TG</div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: "#D29922", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ fontSize: 17, fontWeight: 700, color: "#D29922", fontVariantNumeric: "tabular-nums" }}>
                   {formatCurrency(profitLossData?.summary?.teacherPayroll ?? 0)}
                 </div>
               </Card>
@@ -384,7 +384,7 @@ export default function ReportsPage() {
             <Col xs={24} sm={6}>
               <Card size="small" style={{ borderRadius: 8 }}>
                 <div style={{ color: "#59636E", fontSize: 13 }}>Chi phí hoạt động</div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: "#CF222E", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ fontSize: 17, fontWeight: 700, color: "#CF222E", fontVariantNumeric: "tabular-nums" }}>
                   {formatCurrency(profitLossData?.summary?.expenses ?? 0)}
                 </div>
               </Card>

@@ -164,7 +164,7 @@ export default function DebtsPage() {
   return (
     <div style={{ padding: "0 0 24px 0" }}>
       <div style={{ marginBottom: 16 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 4px 0" }}>Sổ theo dõi công nợ học sinh</h1>
+        <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px 0" }}>Sổ theo dõi công nợ học sinh</h1>
         <div style={{ color: "#59636E" }}>
           Tự động tính công nợ từ học phí thỏa thuận và các phiếu thu, cảnh báo học sinh quá hạn đóng tiền
         </div>
@@ -174,7 +174,7 @@ export default function DebtsPage() {
         <Col xs={24} sm={6}>
           <Card size="small" style={{ borderRadius: 8 }}>
             <div style={{ color: "#59636E", fontSize: 13 }}>Tổng học phí</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: "#1F2328", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#1F2328", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(data.summary.totalFee)}
             </div>
           </Card>
@@ -182,7 +182,7 @@ export default function DebtsPage() {
         <Col xs={24} sm={6}>
           <Card size="small" style={{ borderRadius: 8 }}>
             <div style={{ color: "#59636E", fontSize: 13 }}>Đã thu</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(data.summary.totalPaid)}
             </div>
           </Card>
@@ -190,7 +190,7 @@ export default function DebtsPage() {
         <Col xs={24} sm={6}>
           <Card size="small" style={{ borderRadius: 8 }}>
             <div style={{ color: "#59636E", fontSize: 13 }}>Còn phải thu (Nợ)</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: "#D29922", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#D29922", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(data.summary.totalDebt)}
             </div>
           </Card>
@@ -198,7 +198,7 @@ export default function DebtsPage() {
         <Col xs={24} sm={6}>
           <Card size="small" style={{ borderRadius: 8, borderColor: data.summary.overdueCount > 0 ? "#CF222E" : undefined }}>
             <div style={{ color: "#59636E", fontSize: 13 }}>Học sinh quá hạn</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: "#CF222E", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#CF222E", fontVariantNumeric: "tabular-nums" }}>
               {data.summary.overdueCount} học sinh
             </div>
           </Card>
