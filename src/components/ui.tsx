@@ -1,7 +1,18 @@
 "use client";
 
-import { MoreOutlined } from "@ant-design/icons";
-import { Avatar, Button, Dropdown, Tag, Typography, type MenuProps } from "antd";
+import { ActionMenu as PrimerActionMenu, ActionList } from "@primer/react";
+import {
+  ClockIcon,
+  CopyIcon,
+  DeviceMobileIcon,
+  EyeIcon,
+  KebabHorizontalIcon,
+  PencilIcon,
+  PlayIcon,
+  SyncIcon,
+  TrashIcon,
+} from "@primer/octicons-react";
+import { Avatar, Tag, Typography, type MenuProps } from "antd";
 import type { ReactNode } from "react";
 import { CERT_WARN_DAYS, optionOf, type Option } from "@/lib/constants";
 import { addDays, formatDateVN, todayISO } from "@/lib/dates";
@@ -82,17 +93,89 @@ export function PageHeader({ title, description, actions }: { title: ReactNode; 
   );
 }
 
-/** Nút ⋯ cuối dòng: đầu menu ghi tên + mã để tránh thao tác nhầm (DESIGN 5A.5). */
-export function ActionMenu({ title, items }: { title: string; items: MenuProps["items"] }) {
+export type ActionMenuItem = {
+  key?: string | number;
+  label?: ReactNode;
+  icon?: React.ComponentType<any>;
+  onClick?: () => void;
+  danger?: boolean;
+  disabled?: boolean;
+  type?: "divider" | "group";
+};
+
+/**
+ * Nút ⋯ cuối dòng chuẩn Primer React: ActionMenu + ActionList (theo Storybook).
+ * Tự động gắn icon phù hợp theo key, có divider và variant="danger" cho tác vụ huỷ/xoá.
+ */
+export function ActionMenu({ title, items }: { title: string; items?: (ActionMenuItem | null | undefined | false)[] | MenuProps["items"] }) {
+  const list = (items ?? []).filter(Boolean) as (ActionMenuItem & Record<string, any>)[];
+
   return (
-    <Dropdown
-      trigger={["click"]}
-      placement="bottomRight"
-      menu={{
-        items: [{ key: "__title", label: <b>{title}</b>, disabled: true }, { type: "divider" }, ...(items ?? [])],
-      }}
-    >
-      <Button type="text" icon={<MoreOutlined rotate={90} />} aria-label="Thao tác" />
-    </Dropdown>
+    <PrimerActionMenu>
+      <PrimerActionMenu.Button
+        aria-label="Thao tác"
+        size="small"
+        variant="invisible"
+        leadingVisual={KebabHorizontalIcon}
+        className="action-menu-btn"
+      />
+      <PrimerActionMenu.Overlay align="end" width="medium">
+        <ActionList showDividers={false}>
+          {title && (
+            <>
+              <ActionList.Item disabled className="action-menu-title">
+                <span style={{ fontWeight: 600, color: "#59636e", fontSize: 12 }}>{title}</span>
+              </ActionList.Item>
+              <ActionList.Divider />
+            </>
+          )}
+          {list.map((it, idx) => {
+            if (it.type === "divider") {
+              return <ActionList.Divider key={`div-${idx}`} />;
+            }
+            const Icon = it.icon ?? iconForAction(it.key);
+            return (
+              <ActionList.Item
+                key={it.key ?? idx}
+                variant={it.danger ? "danger" : "default"}
+                disabled={it.disabled}
+                onSelect={() => it.onClick?.()}
+              >
+                {Icon && (
+                  <ActionList.LeadingVisual>
+                    <Icon />
+                  </ActionList.LeadingVisual>
+                )}
+                {it.label}
+              </ActionList.Item>
+            );
+          })}
+        </ActionList>
+      </PrimerActionMenu.Overlay>
+    </PrimerActionMenu>
   );
+}
+
+function iconForAction(key?: string | number): React.ComponentType<any> | undefined {
+  switch (key) {
+    case "view":
+      return EyeIcon;
+    case "edit":
+      return PencilIcon;
+    case "status":
+      return SyncIcon;
+    case "call":
+      return DeviceMobileIcon;
+    case "copy":
+      return CopyIcon;
+    case "reserve":
+      return ClockIcon;
+    case "back":
+      return PlayIcon;
+    case "quit":
+    case "delete":
+      return TrashIcon;
+    default:
+      return undefined;
+  }
 }

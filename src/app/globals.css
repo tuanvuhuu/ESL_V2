@@ -987,11 +987,18 @@ body {
 }
 
 /* Cột ⋯ cuối dòng */
+.primer-grid td:last-child .action-menu-btn,
+.primer-grid td:last-child button[aria-label="Thao tác"],
 .primer-grid td:last-child .ant-btn {
-  width: 26px;
-  height: 26px;
-  min-width: 26px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: #59636e;
+  border-radius: 6px;
 }
 
 .primer-grid td:last-child:has([aria-label="Thao tác"]) {

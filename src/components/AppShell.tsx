@@ -25,7 +25,8 @@ import {
   UsergroupAddOutlined,
   WalletOutlined,
 } from "@ant-design/icons";
-import { AutoComplete, Avatar, Breadcrumb, Button, Drawer, Dropdown, Grid, Input, Layout, Menu, Result, Select, Spin } from "antd";
+import { ActionMenu as PrimerActionMenu, ActionList, Breadcrumbs as PrimerBreadcrumbs } from "@primer/react";
+import { AutoComplete, Avatar, Button, Drawer, Dropdown, Grid, Input, Layout, Menu, Result, Select, Spin } from "antd";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
@@ -179,18 +180,12 @@ function UserMenu({ viewer, compact }: { viewer: Viewer; compact: boolean }) {
   const [changing, setChanging] = useState(false);
   return (
     <>
-      <Dropdown
-        trigger={["click"]}
-        menu={{
-          items: [
-            { key: "who", disabled: true, label: <div><b>{viewer.fullName}</b><div className="sub">{roleLabel(viewer.role)} · {viewer.username}</div></div> },
-            { type: "divider" },
-            { key: "password", icon: <KeyOutlined />, label: "Đổi mật khẩu", onClick: () => setChanging(true) },
-            { key: "logout", icon: <LogoutOutlined />, label: "Đăng xuất", danger: true, onClick: () => void logout() },
-          ],
-        }}
-      >
-        <Button type="text" className="user-btn" aria-label="Tài khoản">
+      <PrimerActionMenu>
+        <PrimerActionMenu.Button
+          variant="invisible"
+          className="user-btn"
+          aria-label="Tài khoản"
+        >
           <Avatar size={32} style={{ background: "#1F6FEB", flexShrink: 0 }}>{initials(viewer.fullName)}</Avatar>
           {!compact && (
             <span className="user-btn-text">
@@ -199,8 +194,25 @@ function UserMenu({ viewer, compact }: { viewer: Viewer; compact: boolean }) {
             </span>
           )}
           {!compact && <DownOutlined style={{ fontSize: 10, color: "#8C959F" }} />}
-        </Button>
-      </Dropdown>
+        </PrimerActionMenu.Button>
+        <PrimerActionMenu.Overlay align="end" width="medium">
+          <ActionList>
+            <ActionList.Item disabled>
+              <b>{viewer.fullName}</b>
+              <ActionList.Description>{roleLabel(viewer.role)} · {viewer.username}</ActionList.Description>
+            </ActionList.Item>
+            <ActionList.Divider />
+            <ActionList.Item onSelect={() => setChanging(true)}>
+              <ActionList.LeadingVisual><KeyOutlined /></ActionList.LeadingVisual>
+              Đổi mật khẩu
+            </ActionList.Item>
+            <ActionList.Item variant="danger" onSelect={() => void logout()}>
+              <ActionList.LeadingVisual><LogoutOutlined /></ActionList.LeadingVisual>
+              Đăng xuất
+            </ActionList.Item>
+          </ActionList>
+        </PrimerActionMenu.Overlay>
+      </PrimerActionMenu>
       <ChangePasswordModal open={changing} onClose={() => setChanging(false)} />
     </>
   );
@@ -407,31 +419,55 @@ function SignedInShell({ children }: { children: ReactNode }) {
       <Layout>
         <Layout.Header className="topbar">
           {!isStaff(viewer) && (
-          <Select
-            value={canSeeAllCenters(viewer) ? centerId : centerId || undefined}
-            placeholder="Trung tâm"
-            onChange={setCenterId}
-            style={{ width: isMobile ? 130 : 190 }}
-            options={[
-              ...(canSeeAllCenters(viewer) ? [{ value: 0, label: "Tất cả trung tâm" }] : []),
-              ...centers.map((c) => ({
-                value: c.id,
-                label: (
-                  <span>
-                    <span className="dot" style={{ background: c.color }} />
-                    {c.name}
-                  </span>
-                ),
-              })),
-            ]}
-          />
+            <PrimerActionMenu>
+              <PrimerActionMenu.Button size="small">
+                {centerId === 0
+                  ? "Tất cả trung tâm"
+                  : (() => {
+                      const cur = centers.find((c) => c.id === centerId);
+                      return cur ? (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                          <span className="dot" style={{ background: cur.color }} />
+                          {cur.name}
+                        </span>
+                      ) : (
+                        "Chọn trung tâm"
+                      );
+                    })()}
+              </PrimerActionMenu.Button>
+              <PrimerActionMenu.Overlay align="start" width="medium">
+                <ActionList selectionVariant="single">
+                  {canSeeAllCenters(viewer) && (
+                    <ActionList.Item selected={centerId === 0} onSelect={() => setCenterId(0)}>
+                      Tất cả trung tâm
+                    </ActionList.Item>
+                  )}
+                  {centers.map((c) => (
+                    <ActionList.Item key={c.id} selected={centerId === c.id} onSelect={() => setCenterId(c.id)}>
+                      <ActionList.LeadingVisual>
+                        <span className="dot" style={{ background: c.color }} />
+                      </ActionList.LeadingVisual>
+                      {c.name}
+                    </ActionList.Item>
+                  ))}
+                </ActionList>
+              </PrimerActionMenu.Overlay>
+            </PrimerActionMenu>
           )}
           <GlobalSearch placeholder={isStaff(viewer) ? "Tìm học sinh lớp mình" : "Tìm HS / PH / GV, tên hoặc SĐT"} />
           <div style={{ flex: 1 }} />
           <UserMenu viewer={viewer} compact={isMobile} />
         </Layout.Header>
         <Layout.Content className="content" style={{ paddingBottom: isMobile ? 72 : 24 }}>
-          {allowed && !isMobile && crumbs.length > 0 && <Breadcrumb className="crumbs" items={crumbs} />}
+          {allowed && !isMobile && crumbs.length > 0 && (
+            <PrimerBreadcrumbs className="crumbs">
+              {crumbs.map((c, i) => (
+                <PrimerBreadcrumbs.Item key={i} selected={i === crumbs.length - 1}>
+                  {c.title}
+                </PrimerBreadcrumbs.Item>
+              ))}
+            </PrimerBreadcrumbs>
+          )}
           {allowed ? children : <Result status="403" title="Không có quyền" subTitle="Tài khoản của bạn không mở được trang này." extra={<Link href="/">Về trang Hôm nay</Link>} />}
         </Layout.Content>
         {isMobile && (
