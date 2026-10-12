@@ -18,7 +18,7 @@ export const theme: ThemeConfig = {
     fontFamily: "'Be Vietnam Pro', Inter, -apple-system, 'Segoe UI', Roboto, sans-serif",
   },
   components: {
-    Table: { headerBg: "#FAFBFC", rowHoverBg: "#F3F7FF", borderColor: "#EEF1F4", cellPaddingBlock: 12, cellPaddingInline: 16 },
+    Table: { headerBg: "#FAFBFC", rowHoverBg: "#F3F7FF", borderColor: "#EEF1F4", cellPaddingBlock: 8, cellPaddingInline: 10 },
     Layout: { headerBg: "#FFFFFF", siderBg: "#FFFFFF", triggerBg: "#FFFFFF", triggerColor: "#59636E" },
     Menu: {
       itemBorderRadius: 8,

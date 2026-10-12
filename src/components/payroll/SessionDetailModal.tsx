@@ -74,12 +74,12 @@ export function SessionDetailModal({
       title: "Lớp & Phòng",
       key: "class",
       render: (_: any, r: any) => (
-        <div>
-          <div style={{ fontWeight: 600 }}>{r.className}</div>
-          <div style={{ fontSize: 12, color: "#8C959F" }}>
+        <span>
+          <strong>{r.className}</strong>{" "}
+          <span style={{ fontSize: 12, color: "#8C959F" }}>
             {r.classCode} · {r.roomName} ({r.centerName})
-          </div>
-        </div>
+          </span>
+        </span>
       ),
     },
     {
@@ -144,7 +144,7 @@ export function SessionDetailModal({
           Đóng
         </Button>,
       ]}
-      width={850}
+      width="min(1280px, calc(100vw - 48px))"
       destroyOnClose
     >
       <div style={{ marginBottom: 16 }}>
@@ -173,6 +173,29 @@ export function SessionDetailModal({
         loading={loading}
         size="small"
         pagination={false}
+        bordered
+        sticky
+        scroll={{ x: 900, y: "calc(100vh - 480px)" }}
+        summary={(rows) => {
+          const hours = rows.reduce((s: number, r: any) => s + (r.hours ?? 0), 0);
+          const pay = rows.reduce((s: number, r: any) => s + (r.pay ?? 0), 0);
+          return (
+            <Table.Summary fixed>
+              <Table.Summary.Row>
+                <Table.Summary.Cell index={0} colSpan={4}>
+                  <strong>Tổng cộng ({rows.length} buổi)</strong>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={1} align="right">
+                  <strong>{formatHours(hours)}</strong>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={2} />
+                <Table.Summary.Cell index={3} align="right">
+                  <strong style={{ color: "#2DA44E" }}>{formatCurrency(pay)}</strong>
+                </Table.Summary.Cell>
+              </Table.Summary.Row>
+            </Table.Summary>
+          );
+        }}
       />
 
       {adjustments.length > 0 && (
