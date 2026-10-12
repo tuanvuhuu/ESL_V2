@@ -1,7 +1,9 @@
 "use client";
 
 import {
+  AppstoreOutlined,
   CalendarOutlined,
+  DownOutlined,
   HomeOutlined,
   IdcardOutlined,
   KeyOutlined,
@@ -12,36 +14,69 @@ import {
   TeamOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { AutoComplete, Avatar, Button, Dropdown, Grid, Input, Layout, Menu, Result, Select, Spin } from "antd";
+import { AutoComplete, Avatar, Button, Drawer, Dropdown, Grid, Input, Layout, Menu, Result, Select, Spin } from "antd";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { api, qs, useDebounced } from "@/client/api";
 import { useCenters } from "@/client/centers";
 import { useSession } from "@/client/session";
 import { canOpenPage, canSeeAllCenters, isStaff, roleLabel, type Viewer } from "@/lib/permissions";
 import { formatPhone, initials } from "@/lib/text";
-import { useEffect } from "react";
 import { ChangePasswordModal } from "./ChangePasswordModal";
 
-const NAV = [
-  { key: "/", icon: <HomeOutlined />, label: "Hôm nay" },
-  { key: "/schedule", icon: <CalendarOutlined />, label: "Lịch học" },
-  { key: "/classes", icon: <ReadOutlined />, label: "Lớp học" },
-  { key: "/students", icon: <UserOutlined />, label: "Học sinh" },
-  { key: "/parents", icon: <TeamOutlined />, label: "Phụ huynh" },
-  { key: "/teachers", icon: <SolutionOutlined />, label: "Giáo viên" },
-  { key: "/settings", icon: <SettingOutlined />, label: "Cài đặt" },
+type NavItem = { key: string; icon: ReactNode; label: string };
+type NavGroup = { key: string; label: string; items: NavItem[] };
+
+/** Menu chia nhóm theo công việc hằng ngày; nhóm không còn mục nào thì ẩn. */
+const NAV: NavGroup[] = [
+  { key: "today", label: "Tổng quan", items: [{ key: "/", icon: <HomeOutlined />, label: "Hôm nay" }] },
+  {
+    key: "teaching",
+    label: "Đào tạo",
+    items: [
+      { key: "/schedule", icon: <CalendarOutlined />, label: "Lịch học" },
+      { key: "/classes", icon: <ReadOutlined />, label: "Lớp học" },
+    ],
+  },
+  {
+    key: "people",
+    label: "Con người",
+    items: [
+      { key: "/students", icon: <UserOutlined />, label: "Học sinh" },
+      { key: "/parents", icon: <TeamOutlined />, label: "Phụ huynh" },
+      { key: "/teachers", icon: <SolutionOutlined />, label: "Giáo viên" },
+    ],
+  },
+  { key: "system", label: "Hệ thống", items: [{ key: "/settings", icon: <SettingOutlined />, label: "Cài đặt" }] },
 ];
 
 /** Menu theo vai trò: mục không có quyền thì ẩn hẳn (DESIGN mục 7). */
-function navFor(v: Viewer) {
-  const items = NAV.filter((n) => canOpenPage(v, n.key));
+function navFor(v: Viewer): NavGroup[] {
+  const groups = NAV.map((g) => ({ ...g, items: g.items.filter((n) => canOpenPage(v, n.key)) }));
   if (isStaff(v) && v.teacherId) {
-    // Giáo viên, trợ giảng: thay "Giáo viên" bằng hồ sơ và lịch dạy của mình.
-    items.splice(items.length, 0, { key: `/teachers/${v.teacherId}`, icon: <IdcardOutlined />, label: "Của tôi" });
+    // Giáo viên, trợ giảng: hồ sơ và lịch dạy của mình.
+    groups.push({ key: "me", label: "Cá nhân", items: [{ key: `/teachers/${v.teacherId}`, icon: <IdcardOutlined />, label: "Của tôi" }] });
   }
-  return items;
+  return groups.filter((g) => g.items.length > 0);
+}
+
+function isActive(key: string, pathname: string) {
+  return key === "/" ? pathname === "/" : pathname === key || pathname.startsWith(`${key}/`);
+}
+
+function Brand({ collapsed }: { collapsed?: boolean }) {
+  return (
+    <div className={`brand${collapsed ? " collapsed" : ""}`}>
+      <span className="brand-mark">E</span>
+      {!collapsed && (
+        <span className="brand-text">
+          <b>ESL Center</b>
+          <span>Trung tâm tiếng Anh</span>
+        </span>
+      )}
+    </div>
+  );
 }
 
 function UserMenu({ viewer, compact }: { viewer: Viewer; compact: boolean }) {
@@ -60,9 +95,15 @@ function UserMenu({ viewer, compact }: { viewer: Viewer; compact: boolean }) {
           ],
         }}
       >
-        <Button type="text" style={{ height: 40, paddingInline: 4, flexShrink: 0 }} aria-label="Tài khoản">
-          <Avatar size={32} style={{ background: "#1F6FEB" }}>{initials(viewer.fullName)}</Avatar>
-          {!compact && <span style={{ marginInlineStart: 8 }}>{viewer.fullName}</span>}
+        <Button type="text" className="user-btn" aria-label="Tài khoản">
+          <Avatar size={32} style={{ background: "#1F6FEB", flexShrink: 0 }}>{initials(viewer.fullName)}</Avatar>
+          {!compact && (
+            <span className="user-btn-text">
+              <b>{viewer.fullName}</b>
+              <span>{roleLabel(viewer.role)}</span>
+            </span>
+          )}
+          {!compact && <DownOutlined style={{ fontSize: 10, color: "#8C959F" }} />}
         </Button>
       </Dropdown>
       <ChangePasswordModal open={changing} onClose={() => setChanging(false)} />
@@ -149,6 +190,8 @@ function SignedInShell({ children }: { children: ReactNode }) {
   const isMobile = !screens.md;
   const { viewer } = useSession();
   const { centers, centerId, setCenterId } = useCenters();
+  const [collapsed, setCollapsed] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   if (!viewer) {
     return (
@@ -158,17 +201,34 @@ function SignedInShell({ children }: { children: ReactNode }) {
     );
   }
 
-  const nav = navFor(viewer);
-  const selected = nav.filter((n) => (n.key === "/" ? pathname === "/" : pathname.startsWith(n.key))).map((n) => n.key);
-  const menuItems = nav.map((n) => ({ key: n.key, icon: n.icon, label: <Link href={n.key}>{n.label}</Link> }));
+  const groups = navFor(viewer);
+  const flat = groups.flatMap((g) => g.items);
+  const selected = flat.filter((n) => isActive(n.key, pathname)).map((n) => n.key);
+  const toMenu = (n: NavItem) => ({ key: n.key, icon: n.icon, label: <Link href={n.key}>{n.label}</Link> });
+  // Thu gọn thì nhãn nhóm không hiện được, thay bằng đường kẻ mảnh giữa các nhóm.
+  const menuItems = collapsed
+    ? groups.flatMap((g, i) => [...(i ? [{ type: "divider" as const, key: `d-${g.key}` }] : []), ...g.items.map(toMenu)])
+    : groups.map((g) => ({ type: "group" as const, key: g.key, label: g.label, children: g.items.map(toMenu) }));
   const allowed = canOpenPage(viewer, pathname);
+  // Di động: 4 mục đầu ở thanh dưới, phần còn lại trong "Thêm".
+  const bottom = flat.length > 5 ? flat.slice(0, 4) : flat;
+  const moreActive = flat.length > 5 && !bottom.some((n) => selected.includes(n.key));
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
       {!isMobile && (
-        <Layout.Sider collapsible breakpoint="xl" width={200} theme="light" style={{ borderRight: "1px solid #EEF1F4" }}>
-          <div className="logo">ESL</div>
-          <Menu mode="inline" selectedKeys={selected} items={menuItems} style={{ borderInlineEnd: 0 }} />
+        <Layout.Sider
+          collapsible
+          collapsed={collapsed}
+          onCollapse={setCollapsed}
+          breakpoint="xl"
+          width={232}
+          collapsedWidth={72}
+          theme="light"
+          className="sider"
+        >
+          <Brand collapsed={collapsed} />
+          <Menu mode="inline" selectedKeys={selected} items={menuItems} className="side-menu" />
         </Layout.Sider>
       )}
       <Layout>
@@ -202,13 +262,36 @@ function SignedInShell({ children }: { children: ReactNode }) {
         </Layout.Content>
         {isMobile && (
           <nav className="bottom-nav">
-            {nav.slice(0, 5).map((n) => (
+            {bottom.map((n) => (
               <Link key={n.key} href={n.key} className={selected.includes(n.key) ? "active" : ""}>
                 {n.icon}
                 <span>{n.label}</span>
               </Link>
             ))}
+            {flat.length > 5 && (
+              <button type="button" className={moreActive ? "active" : ""} onClick={() => setMoreOpen(true)}>
+                <AppstoreOutlined />
+                <span>Thêm</span>
+              </button>
+            )}
           </nav>
+        )}
+        {isMobile && (
+          <Drawer placement="bottom" height="auto" open={moreOpen} onClose={() => setMoreOpen(false)} title="Tất cả mục" className="more-drawer">
+            {groups.map((g) => (
+              <div key={g.key} className="more-group">
+                <div className="more-group-label">{g.label}</div>
+                <div className="more-grid">
+                  {g.items.map((n) => (
+                    <Link key={n.key} href={n.key} onClick={() => setMoreOpen(false)} className={selected.includes(n.key) ? "active" : ""}>
+                      {n.icon}
+                      <span>{n.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </Drawer>
         )}
       </Layout>
     </Layout>

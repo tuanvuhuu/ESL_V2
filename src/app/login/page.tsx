@@ -41,8 +41,8 @@ function LoginForm() {
   if (mode === "loading") return <Spin />;
 
   return (
-    <div className="panel" style={{ width: "100%", maxWidth: 380 }}>
-      <div className="logo" style={{ paddingInline: 0, marginBottom: 4 }}>ESL</div>
+    <div className="panel" style={{ width: "100%", maxWidth: 400, padding: 32, boxShadow: "0 8px 24px rgba(31, 35, 40, 0.08)" }}>
+      <span className="brand-mark" style={{ marginBottom: 16 }}>E</span>
       <h1 style={{ fontSize: 20, margin: "0 0 4px" }}>{mode === "setup" ? "Tạo tài khoản quản lý" : "Đăng nhập"}</h1>
       <p className="sub" style={{ marginTop: 0, marginBottom: 16 }}>
         {mode === "setup"
@@ -77,7 +77,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 16, background: "#F6F8FA" }}>
+    <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 16, background: "radial-gradient(1200px 600px at 10% -10%, #EAF2FF 0%, transparent 60%), radial-gradient(900px 500px at 110% 110%, #F3EDFF 0%, transparent 55%), #F6F8FA" }}>
       <Suspense fallback={<Spin />}>
         <LoginForm />
       </Suspense>
