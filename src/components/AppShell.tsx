@@ -414,7 +414,15 @@ function SignedInShell({ children }: { children: ReactNode }) {
   const moreActive = flat.length > 5 && !bottom.some((n) => selected.includes(n.key));
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f6f8fa" }}>
+    <div
+      style={{
+        display: "flex",
+        height: isMobile ? "auto" : "100vh",
+        minHeight: "100vh",
+        background: "#f6f8fa",
+        overflow: isMobile ? "visible" : "hidden",
+      }}
+    >
       {!isMobile && (
         <aside
           className={`sider${collapsed ? " collapsed" : ""}`}
@@ -516,7 +524,16 @@ function SignedInShell({ children }: { children: ReactNode }) {
           </nav>
         </aside>
       )}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minWidth: 0,
+          height: isMobile ? "auto" : "100vh",
+          overflow: isMobile ? "visible" : "hidden",
+        }}
+      >
         <header className="topbar">
           {allowed && !isMobile && crumbs.length > 0 && (
             <PrimerBreadcrumbs className="crumbs" style={{ margin: 0, fontSize: 13 }}>
@@ -569,7 +586,17 @@ function SignedInShell({ children }: { children: ReactNode }) {
             <UserMenu viewer={viewer} compact={isMobile} />
           </div>
         </header>
-        <main className="content" style={{ paddingBottom: isMobile ? 72 : 24, flex: 1 }}>
+        <main
+          className="content"
+          style={{
+            flex: 1,
+            minHeight: 0,
+            display: "flex",
+            flexDirection: "column",
+            padding: isMobile ? "12px 12px 72px 12px" : "12px 20px 14px 20px",
+            boxSizing: "border-box",
+          }}
+        >
           {allowed ? (
             children
           ) : (
