@@ -14,6 +14,8 @@ if errorlevel 1 goto no_node
 
 if not exist ".env" if exist ".env.example" copy /y ".env.example" ".env" >nul
 
+if exist ".next\prerender-manifest.json" rmdir /s /q ".next" >nul 2>nul
+
 if not exist "node_modules" goto do_install
 goto check_db
 
