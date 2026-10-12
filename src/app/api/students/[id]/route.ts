@@ -14,6 +14,7 @@ export const GET = route<IdCtx>(async (_req, { params }, viewer) => {
     where: { id },
     include: {
       center: true,
+      waitingCourse: { select: { id: true, name: true } },
       guardians: {
         include: {
           parent: {

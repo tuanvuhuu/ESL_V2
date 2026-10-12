@@ -68,12 +68,23 @@ export const canTakeAttendance = (v: Viewer) => isManager(v) || isOffice(v) || i
 /** Xếp học bù, xem danh sách cần chú ý. */
 export const canArrangeMakeups = (v: Viewer) => isManager(v) || isOffice(v);
 
+/**
+ * Ghi kết quả cuối khóa và nhận xét tổng kết: giáo viên chính của lớp, giáo vụ trung tâm của lớp, quản lý.
+ * `classTeacherId`: giáo viên chính của lớp.
+ */
+export const canWriteOutcome = (v: Viewer, classCenterId: number, classTeacherId: number) =>
+  canEditCenter(v, classCenterId) || (v.teacherId != null && v.teacherId === classTeacherId);
+
+/** Nhật ký liên lạc, việc cần gọi lại: xem như phụ huynh; ghi thì theo trung tâm của học sinh (canEditCenter). */
+export const canSeeContacts = (v: Viewer) => canSeeParents(v);
+
 /** Trang đầu tiên sau khi đăng nhập và các mục menu được thấy. */
 export function canOpenPage(v: Viewer, path: string): boolean {
   if (path.startsWith("/settings")) return canManageSettings(v);
   if (path.startsWith("/my")) return isStaff(v) && v.teacherId != null;
   if (path.startsWith("/makeups")) return canArrangeMakeups(v);
   if (path.startsWith("/parents")) return canSeeParents(v);
+  if (path.startsWith("/followups")) return canSeeContacts(v);
   if (path.startsWith("/teachers/")) return canSeeTeachers(v) || Number(path.split("/")[2]) === v.teacherId;
   if (path.startsWith("/teachers")) return canSeeTeachers(v);
   return true;

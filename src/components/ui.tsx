@@ -3,7 +3,8 @@
 import { MoreOutlined } from "@ant-design/icons";
 import { Avatar, Button, Dropdown, Tag, Typography, type MenuProps } from "antd";
 import type { ReactNode } from "react";
-import { optionOf, type Option } from "@/lib/constants";
+import { CERT_WARN_DAYS, optionOf, type Option } from "@/lib/constants";
+import { addDays, formatDateVN, todayISO } from "@/lib/dates";
 import { initials } from "@/lib/text";
 
 export function StatusTag({ options, value, sub }: { options: readonly Option[]; value: string; sub?: string | null }) {
@@ -24,6 +25,15 @@ export function CenterTag({ center }: { center?: { name: string; color: string }
   return (
     <Tag style={{ color: center.color, borderColor: center.color, background: `${center.color}12` }}>{center.name}</Tag>
   );
+}
+
+/** Hạn chứng chỉ giáo viên (M8): đỏ khi đã hết hạn, vàng khi còn ≤ 60 ngày; `always` thì hiện cả khi còn hạn. */
+export function CertTag({ expiry, always }: { expiry: string | null | undefined; always?: boolean }) {
+  if (!expiry) return always ? <Dash /> : null;
+  const today = todayISO();
+  if (expiry < today) return <Tag color="red">Hết hạn {formatDateVN(expiry)}</Tag>;
+  if (expiry <= addDays(today, CERT_WARN_DAYS)) return <Tag color="orange">Hết hạn {formatDateVN(expiry)}</Tag>;
+  return always ? <span className="sub">Đến {formatDateVN(expiry)}</span> : null;
 }
 
 export function Dash() {

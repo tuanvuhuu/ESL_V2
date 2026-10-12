@@ -10,6 +10,7 @@ import {
   IdcardOutlined,
   KeyOutlined,
   LogoutOutlined,
+  PhoneOutlined,
   ReadOutlined,
   ScheduleOutlined,
   SettingOutlined,
@@ -62,6 +63,7 @@ const NAV: NavGroup[] = [
     items: [
       { key: "/students", icon: <UserOutlined />, label: "Học sinh" },
       { key: "/parents", icon: <UsergroupAddOutlined />, label: "Phụ huynh" },
+      { key: "/followups", icon: <PhoneOutlined />, label: "Cần gọi lại" },
       { key: "/teachers", icon: <SolutionOutlined />, label: "Giáo viên" },
     ],
   },

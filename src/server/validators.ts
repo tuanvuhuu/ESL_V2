@@ -2,6 +2,8 @@ import { z } from "zod";
 import {
   AUDIENCES,
   CLASS_STATUSES,
+  CONTACT_CHANNELS,
+  COURSE_OUTCOMES,
   EMPLOYMENTS,
   GENDERS,
   STUDENT_STATUSES,
@@ -111,6 +113,7 @@ export const teacherSchema = z.object({
   employment: z.enum(values(EMPLOYMENTS)),
   status: z.enum(values(TEACHER_STATUSES)).default("ACTIVE"),
   qualifications: optText,
+  certExpiry: isoDate().optional().nullable(),
   startDate: isoDate().optional().nullable(),
   note: optText,
   centerIds: z.array(z.number().int().positive()).min(1, "Chọn ít nhất một trung tâm"),
@@ -319,3 +322,49 @@ export const userUpdateSchema = z
   .object({ ...userFields, password: password.optional().nullable().or(z.literal("")) })
   .superRefine(userRefs)
   .transform(normalizeRefs);
+
+/** Kết quả cuối khóa của một ghi danh; bỏ trống cả hai để xóa. */
+export const outcomeSchema = z.object({
+  outcome: z.enum(values(COURSE_OUTCOMES)).optional().nullable(),
+  finalComment: z
+    .string()
+    .trim()
+    .max(1000, "Nhận xét tối đa 1000 ký tự")
+    .optional()
+    .nullable()
+    .transform((v) => (v ? v : null)),
+});
+
+/** Học sinh chờ xếp lớp theo khóa (trống = bỏ chờ). */
+export const waitingSchema = z.object({ courseId: z.number().int().positive().nullable() });
+
+/** Thao tác hàng loạt ở hồ sơ lớp (M14). */
+export const classBulkSchema = z.discriminatedUnion("action", [
+  z.object({
+    action: z.literal("teacher"),
+    fromDate: isoDate("Chọn ngày bắt đầu đổi"),
+    teacherId: z.number({ error: "Chọn giáo viên mới" }).int().positive(),
+  }),
+  z
+    .object({
+      action: z.literal("shift"),
+      fromDate: isoDate("Chọn buổi bắt đầu dời"),
+      newDate: isoDate("Chọn ngày học lại"),
+      reason: reqText("Nhập lý do dời lịch"),
+    })
+    .refine((v) => v.newDate > v.fromDate, { message: "Ngày học lại phải sau ngày bắt đầu dời", path: ["newDate"] }),
+]);
+
+/** Ghi một lần liên lạc; `closeId`: lần liên lạc này xử lý việc cần gọi lại đó. */
+export const contactSchema = z
+  .object({
+    studentId: z.number({ error: "Chọn học sinh" }).int().positive(),
+    parentId: z.number().int().positive().optional().nullable(),
+    channel: z.enum(values(CONTACT_CHANNELS), { message: "Chọn cách liên lạc" }),
+    content: z.string({ error: "Ghi nội dung trao đổi" }).trim().min(1, "Ghi nội dung trao đổi").max(1000),
+    followUpDate: isoDate().optional().nullable(),
+    followUpNote: optText,
+    closeId: z.number().int().positive().optional().nullable(),
+  })
+  .refine((c) => !c.followUpDate || c.followUpDate >= todayISO(), { message: "Ngày hẹn gọi lại phải từ hôm nay trở đi", path: ["followUpDate"] })
+  .refine((c) => !c.followUpDate || !!c.followUpNote, { message: "Ghi việc cần làm khi gọi lại", path: ["followUpNote"] });

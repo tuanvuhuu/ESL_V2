@@ -9,6 +9,7 @@ import { useCenters } from "@/client/centers";
 import { useViewer } from "@/client/session";
 import type { Balance, ScheduleSession } from "@/client/types";
 import { BalanceCell } from "@/components/attendance/parts";
+import { OutcomeTag } from "@/components/history/CourseHistory";
 import { MySessionCard } from "@/components/my/SessionCard";
 import { SubstituteModal, type SubstituteTarget } from "@/components/staffing/SubstituteModal";
 import { PageHeader } from "@/components/ui";
@@ -72,6 +73,8 @@ type Attention = {
     class: { id: number; code: string; centerId: number; center: { name: string; color: string } };
   }[];
   reservationsDue: { id: number; expectedReturn: string; startDate: string; student: StudentLite }[];
+  followUpsDue: number;
+  toAdvise: { enrollmentId: number; student: StudentLite; class: { id: number; code: string; course: { name: string } | null }; outcome: string | null }[];
 };
 type StudentLite = { id: number; code: string; fullName: string; center: { name: string; color: string } };
 
@@ -289,6 +292,35 @@ function OfficeToday() {
                       >
                         <span>
                           {studentLink(r.student)} <span className="sub">· bảo lưu từ {formatDateVN(r.startDate)}</span>
+                        </span>
+                      </List.Item>
+                    )}
+                  />
+                ),
+              },
+              {
+                key: "followups",
+                label: <TabLabel text="Cần gọi lại" count={att.followUpsDue} color="#CF222E" />,
+                children: (
+                  <div style={{ padding: "8px 0" }}>
+                    {att.followUpsDue ? `${att.followUpsDue} việc hẹn gọi lại phụ huynh đã đến hạn. ` : "Không có việc gọi lại nào đến hạn. "}
+                    <Link href="/followups">Mở trang Cần gọi lại</Link>
+                  </div>
+                ),
+              },
+              {
+                key: "advise",
+                label: <TabLabel text="Tư vấn khóa tiếp" count={att.toAdvise.length} color="#1F6FEB" />,
+                children: (
+                  <List
+                    size="small"
+                    locale={{ emptyText: "Không có học sinh nào vừa học xong mà chưa có lớp tiếp theo." }}
+                    dataSource={att.toAdvise}
+                    renderItem={(e) => (
+                      <List.Item extra={<OutcomeTag value={e.outcome} />}>
+                        <span>
+                          {studentLink(e.student)} · xong <Link href={`/classes/${e.class.id}`}>{e.class.code}</Link>
+                          {e.class.course ? <span className="sub"> ({e.class.course.name})</span> : null}
                         </span>
                       </List.Item>
                     )}

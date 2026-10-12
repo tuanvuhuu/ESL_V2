@@ -14,6 +14,8 @@ export const POST = route<IdCtx>(async (req, { params }, viewer) => {
     await assertCanEditClass(tx, viewer, classId);
     const { enrollment: e, cls } = await createEnrollment(tx, { classId, studentId, joinedAt: joinedAt ?? todayISO(), purchasedSessions });
     const student = await tx.student.findUniqueOrThrow({ where: { id: studentId } });
+    // Đã có lớp thì không còn chờ xếp lớp nữa.
+    if (student.waitingCourseId) await tx.student.update({ where: { id: studentId }, data: { waitingCourseId: null } });
     if (student.status === "WAITING") {
       await tx.student.update({ where: { id: studentId }, data: { status: "STUDYING" } });
       await logChange(tx, "Student", studentId, "status", { status: ["WAITING", "STUDYING"] });

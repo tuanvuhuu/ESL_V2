@@ -11,6 +11,7 @@ import { studentCreateSchema } from "@/server/validators";
 
 const listInclude = {
   center: { select: { id: true, name: true, color: true } },
+  waitingCourse: { select: { id: true, name: true } },
   guardians: { include: { parent: true }, orderBy: { isPrimary: "desc" } },
   enrollments: {
     where: { leftAt: null, class: { status: { in: ["PLANNED", "ACTIVE", "SUSPENDED"] } } },
@@ -23,6 +24,7 @@ export const GET = route(async (req, _ctx, viewer) => {
   const q = normalizeQuery(sp.get("q") ?? "");
   const centerId = Number(sp.get("centerId")) || undefined;
   const status = sp.get("status") || undefined;
+  const waitingCourseId = Number(sp.get("waitingCourseId")) || undefined;
   const page = Math.max(1, Number(sp.get("page")) || 1);
   const pageSize = Math.min(5000, Math.max(1, Number(sp.get("pageSize")) || 10));
   const sortField = sp.get("sort") === "fullName" ? "fullName" : sp.get("sort") === "dob" ? "dob" : "id";
@@ -30,6 +32,7 @@ export const GET = route(async (req, _ctx, viewer) => {
 
   const base: Prisma.StudentWhereInput = {
     ...(centerId ? { centerId } : {}),
+    ...(waitingCourseId ? { waitingCourseId } : {}),
     ...(q.length > 0 ? { searchText: { contains: q } } : {}),
     ...(isStaff(viewer) ? staffStudentWhere(viewer) : {}),
   };

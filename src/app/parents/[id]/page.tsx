@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useApi } from "@/client/api";
 import type { Parent, Student } from "@/client/types";
 import { AuditTimeline } from "@/components/AuditTimeline";
+import { ContactList } from "@/components/contacts/ContactList";
 import { ParentFormModal } from "@/components/parents/ParentFormModal";
 import { CenterTag, Dash, PageHeader, PersonAvatar, StatusTag } from "@/components/ui";
 import { STUDENT_STATUSES, weekdayText } from "@/lib/constants";
@@ -100,6 +101,18 @@ export default function ParentProfilePage() {
         <Tabs
           items={[
             { key: "info", label: "Tổng quan", children: info },
+            {
+              key: "contacts",
+              label: "Nhật ký liên lạc",
+              children: (
+                <>
+                  <div className="sub" style={{ marginBottom: 12 }}>
+                    Mọi lần liên lạc về các con của phụ huynh này. Ghi liên lạc mới ở hồ sơ từng học sinh, tab Liên lạc.
+                  </div>
+                  <ContactList parentId={p.id} />
+                </>
+              ),
+            },
             { key: "audit", label: "Lịch sử thay đổi", children: <AuditTimeline entity="Parent" id={p.id} /> },
           ]}
         />

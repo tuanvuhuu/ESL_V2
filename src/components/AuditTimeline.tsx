@@ -28,6 +28,10 @@ const ACTIONS: Record<string, string> = {
   availability: "Sửa lịch rảnh",
   "leave-add": "Đăng ký nghỉ",
   "leave-remove": "Hủy đăng ký nghỉ",
+  outcome: "Kết quả cuối khóa",
+  waiting: "Ghi danh chờ xếp lớp",
+  contact: "Ghi liên lạc",
+  bulk: "Thao tác hàng loạt",
 };
 
 /** Tên trường hiển thị trong lịch sử. */
@@ -52,6 +56,15 @@ const FIELDS: Record<string, string> = {
   returnedAt: "Học lại từ",
   slots: "Khung rảnh",
   leave: "Nghỉ",
+  outcome: "Kết quả",
+  finalComment: "Nhận xét cuối khóa",
+  waitingCourse: "Khóa chờ xếp lớp",
+  channel: "Cách liên lạc",
+  followUpDate: "Hẹn gọi lại",
+  teacher: "Giáo viên chính",
+  fromDate: "Từ ngày",
+  sessions: "Số buổi",
+  shift: "Dời lịch",
 };
 
 const show = (v: unknown) => (v === null || v === undefined || v === "" ? "∅" : Array.isArray(v) ? v.join(", ") : String(v));

@@ -11,7 +11,7 @@ import { useViewer } from "@/client/session";
 import type { Teacher } from "@/client/types";
 import { useColumnSettings, type ColumnDef } from "@/components/ColumnSettings";
 import { TeacherFormModal } from "@/components/teachers/TeacherFormModal";
-import { ActionMenu, CenterTag, Dash, PageHeader, PersonAvatar, StatusTag, TwoLine } from "@/components/ui";
+import { ActionMenu, CenterTag, CertTag, Dash, PageHeader, PersonAvatar, StatusTag, TwoLine } from "@/components/ui";
 import { EMPLOYMENTS, TEACHER_ORIGINS, TEACHER_ROLES, TEACHER_STATUSES, optionOf } from "@/lib/constants";
 import { canEditTeachers } from "@/lib/permissions";
 import { formatPhone } from "@/lib/text";
@@ -68,6 +68,7 @@ export default function TeachersPage() {
         align: "right",
         render: (_, r) => <span className="num">{r.monthHours.toLocaleString("vi-VN", { maximumFractionDigits: 1 })}</span>,
       },
+      { key: "cert", title: "Chứng chỉ", width: 170, render: (_, r) => <CertTag expiry={r.certExpiry} always /> },
       { key: "status", title: "Trạng thái", width: 130, render: (_, r) => <StatusTag options={TEACHER_STATUSES} value={r.status} /> },
       {
         key: "actions",

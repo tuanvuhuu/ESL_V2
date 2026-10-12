@@ -52,35 +52,40 @@ model Parent {
   note       String?
   searchText String            @default("")
   children   StudentGuardian[]
+  contacts   ContactLog[]
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
 }
 
 model Student {
-  id           Int               @id @default(autoincrement())
-  code         String            @unique
-  fullName     String
-  englishName  String?
-  dob          String
-  gender       String
-  audience     String
-  school       String?
-  schoolGrade  String?
-  centerId     Int
-  center       Center            @relation(fields: [centerId], references: [id])
-  level        String?
-  status       String            @default("WAITING")
-  statusReason String?
-  note         String?
+  id              Int               @id @default(autoincrement())
+  code            String            @unique
+  fullName        String
+  englishName     String?
+  dob             String
+  gender          String
+  audience        String
+  school          String?
+  schoolGrade     String?
+  centerId        Int
+  center          Center            @relation(fields: [centerId], references: [id])
+  level           String?
+  status          String            @default("WAITING")
+  statusReason    String?
+  // Khóa học sinh đang chờ xếp lớp (M5: ghi danh chưa có lớp phù hợp).
+  waitingCourseId Int?
+  waitingCourse   Course?           @relation(fields: [waitingCourseId], references: [id])
+  note            String?
   // Tên, tên tiếng Anh, mã, tên và SĐT phụ huynh, đã bỏ dấu, dùng cho tìm kiếm.
-  searchText   String            @default("")
-  guardians    StudentGuardian[]
-  enrollments  ClassEnrollment[]
-  attendances  Attendance[]
-  makeups      Makeup[]
-  reservations Reservation[]
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  searchText      String            @default("")
+  guardians       StudentGuardian[]
+  enrollments     ClassEnrollment[]
+  attendances     Attendance[]
+  makeups         Makeup[]
+  reservations    Reservation[]
+  contacts        ContactLog[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 
   @@index([centerId, status])
 }
@@ -110,6 +115,8 @@ model Teacher {
   employment     String                @default("PART_TIME")
   status         String                @default("ACTIVE")
   qualifications String?
+  // Ngày hết hạn chứng chỉ giảng dạy (M8: cảnh báo trước 60 ngày).
+  certExpiry     String?
   startDate      String?
   note           String?
   searchText     String                @default("")
@@ -143,6 +150,7 @@ model Course {
   tuition        Int          @default(0)
   maxStudents    Int          @default(12)
   classes        ClassGroup[]
+  waiting        Student[]
 }
 
 model ClassGroup {
@@ -228,6 +236,11 @@ model ClassEnrollment {
   transferredFromId Int?             @unique
   transferredFrom   ClassEnrollment? @relation("Transfer", fields: [transferredFromId], references: [id])
   transferredTo     ClassEnrollment? @relation("Transfer")
+  // Kết quả cuối khóa (src/lib/history.ts) và nhận xét tổng kết của giáo viên, gửi phụ huynh.
+  outcome           String?
+  finalComment      String?
+  outcomeBy         String?
+  outcomeAt         DateTime?
   attendances       Attendance[]
 
   @@index([studentId])
@@ -373,4 +386,25 @@ model Reservation {
   createdAt      DateTime @default(now())
 
   @@index([studentId])
+}
+
+// Nhật ký liên lạc với phụ huynh về một học sinh (gọi, Zalo, gặp trực tiếp…).
+// Có `followUpDate` mà chưa có `followUpDoneAt` = việc cần gọi lại (M7).
+model ContactLog {
+  id             Int       @id @default(autoincrement())
+  studentId      Int
+  student        Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  parentId       Int?
+  parent         Parent?   @relation(fields: [parentId], references: [id])
+  channel        String
+  content        String
+  followUpDate   String?
+  followUpNote   String?
+  followUpDoneAt DateTime?
+  followUpDoneBy String?
+  createdBy      String
+  createdAt      DateTime  @default(now())
+
+  @@index([studentId])
+  @@index([followUpDate])
 }

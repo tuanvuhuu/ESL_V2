@@ -34,6 +34,7 @@ export function TeacherFormModal({
       form.setFieldsValue({
         ...teacher,
         startDate: teacher.startDate ? dayjs(teacher.startDate) : undefined,
+        certExpiry: teacher.certExpiry ? dayjs(teacher.certExpiry) : undefined,
         centerIds: teacher.centers.map((c) => c.centerId),
       });
     } else {
@@ -49,7 +50,8 @@ export function TeacherFormModal({
 
   const submit = async () => {
     const v = await form.validateFields();
-    const payload = { ...v, startDate: v.startDate ? (v.startDate as Dayjs).format("YYYY-MM-DD") : null };
+    const day = (d: unknown) => (d ? (d as Dayjs).format("YYYY-MM-DD") : null);
+    const payload = { ...v, startDate: day(v.startDate), certExpiry: day(v.certExpiry) };
     setSaving(true);
     try {
       const saved = teacher
@@ -136,6 +138,11 @@ export function TeacherFormModal({
           <Col xs={24} md={12}>
             <Form.Item name="qualifications" label="Bằng cấp, chứng chỉ">
               <Input placeholder="IELTS 8.0, TESOL…" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item name="certExpiry" label="Chứng chỉ hết hạn ngày" extra="Hệ thống cảnh báo trước 60 ngày.">
+              <DatePicker format="DD/MM/YYYY" style={{ width: "100%" }} />
             </Form.Item>
           </Col>
           <Col span={24}>
