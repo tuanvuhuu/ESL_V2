@@ -18,7 +18,7 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <ConfigProvider locale={viVN} theme={theme}>
       <App message={{ top: 16, duration: 2.5 }}>
-        <SessionProvider enabled={pathname !== "/login"}>
+        <SessionProvider enabled={Boolean(pathname && pathname !== "/login")}>
           <CenterProvider>{children}</CenterProvider>
         </SessionProvider>
       </App>

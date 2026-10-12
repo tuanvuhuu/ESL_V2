@@ -20,10 +20,16 @@ export async function api<T = unknown>(url: string, init?: { method?: string; bo
     cache: "no-store",
   });
   const data = await res.json().catch(() => ({}));
-  if (res.status === 401 && !url.startsWith("/api/auth/") && typeof window !== "undefined") {
-    // Phiên hết hạn hoặc bị đăng xuất: về trang đăng nhập rồi quay lại trang đang xem.
-    const next = window.location.pathname + window.location.search;
-    window.location.assign(`/login?next=${encodeURIComponent(next)}`);
+  if (res.status === 401 && typeof window !== "undefined") {
+    if (url !== "/api/auth/login" && url !== "/api/auth/setup") {
+      // Xoá cookie phiên cũ đã hết hạn
+      document.cookie = "esl_session=; path=/; max-age=0";
+      if (window.location.pathname !== "/login") {
+        const next = window.location.pathname + window.location.search;
+        const target = next && next !== "/" ? `/login?next=${encodeURIComponent(next)}` : "/login";
+        window.location.assign(target);
+      }
+    }
   }
   if (!res.ok) throw new ApiError(res.status, data?.error ?? "Có lỗi xảy ra", data?.details);
   return data as T;
