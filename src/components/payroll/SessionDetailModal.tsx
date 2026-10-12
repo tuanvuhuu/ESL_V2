@@ -3,10 +3,65 @@
 import { useEffect, useState } from "react";
 import { DeleteOutlined } from "@ant-design/icons";
 import { Button, Descriptions, Divider, Modal, Popconfirm, Table, Tag, message } from "antd";
+import type { ColumnsType } from "antd/es/table";
 import { api } from "@/client/api";
+import { DataGrid } from "@/components/DataGrid";
 import { formatCurrency } from "@/lib/finance";
-import { adjustmentTypeOption, formatHours } from "@/lib/payroll";
+import { adjustmentTypeOption, formatHours, type AdjustmentType, type TeachingRole } from "@/lib/payroll";
 import { formatDateVN } from "@/lib/dates";
+
+/** Một buổi dạy đã tính tiền, dùng cho bảng chi tiết lương. */
+export type PayrollSessionRow = {
+  id: number;
+  date: string;
+  startTime: string;
+  endTime: string;
+  className: string;
+  classCode: string;
+  centerName: string;
+  roomName: string;
+  role: TeachingRole;
+  hourlyRate: number;
+  durationMinutes: number;
+  hours: number;
+  isOverlapping: boolean;
+  pay: number;
+};
+
+/** Khoản thưởng / phụ cấp / phạt của kỳ lương. */
+export type PayrollAdjustmentRow = {
+  id: number;
+  payrollPeriodId: number;
+  type: AdjustmentType;
+  amount: number;
+  note: string;
+  createdBy: string;
+};
+
+/** Bảng lương tháng của một giáo viên (null khi tháng đó chưa có bảng lương). */
+export type PayrollPeriodRow = {
+  id: number;
+  month: string;
+  teacherId: number;
+  centerId: number | null;
+  status: string;
+  totalHours: number;
+  teachingPay: number;
+  bonusPay: number;
+  allowancePay: number;
+  penaltyPay: number;
+  finalPay: number;
+  adjustments: PayrollAdjustmentRow[];
+};
+
+/** Kết quả GET /api/my/payroll (src/server/payroll.ts › getTeacherMonthlyDetails). */
+export type PayrollDetail = {
+  month: string;
+  period: PayrollPeriodRow | null;
+  sessions: PayrollSessionRow[];
+  totalHours: number;
+  totalTeachingPay: number;
+};
 
 export function SessionDetailModal({
   open,
@@ -26,16 +81,16 @@ export function SessionDetailModal({
   onAdjustmentChange: () => void;
 }) {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<PayrollDetail | null>(null);
 
   const loadDetails = async () => {
     if (!teacherId) return;
     setLoading(true);
     try {
-      const res = await api.get<any>(`/api/my/payroll?month=${month}&teacherId=${teacherId}`);
+      const res = await api.get<PayrollDetail>(`/api/my/payroll?month=${month}&teacherId=${teacherId}`);
       setData(res);
-    } catch (err: any) {
-      message.error(err.message || "Không thể tải chi tiết giờ dạy");
+    } catch (err) {
+      message.error((err as Error).message || "Không thể tải chi tiết giờ dạy");
     } finally {
       setLoading(false);
     }
@@ -53,12 +108,12 @@ export function SessionDetailModal({
       message.success("Đã xóa khoản điều chỉnh");
       loadDetails();
       onAdjustmentChange();
-    } catch (err: any) {
-      message.error(err.message || "Không thể xóa điều chỉnh");
+    } catch (err) {
+      message.error((err as Error).message || "Không thể xóa điều chỉnh");
     }
   };
 
-  const sessionColumns = [
+  const sessionColumns: ColumnsType<PayrollSessionRow> = [
     {
       title: "Ngày",
       dataIndex: "date",
@@ -68,12 +123,12 @@ export function SessionDetailModal({
     {
       title: "Thời gian",
       key: "time",
-      render: (_: any, r: any) => `${r.startTime}–${r.endTime}`,
+      render: (_, r) => `${r.startTime}–${r.endTime}`,
     },
     {
       title: "Lớp & Phòng",
       key: "class",
-      render: (_: any, r: any) => (
+      render: (_, r) => (
         <span>
           <strong>{r.className}</strong>{" "}
           <span style={{ fontSize: 12, color: "#8C959F" }}>
@@ -86,7 +141,7 @@ export function SessionDetailModal({
       title: "Vai trò",
       dataIndex: "role",
       key: "role",
-      render: (role: string) => (
+      render: (role: TeachingRole) => (
         <Tag color={role === "TEACHER" ? "blue" : "purple"}>
           {role === "TEACHER" ? "Giáo viên" : "Trợ giảng"}
         </Tag>
@@ -96,8 +151,8 @@ export function SessionDetailModal({
       title: "Số giờ",
       dataIndex: "hours",
       key: "hours",
-      align: "right" as const,
-      render: (h: number, r: any) => (
+      align: "right",
+      render: (h: number, r) => (
         <div>
           <span style={{ fontVariantNumeric: "tabular-nums", fontWeight: 600 }}>{formatHours(h)}</span>
           {r.isOverlapping && (
@@ -114,7 +169,7 @@ export function SessionDetailModal({
       title: "Đơn giá",
       dataIndex: "hourlyRate",
       key: "hourlyRate",
-      align: "right" as const,
+      align: "right",
       render: (rate: number) => (
         <span style={{ fontVariantNumeric: "tabular-nums" }}>{formatCurrency(rate)}/h</span>
       ),
@@ -123,12 +178,61 @@ export function SessionDetailModal({
       title: "Thành tiền",
       dataIndex: "pay",
       key: "pay",
-      align: "right" as const,
+      align: "right",
       render: (pay: number) => (
         <span style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700, color: "#2DA44E" }}>
           {formatCurrency(pay)}
         </span>
       ),
+    },
+  ];
+
+  const adjustmentColumns: ColumnsType<PayrollAdjustmentRow> = [
+    {
+      title: "Loại",
+      dataIndex: "type",
+      render: (t: AdjustmentType) => {
+        const opt = adjustmentTypeOption(t);
+        return <Tag color={opt?.color}>{opt?.label ?? t}</Tag>;
+      },
+    },
+    {
+      title: "Lý do",
+      dataIndex: "note",
+    },
+    {
+      title: "Số tiền",
+      dataIndex: "amount",
+      align: "right",
+      render: (val: number, r) => (
+        <span
+          style={{
+            fontWeight: 700,
+            fontVariantNumeric: "tabular-nums",
+            color: r.type === "PENALTY" ? "#CF222E" : "#2DA44E",
+          }}
+        >
+          {r.type === "PENALTY" ? "-" : "+"}
+          {formatCurrency(val)}
+        </span>
+      ),
+    },
+    {
+      title: "Thao tác",
+      key: "action",
+      align: "center",
+      render: (_, r) =>
+        !isLocked ? (
+          <Popconfirm
+            title="Xóa khoản điều chỉnh này?"
+            onConfirm={() => handleDeleteAdjustment(r.id)}
+            okText="Xóa"
+            cancelText="Hủy"
+            okButtonProps={{ danger: true }}
+          >
+            <Button size="small" danger icon={<DeleteOutlined />} />
+          </Popconfirm>
+        ) : null,
     },
   ];
 
@@ -166,19 +270,16 @@ export function SessionDetailModal({
       <Divider orientation="left" style={{ margin: "16px 0 12px 0", fontSize: 14 }}>
         Danh sách buổi dạy ({data?.sessions?.length ?? 0} buổi)
       </Divider>
-      <Table
+      <DataGrid<PayrollSessionRow>
         dataSource={data?.sessions ?? []}
         columns={sessionColumns}
         rowKey="id"
         loading={loading}
-        size="small"
-        pagination={false}
-        bordered
-        sticky
-        scroll={{ x: 900, y: "calc(100vh - 480px)" }}
+        minWidth={900}
+        maxHeight="calc(100vh - 480px)"
         summary={(rows) => {
-          const hours = rows.reduce((s: number, r: any) => s + (r.hours ?? 0), 0);
-          const pay = rows.reduce((s: number, r: any) => s + (r.pay ?? 0), 0);
+          const hours = rows.reduce((s, r) => s + (r.hours ?? 0), 0);
+          const pay = rows.reduce((s, r) => s + (r.pay ?? 0), 0);
           return (
             <Table.Summary fixed>
               <Table.Summary.Row>
@@ -203,59 +304,12 @@ export function SessionDetailModal({
           <Divider orientation="left" style={{ margin: "20px 0 12px 0", fontSize: 14 }}>
             Khoản điều chỉnh (Thưởng / Phụ cấp / Phạt)
           </Divider>
-          <Table
+          <Table<PayrollAdjustmentRow>
             dataSource={adjustments}
             rowKey="id"
             size="small"
             pagination={false}
-            columns={[
-              {
-                title: "Loại",
-                dataIndex: "type",
-                render: (t: string) => {
-                  const opt = adjustmentTypeOption(t);
-                  return <Tag color={opt?.color}>{opt?.label ?? t}</Tag>;
-                },
-              },
-              {
-                title: "Lý do",
-                dataIndex: "note",
-              },
-              {
-                title: "Số tiền",
-                dataIndex: "amount",
-                align: "right" as const,
-                render: (val: number, r: any) => (
-                  <span
-                    style={{
-                      fontWeight: 700,
-                      fontVariantNumeric: "tabular-nums",
-                      color: r.type === "PENALTY" ? "#CF222E" : "#2DA44E",
-                    }}
-                  >
-                    {r.type === "PENALTY" ? "-" : "+"}
-                    {formatCurrency(val)}
-                  </span>
-                ),
-              },
-              {
-                title: "Thao tác",
-                key: "action",
-                align: "center" as const,
-                render: (_: any, r: any) =>
-                  !isLocked ? (
-                    <Popconfirm
-                      title="Xóa khoản điều chỉnh này?"
-                      onConfirm={() => handleDeleteAdjustment(r.id)}
-                      okText="Xóa"
-                      cancelText="Hủy"
-                      okButtonProps={{ danger: true }}
-                    >
-                      <Button size="small" danger icon={<DeleteOutlined />} />
-                    </Popconfirm>
-                  ) : null,
-              },
-            ]}
+            columns={adjustmentColumns}
           />
         </>
       )}

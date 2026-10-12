@@ -2,17 +2,27 @@
 
 import { useEffect, useState } from "react";
 import { CheckOutlined, LockOutlined, PlusOutlined, UnorderedListOutlined } from "@ant-design/icons";
-import { Button, Card, Col, DatePicker, Dropdown, Row, Select, Space, Table, Tag, message } from "antd";
+import { Button, Card, Col, DatePicker, Dropdown, Row, Space, Tag, message } from "antd";
+import type { MenuProps } from "antd";
+import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { api, qs } from "@/client/api";
 import { useCenters } from "@/client/centers";
 import { useSession } from "@/client/session";
 import { AdjustmentModal } from "@/components/payroll/AdjustmentModal";
-import { SessionDetailModal } from "@/components/payroll/SessionDetailModal";
+import { SessionDetailModal, type PayrollPeriodRow } from "@/components/payroll/SessionDetailModal";
+import { DataGrid } from "@/components/DataGrid";
 import { formatCurrency } from "@/lib/finance";
 import { formatHours, payrollStatusOption } from "@/lib/payroll";
 import { isManager } from "@/lib/permissions";
 import { todayISO } from "@/lib/dates";
+
+/** Một dòng của GET /api/payroll (src/server/payroll.ts › generateOrGetMonthlyPayroll). */
+type PayrollRow = {
+  period: PayrollPeriodRow;
+  teacher: { id: number; fullName: string; displayName: string; code: string; role: string };
+  sessionsCount: number;
+};
 
 export default function PayrollPage() {
   const { centers, centerId } = useCenters();
@@ -20,7 +30,7 @@ export default function PayrollPage() {
 
   const [loading, setLoading] = useState(false);
   const [month, setMonth] = useState<string>(todayISO().slice(0, 7));
-  const [payrollList, setPayrollList] = useState<any[]>([]);
+  const [payrollList, setPayrollList] = useState<PayrollRow[]>([]);
 
   const [detailModal, setDetailModal] = useState<{
     open: boolean;
@@ -42,10 +52,10 @@ export default function PayrollPage() {
         month,
         centerId: centerId || undefined,
       });
-      const data = await api.get<any[]>(`/api/payroll${query}`);
+      const data = await api.get<PayrollRow[]>(`/api/payroll${query}`);
       setPayrollList(data);
-    } catch (err: any) {
-      message.error(err.message || "Không thể tải bảng lương tháng");
+    } catch (err) {
+      message.error((err as Error).message || "Không thể tải bảng lương tháng");
     } finally {
       setLoading(false);
     }
@@ -60,8 +70,8 @@ export default function PayrollPage() {
       await api.post(`/api/payroll/${periodId}/lock`, {});
       message.success("Đã chốt bảng lương thành công");
       loadPayroll();
-    } catch (err: any) {
-      message.error(err.message || "Không thể chốt bảng lương");
+    } catch (err) {
+      message.error((err as Error).message || "Không thể chốt bảng lương");
     }
   };
 
@@ -70,8 +80,8 @@ export default function PayrollPage() {
       await api.post(`/api/payroll/${periodId}/pay`, {});
       message.success("Đã đánh dấu đã thanh toán lương");
       loadPayroll();
-    } catch (err: any) {
-      message.error(err.message || "Không thể cập nhật trạng thái thanh toán");
+    } catch (err) {
+      message.error((err as Error).message || "Không thể cập nhật trạng thái thanh toán");
     }
   };
 
@@ -79,11 +89,11 @@ export default function PayrollPage() {
   const totalHours = payrollList.reduce((s, p) => s + (p.period?.totalHours ?? 0), 0);
   const paidCount = payrollList.filter((p) => p.period?.status === "PAID").length;
 
-  const columns = [
+  const columns: ColumnsType<PayrollRow> = [
     {
       title: "Giáo viên / Trợ giảng",
       key: "teacher",
-      render: (_: any, row: any) => (
+      render: (_, row) => (
         <div>
           <div style={{ fontWeight: 600 }}>{row.teacher.fullName}</div>
           <div style={{ fontSize: 12, color: "#8C959F" }}>
@@ -106,14 +116,14 @@ export default function PayrollPage() {
       title: "Số buổi",
       dataIndex: "sessionsCount",
       key: "sessionsCount",
-      align: "center" as const,
+      align: "center",
       render: (count: number) => <span style={{ fontWeight: 600 }}>{count} buổi</span>,
     },
     {
       title: "Số giờ dạy",
       key: "totalHours",
-      align: "right" as const,
-      render: (_: any, row: any) => (
+      align: "right",
+      render: (_, row) => (
         <span style={{ fontVariantNumeric: "tabular-nums" }}>
           {formatHours(row.period?.totalHours ?? 0)}
         </span>
@@ -122,8 +132,8 @@ export default function PayrollPage() {
     {
       title: "Tiền dạy",
       key: "teachingPay",
-      align: "right" as const,
-      render: (_: any, row: any) => (
+      align: "right",
+      render: (_, row) => (
         <span style={{ fontVariantNumeric: "tabular-nums" }}>
           {formatCurrency(row.period?.teachingPay ?? 0)}
         </span>
@@ -132,8 +142,8 @@ export default function PayrollPage() {
     {
       title: "Điều chỉnh",
       key: "adjustments",
-      align: "right" as const,
-      render: (_: any, row: any) => {
+      align: "right",
+      render: (_, row) => {
         const bonus = row.period?.bonusPay ?? 0;
         const allowance = row.period?.allowancePay ?? 0;
         const penalty = row.period?.penaltyPay ?? 0;
@@ -153,8 +163,8 @@ export default function PayrollPage() {
     {
       title: "Thực nhận",
       key: "finalPay",
-      align: "right" as const,
-      render: (_: any, row: any) => (
+      align: "right",
+      render: (_, row) => (
         <span
           style={{
             fontWeight: 800,
@@ -170,7 +180,7 @@ export default function PayrollPage() {
     {
       title: "Trạng thái",
       key: "status",
-      render: (_: any, row: any) => {
+      render: (_, row) => {
         const opt = payrollStatusOption(row.period?.status ?? "DRAFT");
         return <Tag color={opt?.color}>{opt?.label ?? row.period?.status}</Tag>;
       },
@@ -178,13 +188,13 @@ export default function PayrollPage() {
     {
       title: "Thao tác",
       key: "actions",
-      align: "center" as const,
-      render: (_: any, row: any) => {
+      align: "center",
+      render: (_, row) => {
         const period = row.period;
         const isLocked = period?.status === "LOCKED" || period?.status === "PAID";
         const isPaid = period?.status === "PAID";
 
-        const items = [
+        const items: MenuProps["items"] = [
           {
             key: "details",
             icon: <UnorderedListOutlined />,
@@ -294,7 +304,7 @@ export default function PayrollPage() {
         </Space>
       </Card>
 
-      <Table
+      <DataGrid<PayrollRow>
         dataSource={payrollList}
         columns={columns}
         rowKey={(r) => r.teacher.id}
