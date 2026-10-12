@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { DollarOutlined, ExclamationCircleOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Input, Row, Select, Space, Table, Tag, message } from "antd";
+import { Button, Card, Col, Input, Row, Select, Space, Tag, message } from "antd";
 import { api, qs, useDebounced } from "@/client/api";
+import { DataGrid } from "@/components/DataGrid";
 import { useCenters } from "@/client/centers";
 import { PaymentModal, type PaymentTarget } from "@/components/finance/PaymentModal";
 import { ReceiptModal, type ReceiptData } from "@/components/finance/ReceiptModal";
@@ -230,12 +231,12 @@ export default function DebtsPage() {
         </Space>
       </Card>
 
-      <Table
+      <DataGrid
         dataSource={data.items}
         columns={columns}
         rowKey="enrollmentId"
         loading={loading}
-        pagination={{ pageSize: 15 }}
+        pagination={{ pageSize: 50, showSizeChanger: true }}
       />
 
       <PaymentModal

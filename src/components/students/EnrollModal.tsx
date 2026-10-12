@@ -138,7 +138,7 @@ export function EnrollModal({ student, open, onClose, onSaved }: { student: Enro
       onOk={submit}
       confirmLoading={saving}
       destroyOnHidden
-      width={680}
+      width="min(880px, calc(100vw - 48px))"
     >
       <Form form={form} layout="vertical">
         <Form.Item name="courseId" label="Khóa học" rules={[{ required: mode === "wait", message: "Chọn khóa học sinh chờ" }]}>
@@ -195,12 +195,12 @@ export function EnrollModal({ student, open, onClose, onSaved }: { student: Enro
             </Form.Item>
 
             <Row gutter={16}>
-              <Col span={12}>
+              <Col xs={24} md={12}>
                 <Form.Item name="purchasedSessions" label="Số buổi mua" rules={[{ required: true, message: "Nhập số buổi" }]}>
                   <InputNumber min={0} max={500} style={{ width: "100%" }} addonAfter="buổi" />
                 </Form.Item>
               </Col>
-              <Col span={12}>
+              <Col xs={24} md={12}>
                 <Form.Item name="baseTuition" label="Học phí gốc">
                   <InputNumber
                     min={0}
@@ -214,7 +214,7 @@ export function EnrollModal({ student, open, onClose, onSaved }: { student: Enro
             </Row>
 
             <Row gutter={16}>
-              <Col span={10}>
+              <Col xs={24} md={10}>
                 <Form.Item name="discountType" label="Chính sách giảm giá">
                   <Select
                     allowClear
@@ -232,7 +232,7 @@ export function EnrollModal({ student, open, onClose, onSaved }: { student: Enro
               </Col>
               {discountType && (
                 <>
-                  <Col span={7}>
+                  <Col xs={12} md={7}>
                     <Form.Item name="discountMode" label="Kiểu giảm">
                       <Radio.Group
                         options={[
@@ -242,7 +242,7 @@ export function EnrollModal({ student, open, onClose, onSaved }: { student: Enro
                       />
                     </Form.Item>
                   </Col>
-                  <Col span={7}>
+                  <Col xs={12} md={7}>
                     <Form.Item name="discountValue" label="Mức giảm">
                       <InputNumber
                         min={0}
@@ -257,7 +257,7 @@ export function EnrollModal({ student, open, onClose, onSaved }: { student: Enro
             </Row>
 
             <Row gutter={16}>
-              <Col span={12}>
+              <Col xs={24} md={12}>
                 <Form.Item name="dueDate" label="Hạn đóng học phí (nếu còn nợ)">
                   <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD" placeholder="Chọn ngày hết hạn" />
                 </Form.Item>

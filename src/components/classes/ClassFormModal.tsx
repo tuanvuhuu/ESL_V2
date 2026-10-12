@@ -122,7 +122,7 @@ export function ClassFormModal({ open, onClose, onSaved }: { open: boolean; onCl
   return (
     <Modal
       open={open}
-      width={760}
+      width="min(880px, calc(100vw - 48px))"
       style={{ top: 60 }}
       title="Mở lớp mới"
       onCancel={onClose}

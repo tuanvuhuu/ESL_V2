@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { PlusOutlined, PrinterOutlined, StopOutlined } from "@ant-design/icons";
-import { Button, Card, Col, DatePicker, Dropdown, Input, Modal, Row, Select, Space, Table, Tag, message } from "antd";
+import { Button, Card, Col, DatePicker, Dropdown, Input, Modal, Row, Select, Space, Tag, message } from "antd";
 import dayjs from "dayjs";
 import { api, qs } from "@/client/api";
+import { DataGrid } from "@/components/DataGrid";
 import { useCenters } from "@/client/centers";
 import { useSession } from "@/client/session";
 import { PaymentModal } from "@/components/finance/PaymentModal";
@@ -247,12 +248,12 @@ export default function FinancePage() {
         </Space>
       </Card>
 
-      <Table
+      <DataGrid
         dataSource={payments}
         columns={columns}
         rowKey="id"
         loading={loading}
-        pagination={{ pageSize: 15 }}
+        pagination={{ pageSize: 50, showSizeChanger: true }}
       />
 
       <ReceiptModal

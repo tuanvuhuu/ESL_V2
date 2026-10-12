@@ -69,7 +69,7 @@ export function TeacherFormModal({
   return (
     <Modal
       open={open}
-      width={720}
+      width="min(880px, calc(100vw - 48px))"
       style={{ top: 60 }}
       title={teacher ? `Sửa giáo viên · ${teacher.code}` : "Thêm giáo viên / trợ giảng"}
       onCancel={onClose}

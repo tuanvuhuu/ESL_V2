@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Popconfirm, Row, Select, Space, Table, Tag, message } from "antd";
+import { Button, Card, Col, Popconfirm, Row, Select, Space, Tag, message } from "antd";
 import { api, qs } from "@/client/api";
+import { DataGrid } from "@/components/DataGrid";
 import { useCenters } from "@/client/centers";
 import { ExpenseModal, EXPENSE_CATEGORIES } from "@/components/finance/ExpenseModal";
 import { formatCurrency } from "@/lib/finance";
@@ -160,12 +161,12 @@ export default function ExpensesPage() {
         </Space>
       </Card>
 
-      <Table
+      <DataGrid
         dataSource={expenses}
         columns={columns}
         rowKey="id"
         loading={loading}
-        pagination={{ pageSize: 15 }}
+        pagination={{ pageSize: 50, showSizeChanger: true }}
       />
 
       <ExpenseModal

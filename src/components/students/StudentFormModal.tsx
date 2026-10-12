@@ -135,7 +135,7 @@ export function StudentFormModal({ open, student, onClose, onSaved }: Props) {
   return (
     <Modal
       open={open}
-      width={720}
+      width="min(880px, calc(100vw - 48px))"
       style={{ top: 60 }}
       title={isEdit ? `Sửa học sinh · ${student!.code}` : "Thêm học sinh"}
       onCancel={onClose}
