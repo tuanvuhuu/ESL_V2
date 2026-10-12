@@ -1,0 +1,234 @@
+// Đợt 1: trung tâm, phòng, học sinh, phụ huynh, giáo viên/trợ giảng, lớp và lịch học.
+// Ngày lưu dạng "YYYY-MM-DD", giờ dạng "HH:mm" (giờ Việt Nam) để tránh lệch múi giờ.
+// Trạng thái lưu dạng chuỗi; danh sách giá trị hợp lệ nằm trong src/lib/constants.ts.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Center {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique
+  name      String
+  address   String?
+  openHours String?
+  color     String   @default("#1F6FEB")
+  rooms     Room[]
+  students  Student[]
+  classes   ClassGroup[]
+  teachers  TeacherCenter[]
+  holidays  Holiday[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Room {
+  id        Int            @id @default(autoincrement())
+  centerId  Int
+  center    Center         @relation(fields: [centerId], references: [id])
+  name      String
+  capacity  Int            @default(12)
+  equipment String?
+  active    Boolean        @default(true)
+  classes   ClassGroup[]
+  sessions  ClassSession[]
+
+  @@unique([centerId, name])
+}
+
+model Parent {
+  id         Int               @id @default(autoincrement())
+  fullName   String
+  phone      String            @unique
+  zalo       String?
+  email      String?
+  note       String?
+  searchText String            @default("")
+  children   StudentGuardian[]
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+}
+
+model Student {
+  id           Int               @id @default(autoincrement())
+  code         String            @unique
+  fullName     String
+  englishName  String?
+  dob          String
+  gender       String
+  audience     String
+  school       String?
+  schoolGrade  String?
+  centerId     Int
+  center       Center            @relation(fields: [centerId], references: [id])
+  level        String?
+  status       String            @default("WAITING")
+  statusReason String?
+  note         String?
+  // Tên, tên tiếng Anh, mã, tên và SĐT phụ huynh, đã bỏ dấu, dùng cho tìm kiếm.
+  searchText   String            @default("")
+  guardians    StudentGuardian[]
+  enrollments  ClassEnrollment[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([centerId, status])
+}
+
+model StudentGuardian {
+  id        Int     @id @default(autoincrement())
+  studentId Int
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  parentId  Int
+  parent    Parent  @relation(fields: [parentId], references: [id])
+  relation  String
+  isPrimary Boolean @default(false)
+  isPayer   Boolean @default(false)
+
+  @@unique([studentId, parentId])
+}
+
+model Teacher {
+  id             Int              @id @default(autoincrement())
+  code           String           @unique
+  fullName       String
+  displayName    String
+  phone          String?
+  email          String?
+  role           String           @default("TEACHER")
+  origin         String           @default("VN")
+  employment     String           @default("PART_TIME")
+  status         String           @default("ACTIVE")
+  qualifications String?
+  startDate      String?
+  note           String?
+  searchText     String           @default("")
+  centers        TeacherCenter[]
+  mainClasses    ClassGroup[]     @relation("MainTeacher")
+  assistantIn    ClassAssistant[]
+  sessions       ClassSession[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model TeacherCenter {
+  teacherId Int
+  teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  centerId  Int
+  center    Center  @relation(fields: [centerId], references: [id])
+
+  @@id([teacherId, centerId])
+}
+
+model Course {
+  id             Int          @id @default(autoincrement())
+  name           String       @unique
+  program        String?
+  level          String?
+  totalSessions  Int          @default(24)
+  sessionMinutes Int          @default(90)
+  tuition        Int          @default(0)
+  maxStudents    Int          @default(12)
+  classes        ClassGroup[]
+}
+
+model ClassGroup {
+  id            Int               @id @default(autoincrement())
+  code          String            @unique
+  name          String
+  courseId      Int?
+  course        Course?           @relation(fields: [courseId], references: [id])
+  centerId      Int
+  center        Center            @relation(fields: [centerId], references: [id])
+  roomId        Int
+  room          Room              @relation(fields: [roomId], references: [id])
+  teacherId     Int
+  teacher       Teacher           @relation("MainTeacher", fields: [teacherId], references: [id])
+  status        String            @default("PLANNED")
+  // Thứ trong tuần, 1 = Thứ 2 … 7 = Chủ nhật, cách nhau bởi dấu phẩy. Ví dụ "1,3,5".
+  weekdays      String
+  startTime     String
+  endTime       String
+  startDate     String
+  totalSessions Int
+  maxStudents   Int               @default(12)
+  note          String?
+  assistants    ClassAssistant[]
+  sessions      ClassSession[]
+  enrollments   ClassEnrollment[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model ClassAssistant {
+  classId   Int
+  class     ClassGroup @relation(fields: [classId], references: [id], onDelete: Cascade)
+  teacherId Int
+  teacher   Teacher    @relation(fields: [teacherId], references: [id])
+
+  @@id([classId, teacherId])
+}
+
+model ClassSession {
+  id        Int        @id @default(autoincrement())
+  classId   Int
+  class     ClassGroup @relation(fields: [classId], references: [id], onDelete: Cascade)
+  index     Int
+  date      String
+  startTime String
+  endTime   String
+  roomId    Int
+  room      Room       @relation(fields: [roomId], references: [id])
+  // Người dạy thực tế của buổi (mặc định là giáo viên chính, đổi khi dạy thay).
+  teacherId Int
+  teacher   Teacher    @relation(fields: [teacherId], references: [id])
+  status    String     @default("SCHEDULED")
+  note      String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([date])
+  @@index([classId, index])
+}
+
+model ClassEnrollment {
+  id        Int        @id @default(autoincrement())
+  classId   Int
+  class     ClassGroup @relation(fields: [classId], references: [id], onDelete: Cascade)
+  studentId Int
+  student   Student    @relation(fields: [studentId], references: [id])
+  joinedAt  String
+  leftAt    String?
+
+  @@index([studentId])
+  @@index([classId])
+}
+
+model Holiday {
+  id       Int     @id @default(autoincrement())
+  date     String
+  name     String
+  // Trống = nghỉ chung cả 4 trung tâm.
+  centerId Int?
+  center   Center? @relation(fields: [centerId], references: [id])
+
+  @@index([date])
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  entity    String
+  entityId  Int
+  action    String
+  // JSON: { field: [cũ, mới] }
+  changes   String
+  actor     String   @default("Hệ thống")
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+}

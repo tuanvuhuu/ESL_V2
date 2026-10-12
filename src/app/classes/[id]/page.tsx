@@ -1,0 +1,374 @@
+"use client";
+
+import { PlusOutlined } from "@ant-design/icons";
+import { App, Button, Card, Col, Descriptions, Dropdown, Empty, Form, Modal, Popconfirm, Row, Select, Skeleton, Space, Table, Tabs, Tag } from "antd";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useState } from "react";
+import { api, qs, useApi, useDebounced } from "@/client/api";
+import type { Course, Room, SessionRow, StudentRow, Teacher } from "@/client/types";
+import { AuditTimeline } from "@/components/AuditTimeline";
+import { SessionModal } from "@/components/classes/SessionModal";
+import { CenterTag, Dash, PageHeader, StatusTag } from "@/components/ui";
+import { CLASS_STATUSES, STUDENT_STATUSES, weekdayText } from "@/lib/constants";
+import { ageFrom, formatDateVN, todayISO } from "@/lib/dates";
+
+type Detail = {
+  id: number;
+  code: string;
+  name: string;
+  status: string;
+  weekdays: string;
+  startTime: string;
+  endTime: string;
+  startDate: string;
+  totalSessions: number;
+  maxStudents: number;
+  note: string | null;
+  centerId: number;
+  center: { id: number; name: string; color: string };
+  room: Room;
+  course: Course | null;
+  teacher: { id: number; displayName: string; fullName: string };
+  assistants: { teacherId: number; teacher: { id: number; displayName: string } }[];
+  sessions: SessionRow[];
+  enrollments: {
+    id: number;
+    joinedAt: string;
+    leftAt: string | null;
+    student: { id: number; code: string; fullName: string; englishName: string | null; status: string; dob: string };
+  }[];
+};
+
+function AddStudentModal({ classId, open, onClose, onSaved }: { classId: number; open: boolean; onClose: () => void; onSaved: () => void }) {
+  const { message } = App.useApp();
+  const [q, setQ] = useState("");
+  const dq = useDebounced(q);
+  const [studentId, setStudentId] = useState<number>();
+  const [saving, setSaving] = useState(false);
+  const { data } = useApi<{ items: StudentRow[] }>(open ? `/api/students${qs({ q: dq, pageSize: 20 })}` : null);
+
+  const submit = async () => {
+    if (!studentId) return;
+    setSaving(true);
+    try {
+      await api(`/api/classes/${classId}/enrollments`, { body: { studentId } });
+      message.success("Đã xếp học sinh vào lớp");
+      setStudentId(undefined);
+      onSaved();
+    } catch (e) {
+      message.error((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Modal open={open} title="Xếp học sinh vào lớp" onCancel={onClose} onOk={submit} okText="Xếp lớp" cancelText="Hủy" confirmLoading={saving} okButtonProps={{ disabled: !studentId }} destroyOnHidden>
+      <Form layout="vertical">
+        <Form.Item label="Học sinh" extra="Gõ tên, mã hoặc SĐT phụ huynh.">
+          <Select
+            showSearch
+            autoFocus
+            filterOption={false}
+            onSearch={setQ}
+            value={studentId}
+            onChange={setStudentId}
+            placeholder="Tìm học sinh"
+            options={(data?.items ?? []).map((s) => ({
+              value: s.id,
+              label: `${s.fullName} · ${s.code} · ${s.center.name} · ${STUDENT_STATUSES.find((x) => x.value === s.status)?.label}`,
+            }))}
+          />
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+}
+
+export default function ClassDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const { message, modal } = App.useApp();
+  const { data: c, loading, reload } = useApi<Detail>(`/api/classes/${id}`);
+  const { data: teachers } = useApi<Teacher[]>("/api/teachers");
+  const [adding, setAdding] = useState(false);
+  const [session, setSession] = useState<SessionRow | null>(null);
+  const [editAssist, setEditAssist] = useState<number[] | null>(null);
+
+  if (loading && !c) return <Skeleton active />;
+  if (!c) return <Empty description="Không tìm thấy lớp" />;
+
+  const active = c.enrollments.filter((e) => !e.leftAt);
+  const today = todayISO();
+  const done = c.sessions.filter((s) => s.status === "SCHEDULED" && s.date < today).length;
+  const scheduled = c.sessions.filter((s) => s.status === "SCHEDULED").length;
+
+  const update = async (body: Record<string, unknown>, ok: string) => {
+    try {
+      await api(`/api/classes/${c.id}`, { method: "PUT", body });
+      message.success(ok);
+      void reload();
+      return true;
+    } catch (e) {
+      message.error((e as Error).message);
+      return false;
+    }
+  };
+
+  const leave = async (enrollmentId: number) => {
+    try {
+      await api(`/api/classes/${c.id}/enrollments/${enrollmentId}`, { method: "DELETE" });
+      message.success("Học sinh đã rời lớp");
+      void reload();
+    } catch (e) {
+      message.error((e as Error).message);
+    }
+  };
+
+  const overview = (
+    <Row gutter={[16, 16]}>
+      <Col xs={24} lg={14}>
+        <Card size="small" title="Thông tin lớp">
+          <Descriptions column={{ xs: 1, md: 2 }} size="small">
+            <Descriptions.Item label="Khóa">{c.course?.name ?? <Dash />}</Descriptions.Item>
+            <Descriptions.Item label="Trung tâm">
+              <CenterTag center={c.center} />
+            </Descriptions.Item>
+            <Descriptions.Item label="Lịch">
+              {weekdayText(c.weekdays)} · {c.startTime}–{c.endTime}
+            </Descriptions.Item>
+            <Descriptions.Item label="Phòng">
+              {c.room.name} ({c.room.capacity} chỗ)
+            </Descriptions.Item>
+            <Descriptions.Item label="Khai giảng">{formatDateVN(c.startDate)}</Descriptions.Item>
+            <Descriptions.Item label="Sĩ số">
+              {active.length}/{c.maxStudents}
+            </Descriptions.Item>
+            <Descriptions.Item label="Tiến độ">
+              {done}/{scheduled} buổi đã diễn ra
+            </Descriptions.Item>
+            <Descriptions.Item label="Ghi chú">{c.note ?? <Dash />}</Descriptions.Item>
+          </Descriptions>
+        </Card>
+      </Col>
+      <Col xs={24} lg={10}>
+        <Card
+          size="small"
+          title="Giáo viên & trợ giảng"
+          extra={
+            <Button size="small" onClick={() => setEditAssist(c.assistants.map((a) => a.teacherId))}>
+              Sửa trợ giảng
+            </Button>
+          }
+        >
+          <div>
+            Giáo viên chính: <Link href={`/teachers/${c.teacher.id}`}>{c.teacher.displayName}</Link>
+          </div>
+          <div style={{ marginTop: 8 }}>
+            Trợ giảng:{" "}
+            {c.assistants.length
+              ? c.assistants.map((a) => (
+                  <Tag key={a.teacherId}>
+                    <Link href={`/teachers/${a.teacher.id}`}>{a.teacher.displayName}</Link>
+                  </Tag>
+                ))
+              : <Dash />}
+          </div>
+          <div className="sub" style={{ marginTop: 8 }}>
+            Đổi giáo viên cho từng buổi (dạy thay) ở tab Buổi học.
+          </div>
+        </Card>
+      </Col>
+    </Row>
+  );
+
+  const students = (
+    <>
+      <div className="filter-bar">
+        <span className="sub">
+          {active.length}/{Math.min(c.maxStudents, c.room.capacity)} chỗ đã dùng
+        </span>
+        <div className="spacer" />
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setAdding(true)}>
+          Xếp học sinh
+        </Button>
+      </div>
+      <Table
+        rowKey="id"
+        pagination={false}
+        dataSource={c.enrollments}
+        locale={{ emptyText: "Chưa có học sinh nào trong lớp. Thêm học sinh để bắt đầu." }}
+        columns={[
+          { title: "Mã", render: (_, e) => e.student.code },
+          {
+            title: "Học sinh",
+            render: (_, e) => (
+              <>
+                <Link href={`/students/${e.student.id}`}>{e.student.fullName}</Link> {e.student.englishName && <span className="sub">{e.student.englishName}</span>}
+              </>
+            ),
+          },
+          { title: "Tuổi", render: (_, e) => ageFrom(e.student.dob) },
+          { title: "Trạng thái", render: (_, e) => <StatusTag options={STUDENT_STATUSES} value={e.student.status} /> },
+          { title: "Vào lớp", render: (_, e) => formatDateVN(e.joinedAt) },
+          { title: "Rời lớp", render: (_, e) => (e.leftAt ? formatDateVN(e.leftAt) : <Dash />) },
+          {
+            title: "",
+            render: (_, e) =>
+              !e.leftAt && (
+                <Popconfirm title={`${e.student.fullName} rời lớp ${c.code}?`} okText="Rời lớp" cancelText="Hủy" onConfirm={() => leave(e.id)}>
+                  <Button size="small" danger type="text">
+                    Rời lớp
+                  </Button>
+                </Popconfirm>
+              ),
+          },
+        ]}
+      />
+    </>
+  );
+
+  const sessions = (
+    <Table<SessionRow>
+      rowKey="id"
+      size="small"
+      pagination={false}
+      dataSource={c.sessions}
+      scroll={{ x: "max-content" }}
+      rowClassName={(s) => (s.status === "CANCELLED" ? "row-cancelled" : "")}
+      columns={[
+        { title: "Buổi", dataIndex: "index", width: 60 },
+        {
+          title: "Ngày",
+          render: (_, s) => (
+            <span style={{ textDecoration: s.status === "CANCELLED" ? "line-through" : undefined, fontWeight: s.date === today ? 600 : undefined }}>
+              {formatDateVN(s.date, true)}
+            </span>
+          ),
+        },
+        { title: "Giờ", render: (_, s) => `${s.startTime}–${s.endTime}` },
+        { title: "Phòng", render: (_, s) => s.room.name },
+        {
+          title: "Người dạy",
+          render: (_, s) => (
+            <>
+              {s.teacher.displayName} {s.teacherId !== c.teacher.id && <Tag color="purple">Dạy thay</Tag>}
+            </>
+          ),
+        },
+        {
+          title: "Trạng thái",
+          render: (_, s) =>
+            s.status === "CANCELLED" ? (
+              <Tag color="red">Đã hủy</Tag>
+            ) : s.date < today ? (
+              <Tag>Đã diễn ra</Tag>
+            ) : (
+              <Tag color="blue">Sắp diễn ra</Tag>
+            ),
+        },
+        { title: "Ghi chú", render: (_, s) => s.note ?? <Dash /> },
+        {
+          title: "",
+          render: (_, s) => (
+            <Button size="small" onClick={() => setSession(s)}>
+              {s.status === "CANCELLED" ? "Xem" : "Đổi / hủy"}
+            </Button>
+          ),
+        },
+      ]}
+    />
+  );
+
+  return (
+    <>
+      <PageHeader
+        title={
+          <Space>
+            {c.name}
+            <StatusTag options={CLASS_STATUSES} value={c.status} />
+          </Space>
+        }
+        description={`${c.code} · ${c.center.name} · ${c.teacher.displayName}`}
+        actions={
+          <Dropdown
+            trigger={["click"]}
+            menu={{
+              items: CLASS_STATUSES.filter((s) => s.value !== c.status).map((s) => ({
+                key: s.value,
+                label: s.label,
+                danger: s.value === "CANCELLED",
+                onClick: () => {
+                  if (s.value === "CANCELLED") {
+                    modal.confirm({
+                      title: `Hủy lớp ${c.code}?`,
+                      content: "Các buổi chưa diễn ra sẽ bị hủy. Thao tác được lưu vào lịch sử.",
+                      okText: "Hủy lớp",
+                      okButtonProps: { danger: true },
+                      cancelText: "Không",
+                      onOk: () => update({ status: s.value }, `Đã hủy lớp ${c.code}`),
+                    });
+                  } else void update({ status: s.value }, `${c.code}: ${s.label}`);
+                },
+              })),
+            }}
+          >
+            <Button>Đổi trạng thái lớp</Button>
+          </Dropdown>
+        }
+      />
+      <div className="panel">
+        <Tabs
+          items={[
+            { key: "overview", label: "Tổng quan", children: overview },
+            { key: "students", label: `Học sinh (${active.length})`, children: students },
+            { key: "sessions", label: `Buổi học (${c.sessions.length})`, children: sessions },
+            { key: "audit", label: "Lịch sử thay đổi", children: <AuditTimeline entity="Class" id={c.id} /> },
+          ]}
+        />
+      </div>
+      <AddStudentModal
+        classId={c.id}
+        open={adding}
+        onClose={() => setAdding(false)}
+        onSaved={() => {
+          setAdding(false);
+          void reload();
+        }}
+      />
+      <SessionModal
+        open={!!session}
+        session={session ? { ...session, classCode: c.code, centerId: c.centerId, studentCount: active.length } : null}
+        onClose={() => setSession(null)}
+        onSaved={() => {
+          setSession(null);
+          void reload();
+        }}
+      />
+      <Modal
+        open={editAssist !== null}
+        title={`Trợ giảng · ${c.code}`}
+        okText="Lưu"
+        cancelText="Hủy"
+        onCancel={() => setEditAssist(null)}
+        onOk={async () => {
+          if (await update({ assistantIds: editAssist ?? [] }, "Đã cập nhật trợ giảng")) setEditAssist(null);
+        }}
+      >
+        <Select
+          mode="multiple"
+          style={{ width: "100%" }}
+          value={editAssist ?? []}
+          onChange={(v) => setEditAssist(v.slice(0, 2))}
+          optionFilterProp="label"
+          options={(teachers ?? [])
+            .filter((t) => t.status === "ACTIVE" && t.role !== "TEACHER" && t.id !== c.teacher.id && t.centers.some((x) => x.centerId === c.centerId))
+            .map((t) => ({ value: t.id, label: `${t.displayName} · ${t.fullName}` }))}
+        />
+        <div className="sub" style={{ marginTop: 8 }}>
+          Tối đa 2 trợ giảng. Áp dụng cho các buổi sắp tới; hệ thống kiểm tra trùng lịch.
+        </div>
+      </Modal>
+    </>
+  );
+}

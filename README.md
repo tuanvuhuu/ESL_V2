@@ -1,0 +1,64 @@
+# Quản lý trung tâm tiếng Anh (ESL v2)
+
+Hệ thống gọn nhẹ để một quản lý điều hành 4 trung tâm tiếng Anh. Đợt 1: học sinh, phụ huynh, giáo viên/trợ giảng, lớp và lịch học.
+
+**Stack:** Next.js 15 (App Router) · React 19 · Ant Design 5 · Prisma 6 · SQLite (chạy máy) → PostgreSQL khi đưa lên mạng · TypeScript · Vitest.
+
+## Chạy trên máy
+
+Cần Node.js 22.
+
+```bash
+cp .env.example .env
+npm install          # tự chạy prisma generate
+npm run db:push      # tạo database SQLite ở prisma/dev.db
+npm run db:seed      # dữ liệu mẫu: 4 trung tâm, 36 học sinh, 8 giáo viên, 7 lớp
+npm run dev          # http://localhost:3000
+```
+
+Xóa sạch và tạo lại dữ liệu mẫu: `npm run db:reset`.
+
+Kiểm tra trước khi đẩy code: `npm run lint && npm run typecheck && npm test && npm run build`.
+
+## Đã có trong đợt 1
+
+| Màn hình | Nội dung |
+|---|---|
+| Hôm nay | Buổi học hôm nay theo từng trung tâm, số buổi hủy, dạy thay |
+| Học sinh | Danh sách theo mẫu chuẩn (tìm không dấu, lọc trạng thái có số lượng, ghim/ẩn cột, menu ⋯, xuất Excel), thêm/sửa trong popup, cảnh báo trùng hồ sơ, gợi ý phụ huynh theo SĐT, đổi trạng thái kèm lý do, hồ sơ có tab tổng quan / lịch sử lớp / lịch sử thay đổi |
+| Phụ huynh | Danh sách, hồ sơ với thẻ từng con, tự nhận anh chị em qua phụ huynh chung, tối đa 2 người giám hộ / học sinh |
+| Giáo viên | Giáo viên, trợ giảng hoặc cả hai; trung tâm dạy được; giờ dạy theo lịch trong tháng; lịch tuần gộp 4 trung tâm |
+| Lớp học | Mở lớp từng bước, tự sinh buổi học bỏ ngày lễ, xem trước và chặn trùng; xếp học sinh, rời lớp; sửa trợ giảng; đổi trạng thái lớp |
+| Lịch học | Lưới phòng × giờ theo ngày, lịch tuần, lọc theo trung tâm / giáo viên; bấm buổi để dời, đổi phòng, dạy thay, hủy (có thể nối buổi vào cuối lịch) |
+| Cài đặt | Trung tâm & màu, phòng học, ngày nghỉ lễ (chung hoặc từng trung tâm), khóa học |
+
+**Quy tắc đang áp dụng** (theo tài liệu yêu cầu, mục 5):
+
+- Chặn trùng phòng.
+- Chặn một người (giáo viên hoặc trợ giảng) dạy hai buổi trùng giờ ở hai trung tâm khác nhau; cùng trung tâm thì cho phép.
+- Chặn xếp học sinh vào lớp đã đủ chỗ (sĩ số tối đa hoặc sức chứa phòng, lấy số nhỏ hơn) và vào hai lớp trùng giờ.
+- Học sinh, giáo viên, lớp không xóa; kết thúc bằng đổi trạng thái.
+- Thay đổi quan trọng được ghi nhật ký (ai, lúc nào, từ gì thành gì).
+
+## Chưa có (đợt sau)
+
+Đăng nhập và phân quyền theo vai trò, điểm danh và số buổi còn lại, học phí, lương, báo cáo, lịch rảnh và ngày nghỉ của giáo viên, học bù/học ké. Nhật ký hiện ghi người thao tác là "Hệ thống" cho đến khi có đăng nhập.
+
+## Cấu trúc
+
+```
+prisma/schema.prisma     mô hình dữ liệu
+prisma/seed.ts           dữ liệu mẫu
+src/lib/                 logic thuần (sinh lịch, kiểm tra trùng, bỏ dấu, ngày tháng) — có test
+src/server/              truy cập DB, kiểm tra dữ liệu (zod), nhật ký
+src/app/api/             API REST
+src/app/**/page.tsx      các màn hình
+src/components/          thành phần giao diện dùng chung
+tests/                   test Vitest
+```
+
+Ngày lưu dạng `YYYY-MM-DD`, giờ dạng `HH:mm` theo giờ Việt Nam, để không lệch múi giờ.
+
+## Đưa lên mạng (sau)
+
+Đổi `provider` trong `prisma/schema.prisma` sang `postgresql`, đặt `DATABASE_URL` trỏ tới PostgreSQL, chạy `npx prisma migrate deploy`. Cần làm đăng nhập trước khi mở cho nhân sự dùng.
