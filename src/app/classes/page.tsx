@@ -7,12 +7,14 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { qs, useApi, useDebounced } from "@/client/api";
 import { useCenters } from "@/client/centers";
+import { useViewer } from "@/client/session";
 import type { CenterLite } from "@/client/types";
 import { ClassFormModal } from "@/components/classes/ClassFormModal";
 import { useColumnSettings, type ColumnDef } from "@/components/ColumnSettings";
 import { ActionMenu, CenterTag, Dash, PageHeader, StatusTag, TwoLine } from "@/components/ui";
 import { CLASS_STATUSES, weekdayText } from "@/lib/constants";
 import { formatDateVN } from "@/lib/dates";
+import { canCreateRecords } from "@/lib/permissions";
 
 type Row = {
   id: number;
@@ -36,6 +38,7 @@ type Row = {
 
 export default function ClassesPage() {
   const router = useRouter();
+  const canAdd = canCreateRecords(useViewer());
   const { centerId } = useCenters();
   const [q, setQ] = useState("");
   const dq = useDebounced(q);
@@ -117,9 +120,11 @@ export default function ClassesPage() {
         title="Lớp học"
         description="Mở lớp, xếp học sinh và quản lý buổi học"
         actions={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreating(true)}>
-            Mở lớp mới
-          </Button>
+          canAdd && (
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreating(true)}>
+              Mở lớp mới
+            </Button>
+          )
         }
       />
       <div className="panel">

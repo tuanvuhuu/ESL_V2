@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { api, useApi } from "@/client/api";
+import { useViewer } from "@/client/session";
 import type { Guardian, Student } from "@/client/types";
 import { AuditTimeline } from "@/components/AuditTimeline";
 import { AddGuardianModal } from "@/components/students/AddGuardianModal";
@@ -14,6 +15,7 @@ import { StudentFormModal } from "@/components/students/StudentFormModal";
 import { CenterTag, Dash, PageHeader, PersonAvatar, StatusTag } from "@/components/ui";
 import { AUDIENCES, CLASS_STATUSES, GENDERS, STUDENT_STATUSES, optionOf } from "@/lib/constants";
 import { ageFrom, formatDateVN } from "@/lib/dates";
+import { canEditCenter, canSeeAudit, canSeeParents } from "@/lib/permissions";
 import { formatPhone } from "@/lib/text";
 
 type Detail = Student & {
@@ -57,10 +59,13 @@ export default function StudentProfilePage() {
   const [editing, setEditing] = useState(false);
   const [changingStatus, setChangingStatus] = useState(false);
   const [addingGuardian, setAddingGuardian] = useState(false);
+  const viewer = useViewer();
 
   if (loading && !s) return <Skeleton active />;
   if (!s) return <Empty description="Không tìm thấy học sinh" />;
 
+  const editable = canEditCenter(viewer, s.center.id);
+  const seeParents = canSeeParents(viewer);
   const siblings = new Map<number, { id: number; code: string; fullName: string; status: string }>();
   for (const g of s.guardians) for (const c of g.parent.children) siblings.set(c.student.id, c.student);
 
@@ -135,6 +140,7 @@ export default function StudentProfilePage() {
           title="Phụ huynh"
           size="small"
           extra={
+            editable &&
             s.guardians.length < 2 && (
               <Button size="small" icon={<PlusOutlined />} onClick={() => setAddingGuardian(true)}>
                 Thêm
@@ -147,10 +153,14 @@ export default function StudentProfilePage() {
             renderItem={(g) => (
               <List.Item
                 actions={[
-                  <a key="call" href={`tel:${g.parent.phone}`}>
-                    Gọi
-                  </a>,
-                  ...(s.guardians.length > 1
+                  ...(seeParents
+                    ? [
+                        <a key="call" href={`tel:${g.parent.phone}`}>
+                          Gọi
+                        </a>,
+                      ]
+                    : []),
+                  ...(editable && s.guardians.length > 1
                     ? [
                         <Popconfirm key="rm" title="Gỡ phụ huynh này khỏi học sinh?" okText="Gỡ" cancelText="Hủy" onConfirm={() => removeGuardian(g.parentId)}>
                           <a className="muted">Gỡ</a>
@@ -162,17 +172,18 @@ export default function StudentProfilePage() {
                 <List.Item.Meta
                   title={
                     <Space>
-                      <Link href={`/parents/${g.parent.id}`}>{g.parent.fullName}</Link>
+                      {seeParents ? <Link href={`/parents/${g.parent.id}`}>{g.parent.fullName}</Link> : g.parent.fullName}
                       {g.isPrimary && <Tag color="blue">Liên hệ chính</Tag>}
                       {g.isPayer && <Tag>Đóng tiền</Tag>}
                     </Space>
                   }
-                  description={`${g.relation} · ${formatPhone(g.parent.phone)}${g.parent.zalo ? ` · Zalo ${g.parent.zalo}` : ""}`}
+                  description={seeParents ? `${g.relation} · ${formatPhone(g.parent.phone)}${g.parent.zalo ? ` · Zalo ${g.parent.zalo}` : ""}` : g.relation}
                 />
               </List.Item>
             )}
           />
         </Card>
+        {seeParents && (
         <Card title="Anh chị em" size="small" style={{ marginTop: 16 }}>
           {siblings.size === 0 ? (
             <span className="muted">Không có.</span>
@@ -189,6 +200,7 @@ export default function StudentProfilePage() {
             />
           )}
         </Card>
+        )}
       </Col>
     </Row>
   );
@@ -228,12 +240,14 @@ export default function StudentProfilePage() {
         }
         description={`${s.code} · ${s.center.name}`}
         actions={
-          <>
-            <Button onClick={() => setChangingStatus(true)}>Đổi trạng thái</Button>
-            <Button type="primary" onClick={() => setEditing(true)}>
-              Sửa
-            </Button>
-          </>
+          editable && (
+            <>
+              <Button onClick={() => setChangingStatus(true)}>Đổi trạng thái</Button>
+              <Button type="primary" onClick={() => setEditing(true)}>
+                Sửa
+              </Button>
+            </>
+          )
         }
       />
       <div className="panel">
@@ -241,7 +255,7 @@ export default function StudentProfilePage() {
           items={[
             { key: "overview", label: "Tổng quan", children: overview },
             { key: "classes", label: "Lịch sử lớp học", children: history },
-            { key: "audit", label: "Lịch sử thay đổi", children: <AuditTimeline entity="Student" id={s.id} /> },
+            ...(canSeeAudit(viewer) ? [{ key: "audit", label: "Lịch sử thay đổi", children: <AuditTimeline entity="Student" id={s.id} /> }] : []),
           ]}
         />
       </div>

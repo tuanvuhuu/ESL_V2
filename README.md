@@ -12,13 +12,17 @@ Cần Node.js 22.
 cp .env.example .env
 npm install          # tự chạy prisma generate
 npm run db:push      # tạo database SQLite ở prisma/dev.db
-npm run db:seed      # dữ liệu mẫu: 4 trung tâm, 36 học sinh, 8 giáo viên, 7 lớp
+npm run db:seed      # dữ liệu mẫu: 4 trung tâm, 36 học sinh, 8 giáo viên, 7 lớp, 7 tài khoản
 npm run dev          # http://localhost:3000
 ```
 
+Tài khoản chạy thử (mật khẩu `matkhau123`, chỉ có trong dữ liệu mẫu): `quanly` (quản lý), `giaovu.a` … `giaovu.d` (giáo vụ từng trung tâm), `lan` (giáo viên Ms Lan), `thu` (trợ giảng Thư).
+
+Database mới, chưa có tài khoản nào: mở trang đăng nhập sẽ hiện ô tạo tài khoản quản lý đầu tiên. Sau đó quản lý tạo tài khoản cho giáo vụ, giáo viên ở **Cài đặt › Tài khoản**.
+
 Xóa sạch và tạo lại dữ liệu mẫu: `npm run db:reset`.
 
-Kiểm tra trước khi đẩy code: `npm run lint && npm run typecheck && npm test && npm run build`.
+Kiểm tra trước khi đẩy code: `npm run lint && npm run typecheck && npm test && npm run build`. Test phân quyền API chạy trên dữ liệu mẫu, nên cần `db:push` và `db:seed` trước.
 
 ## Đã có trong đợt 1
 
@@ -30,7 +34,22 @@ Kiểm tra trước khi đẩy code: `npm run lint && npm run typecheck && npm t
 | Giáo viên | Giáo viên, trợ giảng hoặc cả hai; trung tâm dạy được; giờ dạy theo lịch trong tháng; lịch tuần gộp 4 trung tâm |
 | Lớp học | Mở lớp từng bước, tự sinh buổi học bỏ ngày lễ, xem trước và chặn trùng; xếp học sinh, rời lớp; sửa trợ giảng; đổi trạng thái lớp |
 | Lịch học | Lưới phòng × giờ theo ngày, lịch tuần, lọc theo trung tâm / giáo viên; bấm buổi để dời, đổi phòng, dạy thay, hủy (có thể nối buổi vào cuối lịch) |
-| Cài đặt | Trung tâm & màu, phòng học, ngày nghỉ lễ (chung hoặc từng trung tâm), khóa học |
+| Cài đặt | Trung tâm & màu, phòng học, ngày nghỉ lễ (chung hoặc từng trung tâm), khóa học, tài khoản |
+| Đăng nhập | Tên đăng nhập + mật khẩu, nhớ 30 ngày; đổi mật khẩu, đăng xuất ở góc phải; sai 5 lần thì khóa 15 phút |
+
+**Phân quyền** (mặc định theo đặc tả đợt 1, chặn ở cả API lẫn giao diện; mục không có quyền thì ẩn hẳn):
+
+| | Quản lý | Giáo vụ | Giáo viên | Trợ giảng |
+|---|---|---|---|---|
+| Chọn "Tất cả trung tâm" | ✓ | – (mặc định trung tâm mình) | – | – |
+| Học sinh, lớp, buổi học trung tâm mình | Sửa | Sửa | Xem lớp mình | Xem lớp mình |
+| Học sinh, lớp trung tâm khác | Sửa | Xem | – | – |
+| Phụ huynh, SĐT phụ huynh | ✓ | ✓ | – | – |
+| Hồ sơ giáo viên | Sửa | Xem | Của mình | Của mình |
+| Cài đặt, tài khoản | ✓ | – | – | – |
+| Lịch sử thay đổi | ✓ | ✓ | – | – |
+
+Quy tắc nằm ở `src/lib/permissions.ts`. Giáo vụ sửa được phụ huynh có con ở trung tâm mình. Trợ giảng sẽ được điểm danh khi có màn hình điểm danh.
 
 **Quy tắc đang áp dụng** (theo tài liệu yêu cầu, mục 5):
 
@@ -38,11 +57,11 @@ Kiểm tra trước khi đẩy code: `npm run lint && npm run typecheck && npm t
 - Chặn một người (giáo viên hoặc trợ giảng) dạy hai buổi trùng giờ ở hai trung tâm khác nhau; cùng trung tâm thì cho phép.
 - Chặn xếp học sinh vào lớp đã đủ chỗ (sĩ số tối đa hoặc sức chứa phòng, lấy số nhỏ hơn) và vào hai lớp trùng giờ.
 - Học sinh, giáo viên, lớp không xóa; kết thúc bằng đổi trạng thái.
-- Thay đổi quan trọng được ghi nhật ký (ai, lúc nào, từ gì thành gì).
+- Thay đổi quan trọng được ghi nhật ký (ai, lúc nào, từ gì thành gì), ghi tên người đang đăng nhập.
 
 ## Chưa có (đợt sau)
 
-Đăng nhập và phân quyền theo vai trò, điểm danh và số buổi còn lại, học phí, lương, báo cáo, lịch rảnh và ngày nghỉ của giáo viên, học bù/học ké. Nhật ký hiện ghi người thao tác là "Hệ thống" cho đến khi có đăng nhập.
+Điểm danh và số buổi còn lại, học phí, lương, báo cáo, lịch rảnh và ngày nghỉ của giáo viên, học bù/học ké.
 
 ## Cấu trúc
 
@@ -61,4 +80,4 @@ Ngày lưu dạng `YYYY-MM-DD`, giờ dạng `HH:mm` theo giờ Việt Nam, đ�
 
 ## Đưa lên mạng (sau)
 
-Đổi `provider` trong `prisma/schema.prisma` sang `postgresql`, đặt `DATABASE_URL` trỏ tới PostgreSQL, chạy `npx prisma migrate deploy`. Cần làm đăng nhập trước khi mở cho nhân sự dùng.
+Đổi `provider` trong `prisma/schema.prisma` sang `postgresql`, đặt `DATABASE_URL` trỏ tới PostgreSQL, chạy `npx prisma migrate deploy`. Nên chạy qua HTTPS; khi đó cookie đăng nhập tự bật `Secure`. Không chạy `db:seed` trên máy thật vì nó xóa dữ liệu và tạo tài khoản mẫu.

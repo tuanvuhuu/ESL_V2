@@ -23,6 +23,7 @@ model Center {
   classes   ClassGroup[]
   teachers  TeacherCenter[]
   holidays  Holiday[]
+  users     User[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -112,6 +113,7 @@ model Teacher {
   mainClasses    ClassGroup[]     @relation("MainTeacher")
   assistantIn    ClassAssistant[]
   sessions       ClassSession[]
+  user           User?
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 }
@@ -231,4 +233,34 @@ model AuditLog {
   createdAt DateTime @default(now())
 
   @@index([entity, entityId])
+}
+
+// Tài khoản đăng nhập. Vai trò: MANAGER, OFFICE (giáo vụ, gắn 1 trung tâm),
+// TEACHER, ASSISTANT (gắn hồ sơ giáo viên). Danh sách nằm trong src/lib/permissions.ts.
+model User {
+  id           Int           @id @default(autoincrement())
+  username     String        @unique
+  fullName     String
+  passwordHash String
+  role         String
+  centerId     Int?
+  center       Center?       @relation(fields: [centerId], references: [id])
+  teacherId    Int?          @unique
+  teacher      Teacher?      @relation(fields: [teacherId], references: [id])
+  active       Boolean       @default(true)
+  lastLoginAt  DateTime?
+  sessions     UserSession[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+// Phiên đăng nhập. Cookie giữ mã ngẫu nhiên, DB chỉ lưu mã băm SHA-256 của nó.
+model UserSession {
+  id        String   @id
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }

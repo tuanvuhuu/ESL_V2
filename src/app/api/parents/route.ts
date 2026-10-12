@@ -1,11 +1,13 @@
+import { canCreateRecords, canSeeParents } from "@/lib/permissions";
 import { normalizeQuery, normalizePhone } from "@/lib/text";
 import { logChange } from "@/server/audit";
 import { prisma } from "@/server/db";
-import { body, conflict, route } from "@/server/http";
+import { allow, body, conflict, route } from "@/server/http";
 import { refreshParentSearch } from "@/server/search-text";
 import { parentSchema } from "@/server/validators";
 
-export const GET = route(async (req) => {
+export const GET = route(async (req, _ctx, viewer) => {
+  allow(canSeeParents(viewer));
   const sp = new URL(req.url).searchParams;
   const phone = sp.get("phone");
   // Tra cứu chính xác theo SĐT (dùng khi thêm học sinh).
@@ -36,7 +38,8 @@ export const GET = route(async (req) => {
   });
 });
 
-export const POST = route(async (req) => {
+export const POST = route(async (req, _ctx, viewer) => {
+  allow(canCreateRecords(viewer));
   const data = await body(req, parentSchema);
   const dup = await prisma.parent.findUnique({ where: { phone: data.phone } });
   if (dup) throw conflict(`SĐT này đã thuộc phụ huynh ${dup.fullName}`);

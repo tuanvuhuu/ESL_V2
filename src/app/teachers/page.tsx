@@ -7,11 +7,13 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { qs, useApi, useDebounced } from "@/client/api";
 import { useCenters } from "@/client/centers";
+import { useViewer } from "@/client/session";
 import type { Teacher } from "@/client/types";
 import { useColumnSettings, type ColumnDef } from "@/components/ColumnSettings";
 import { TeacherFormModal } from "@/components/teachers/TeacherFormModal";
 import { ActionMenu, CenterTag, Dash, PageHeader, PersonAvatar, StatusTag, TwoLine } from "@/components/ui";
 import { EMPLOYMENTS, TEACHER_ORIGINS, TEACHER_ROLES, TEACHER_STATUSES, optionOf } from "@/lib/constants";
+import { canEditTeachers } from "@/lib/permissions";
 import { formatPhone } from "@/lib/text";
 
 type Row = Teacher & { activeClassCount: number; monthHours: number };
@@ -20,6 +22,7 @@ export default function TeachersPage() {
   const router = useRouter();
   const { message } = App.useApp();
   const { centerId } = useCenters();
+  const canEdit = canEditTeachers(useViewer());
   const [q, setQ] = useState("");
   const dq = useDebounced(q);
   const [status, setStatus] = useState("ALL");
@@ -77,7 +80,7 @@ export default function TeachersPage() {
             title={`${r.displayName} · ${r.code}`}
             items={[
               { key: "view", label: "Xem hồ sơ", onClick: () => router.push(`/teachers/${r.id}`) },
-              { key: "edit", label: "Sửa thông tin", onClick: () => setEditing(r) },
+              ...(canEdit ? [{ key: "edit", label: "Sửa thông tin", onClick: () => setEditing(r) }] : []),
               ...(r.phone
                 ? [
                     { type: "divider" as const },
@@ -99,7 +102,7 @@ export default function TeachersPage() {
         ),
       },
     ],
-    [router, message],
+    [router, message, canEdit],
   );
   const { columns, button } = useColumnSettings("teachers", defs);
 
@@ -109,9 +112,11 @@ export default function TeachersPage() {
         title="Giáo viên và trợ giảng"
         description="Hồ sơ, trung tâm dạy và giờ dạy theo lịch"
         actions={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing(null)}>
-            Thêm giáo viên
-          </Button>
+          canEdit && (
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing(null)}>
+              Thêm giáo viên
+            </Button>
+          )
         }
       />
       <div className="panel">

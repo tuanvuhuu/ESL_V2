@@ -1,12 +1,15 @@
+import { canEditTeachers, canSeeTeachers } from "@/lib/permissions";
 import { diff, logChange } from "@/server/audit";
 import { prisma } from "@/server/db";
-import { body, idParam, notFound, route, type IdCtx } from "@/server/http";
+import { allow, body, idParam, notFound, route, type IdCtx } from "@/server/http";
 import { teacherSearchText } from "@/server/search-text";
 import { teacherSchema } from "@/server/validators";
 import { addDays, startOfWeek, todayISO } from "@/lib/dates";
 
-export const GET = route<IdCtx>(async (req, { params }) => {
+export const GET = route<IdCtx>(async (req, { params }, viewer) => {
   const id = idParam((await params).id);
+  // Giáo viên, trợ giảng chỉ xem hồ sơ và lịch của chính mình.
+  if (!canSeeTeachers(viewer) && viewer.teacherId !== id) throw notFound("Không tìm thấy giáo viên");
   const weekStart = new URL(req.url).searchParams.get("week") ?? startOfWeek(todayISO());
   const t = await prisma.teacher.findUnique({
     where: { id },
@@ -40,7 +43,8 @@ export const GET = route<IdCtx>(async (req, { params }) => {
   return { ...t, weekStart, week };
 });
 
-export const PUT = route<IdCtx>(async (req, { params }) => {
+export const PUT = route<IdCtx>(async (req, { params }, viewer) => {
+  allow(canEditTeachers(viewer));
   const id = idParam((await params).id);
   const { centerIds, ...data } = await body(req, teacherSchema);
   return prisma.$transaction(async (tx) => {

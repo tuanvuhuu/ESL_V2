@@ -34,7 +34,7 @@ const phoneRule = {
 
 export function StudentFormModal({ open, student, onClose, onSaved }: Props) {
   const { message } = App.useApp();
-  const { centers, centerId } = useCenters();
+  const { centers, editableCenters, defaultEditableCenterId } = useCenters();
   const [form] = Form.useForm();
   const [saving, setSaving] = useState(false);
   const [found, setFound] = useState<FoundParent | null>(null);
@@ -56,9 +56,9 @@ export function StudentFormModal({ open, student, onClose, onSaved }: Props) {
     if (student) {
       form.setFieldsValue({ ...student, dob: dayjs(student.dob) });
     } else {
-      form.setFieldsValue({ status: "WAITING", centerId: centerId || centers[0]?.id, relation: "Mẹ" });
+      form.setFieldsValue({ status: "WAITING", centerId: defaultEditableCenterId, relation: "Mẹ" });
     }
-  }, [open, student, form, centerId, centers]);
+  }, [open, student, form, defaultEditableCenterId]);
 
   // SĐT phụ huynh đã có → gợi ý dùng thông tin này (DESIGN 5A.7).
   useEffect(() => {
@@ -210,7 +210,8 @@ export function StudentFormModal({ open, student, onClose, onSaved }: Props) {
         <Row gutter={16}>
           <Col xs={24} md={12}>
             <Form.Item name="centerId" label="Trung tâm chính" rules={[{ required: true, message: "Chọn trung tâm" }]}>
-              <Select options={centers.map((c) => ({ value: c.id, label: c.name }))} />
+              {/* Thêm mới: chỉ trung tâm mình. Sửa: chọn được trung tâm khác để chuyển học sinh đi. */}
+              <Select options={(student ? centers : editableCenters).map((c) => ({ value: c.id, label: c.name }))} />
             </Form.Item>
           </Col>
           <Col xs={24} md={12}>

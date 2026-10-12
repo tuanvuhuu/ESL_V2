@@ -20,6 +20,11 @@ export async function api<T = unknown>(url: string, init?: { method?: string; bo
     cache: "no-store",
   });
   const data = await res.json().catch(() => ({}));
+  if (res.status === 401 && !url.startsWith("/api/auth/") && typeof window !== "undefined") {
+    // Phiên hết hạn hoặc bị đăng xuất: về trang đăng nhập rồi quay lại trang đang xem.
+    const next = window.location.pathname + window.location.search;
+    window.location.assign(`/login?next=${encodeURIComponent(next)}`);
+  }
   if (!res.ok) throw new ApiError(res.status, data?.error ?? "Có lỗi xảy ra", data?.details);
   return data as T;
 }

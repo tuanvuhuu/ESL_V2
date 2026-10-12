@@ -1,9 +1,11 @@
 import type { Prisma } from "@prisma/client";
 import { STUDENT_STATUSES } from "@/lib/constants";
+import { canEditCenter, isStaff } from "@/lib/permissions";
 import { formatCode, normalizeQuery } from "@/lib/text";
+import { redactParent, staffStudentWhere } from "@/server/access";
 import { logChange } from "@/server/audit";
 import { prisma } from "@/server/db";
-import { body, route } from "@/server/http";
+import { allow, body, route } from "@/server/http";
 import { refreshParentSearch } from "@/server/search-text";
 import { studentCreateSchema } from "@/server/validators";
 
@@ -16,7 +18,7 @@ const listInclude = {
   },
 } satisfies Prisma.StudentInclude;
 
-export const GET = route(async (req) => {
+export const GET = route(async (req, _ctx, viewer) => {
   const sp = new URL(req.url).searchParams;
   const q = normalizeQuery(sp.get("q") ?? "");
   const centerId = Number(sp.get("centerId")) || undefined;
@@ -29,6 +31,7 @@ export const GET = route(async (req) => {
   const base: Prisma.StudentWhereInput = {
     ...(centerId ? { centerId } : {}),
     ...(q.length > 0 ? { searchText: { contains: q } } : {}),
+    ...(isStaff(viewer) ? staffStudentWhere(viewer) : {}),
   };
   const where = { ...base, ...(status ? { status } : {}) };
 
@@ -49,11 +52,16 @@ export const GET = route(async (req) => {
     counts[g.status] = g._count._all;
     all += g._count._all;
   }
-  return { items, total, counts: { ALL: all, ...counts } };
+  return {
+    items: items.map((s) => ({ ...s, guardians: s.guardians.map((g) => ({ ...g, parent: redactParent(viewer, g.parent) })) })),
+    total,
+    counts: { ALL: all, ...counts },
+  };
 });
 
-export const POST = route(async (req) => {
+export const POST = route(async (req, _ctx, viewer) => {
   const { student, parent } = await body(req, studentCreateSchema);
+  allow(canEditCenter(viewer, student.centerId), "Chỉ thêm được học sinh cho trung tâm mình");
   return prisma.$transaction(async (tx) => {
     const existing = await tx.parent.findUnique({ where: { phone: parent.phone } });
     const p =

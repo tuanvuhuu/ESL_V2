@@ -190,3 +190,45 @@ export const courseSchema = z.object({
   tuition: z.number().int().min(0),
   maxStudents: z.number().int().min(1).max(100),
 });
+
+const ROLE_VALUES = ["MANAGER", "OFFICE", "TEACHER", "ASSISTANT"] as const;
+const username = z
+  .string({ error: "Nhập tên đăng nhập" })
+  .trim()
+  .toLowerCase()
+  .regex(/^[a-z0-9._-]{3,32}$/, "Tên đăng nhập 3–32 ký tự: chữ không dấu, số, dấu chấm, gạch");
+export const password = z.string({ error: "Nhập mật khẩu" }).min(8, "Mật khẩu tối thiểu 8 ký tự").max(100);
+
+export const loginSchema = z.object({
+  username: z.string().trim().toLowerCase().min(1, "Nhập tên đăng nhập"),
+  password: z.string().min(1, "Nhập mật khẩu"),
+});
+
+export const changePasswordSchema = z.object({ current: z.string().min(1, "Nhập mật khẩu hiện tại"), next: password });
+
+export const setupSchema = z.object({ username, fullName: reqText("Nhập họ tên"), password });
+
+/** Giáo vụ phải gắn 1 trung tâm; giáo viên, trợ giảng phải gắn hồ sơ giáo viên. */
+const userFields = {
+  fullName: reqText("Nhập họ tên"),
+  role: z.enum(ROLE_VALUES, { error: "Chọn vai trò" }),
+  centerId: z.number().int().positive().optional().nullable(),
+  teacherId: z.number().int().positive().optional().nullable(),
+  active: z.boolean().default(true),
+};
+const userRefs = <T extends { role: string; centerId?: number | null; teacherId?: number | null }>(u: T, ctx: z.RefinementCtx) => {
+  if (u.role === "OFFICE" && !u.centerId) ctx.addIssue({ code: "custom", path: ["centerId"], message: "Giáo vụ phải chọn trung tâm" });
+  if ((u.role === "TEACHER" || u.role === "ASSISTANT") && !u.teacherId)
+    ctx.addIssue({ code: "custom", path: ["teacherId"], message: "Chọn hồ sơ giáo viên / trợ giảng của tài khoản" });
+};
+const normalizeRefs = <T extends { role: string; centerId?: number | null; teacherId?: number | null }>(u: T) => ({
+  ...u,
+  centerId: u.role === "OFFICE" ? (u.centerId ?? null) : null,
+  teacherId: u.role === "TEACHER" || u.role === "ASSISTANT" ? (u.teacherId ?? null) : null,
+});
+
+export const userCreateSchema = z.object({ ...userFields, username, password }).superRefine(userRefs).transform(normalizeRefs);
+export const userUpdateSchema = z
+  .object({ ...userFields, password: password.optional().nullable().or(z.literal("")) })
+  .superRefine(userRefs)
+  .transform(normalizeRefs);

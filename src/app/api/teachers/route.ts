@@ -1,12 +1,14 @@
+import { canEditTeachers, canSeeTeachers } from "@/lib/permissions";
 import { normalizeQuery, formatCode } from "@/lib/text";
 import { logChange } from "@/server/audit";
 import { prisma } from "@/server/db";
-import { body, route } from "@/server/http";
+import { allow, body, route } from "@/server/http";
 import { teacherSearchText } from "@/server/search-text";
 import { teacherSchema } from "@/server/validators";
 import { todayISO } from "@/lib/dates";
 
-export const GET = route(async (req) => {
+export const GET = route(async (req, _ctx, viewer) => {
+  allow(canSeeTeachers(viewer));
   const sp = new URL(req.url).searchParams;
   const q = normalizeQuery(sp.get("q") ?? "");
   const centerId = Number(sp.get("centerId")) || undefined;
@@ -40,7 +42,8 @@ export const GET = route(async (req) => {
   }));
 });
 
-export const POST = route(async (req) => {
+export const POST = route(async (req, _ctx, viewer) => {
+  allow(canEditTeachers(viewer));
   const { centerIds, ...data } = await body(req, teacherSchema);
   return prisma.$transaction(async (tx) => {
     const created = await tx.teacher.create({

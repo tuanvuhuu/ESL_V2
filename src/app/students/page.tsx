@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { api, qs, useApi, useDebounced } from "@/client/api";
 import { useCenters } from "@/client/centers";
+import { useViewer } from "@/client/session";
 import { downloadCsv } from "@/client/csv";
 import type { Student, StudentRow } from "@/client/types";
 import { useColumnSettings, type ColumnDef } from "@/components/ColumnSettings";
@@ -15,6 +16,7 @@ import { StudentFormModal } from "@/components/students/StudentFormModal";
 import { ActionMenu, CenterTag, Dash, PageHeader, PersonAvatar, StatusTag, TwoLine } from "@/components/ui";
 import { GENDERS, STUDENT_STATUSES, optionOf } from "@/lib/constants";
 import { ageFrom, formatDateVN, todayISO } from "@/lib/dates";
+import { canCreateRecords, canEditCenter, canSeeParents } from "@/lib/permissions";
 import { formatPhone } from "@/lib/text";
 
 type ListResult = { items: StudentRow[]; total: number; counts: Record<string, number> };
@@ -23,6 +25,9 @@ export default function StudentsPage() {
   const router = useRouter();
   const { message } = App.useApp();
   const { centerId } = useCenters();
+  const viewer = useViewer();
+  const canAdd = canCreateRecords(viewer);
+  const seeParents = canSeeParents(viewer);
   const [q, setQ] = useState("");
   const dq = useDebounced(q);
   const [status, setStatus] = useState<string>("ALL");
@@ -92,6 +97,7 @@ export default function StudentsPage() {
         width: 200,
         render: (_, r) => {
           const g = r.guardians.find((x) => x.isPrimary) ?? r.guardians[0];
+          if (g && !seeParents) return <TwoLine main={g.parent.fullName} sub={g.relation} />;
           return g ? (
             <TwoLine main={<Link href={`/parents/${g.parent.id}`}>{g.parent.fullName}</Link>} sub={`${g.relation} · ${formatPhone(g.parent.phone)}`} />
           ) : (
@@ -107,14 +113,19 @@ export default function StudentsPage() {
         required: true,
         defaultPin: "right",
         render: (_, r) => {
-          const g = r.guardians.find((x) => x.isPrimary) ?? r.guardians[0];
+          const g = seeParents ? (r.guardians.find((x) => x.isPrimary) ?? r.guardians[0]) : undefined;
+          const editable = canEditCenter(viewer, r.center.id);
           return (
             <ActionMenu
               title={`${r.fullName} · ${r.code}`}
               items={[
                 { key: "view", label: "Xem hồ sơ", onClick: () => router.push(`/students/${r.id}`) },
-                { key: "edit", label: "Sửa thông tin", onClick: () => setEditing(r) },
-                { key: "status", label: "Đổi trạng thái", onClick: () => setStatusFor({ s: r }) },
+                ...(editable
+                  ? [
+                      { key: "edit", label: "Sửa thông tin", onClick: () => setEditing(r) },
+                      { key: "status", label: "Đổi trạng thái", onClick: () => setStatusFor({ s: r }) },
+                    ]
+                  : []),
                 ...(g
                   ? [
                       { type: "divider" as const },
@@ -129,13 +140,17 @@ export default function StudentsPage() {
                       },
                     ]
                   : []),
-                { type: "divider" as const },
-                ...(r.status === "STUDYING" ? [{ key: "reserve", label: "Bảo lưu", onClick: () => setStatusFor({ s: r, to: "RESERVED" }) }] : []),
-                ...(r.status === "RESERVED" || r.status === "PAUSED"
-                  ? [{ key: "back", label: "Học lại", onClick: () => setStatusFor({ s: r, to: "STUDYING" }) }]
-                  : []),
-                ...(r.status !== "QUIT"
-                  ? [{ key: "quit", danger: true, label: "Cho nghỉ học", onClick: () => setStatusFor({ s: r, to: "QUIT" }) }]
+                ...(editable
+                  ? [
+                      { type: "divider" as const },
+                      ...(r.status === "STUDYING" ? [{ key: "reserve", label: "Bảo lưu", onClick: () => setStatusFor({ s: r, to: "RESERVED" }) }] : []),
+                      ...(r.status === "RESERVED" || r.status === "PAUSED"
+                        ? [{ key: "back", label: "Học lại", onClick: () => setStatusFor({ s: r, to: "STUDYING" }) }]
+                        : []),
+                      ...(r.status !== "QUIT"
+                        ? [{ key: "quit", danger: true, label: "Cho nghỉ học", onClick: () => setStatusFor({ s: r, to: "QUIT" }) }]
+                        : []),
+                    ]
                   : []),
               ]}
             />
@@ -143,7 +158,7 @@ export default function StudentsPage() {
         },
       },
     ],
-    [router, message, today],
+    [router, message, today, viewer, seeParents],
   );
   const { columns, button } = useColumnSettings("students", defs);
 
@@ -179,16 +194,18 @@ export default function StudentsPage() {
     <>
       <PageHeader
         title="Học sinh"
-        description="Quản lý hồ sơ học sinh của 4 trung tâm"
+        description={canAdd ? "Quản lý hồ sơ học sinh của 4 trung tâm" : "Học sinh các lớp bạn dạy và trợ giảng"}
         actions={
-          <>
-            <Button icon={<DownloadOutlined />} onClick={exportCsv}>
-              Xuất Excel
-            </Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing(null)}>
-              Thêm học sinh
-            </Button>
-          </>
+          canAdd && (
+            <>
+              <Button icon={<DownloadOutlined />} onClick={exportCsv}>
+                Xuất Excel
+              </Button>
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing(null)}>
+                Thêm học sinh
+              </Button>
+            </>
+          )
         }
       />
       <div className="panel">
@@ -229,9 +246,11 @@ export default function StudentsPage() {
                     Xóa bộ lọc
                   </Button>
                 ) : (
-                  <Button type="primary" onClick={() => setEditing(null)}>
-                    Thêm học sinh
-                  </Button>
+                  canAdd && (
+                    <Button type="primary" onClick={() => setEditing(null)}>
+                      Thêm học sinh
+                    </Button>
+                  )
                 )}
               </Empty>
             ),

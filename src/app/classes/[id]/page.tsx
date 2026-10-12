@@ -6,12 +6,14 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { api, qs, useApi, useDebounced } from "@/client/api";
+import { useViewer } from "@/client/session";
 import type { Course, Room, SessionRow, StudentRow, Teacher } from "@/client/types";
 import { AuditTimeline } from "@/components/AuditTimeline";
 import { SessionModal } from "@/components/classes/SessionModal";
 import { CenterTag, Dash, PageHeader, StatusTag } from "@/components/ui";
 import { CLASS_STATUSES, STUDENT_STATUSES, weekdayText } from "@/lib/constants";
 import { ageFrom, formatDateVN, todayISO } from "@/lib/dates";
+import { canEditCenter, canSeeAudit, canSeeTeachers } from "@/lib/permissions";
 
 type Detail = {
   id: number;
@@ -89,8 +91,12 @@ function AddStudentModal({ classId, open, onClose, onSaved }: { classId: number;
 export default function ClassDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { message, modal } = App.useApp();
+  const viewer = useViewer();
   const { data: c, loading, reload } = useApi<Detail>(`/api/classes/${id}`);
-  const { data: teachers } = useApi<Teacher[]>("/api/teachers");
+  const editable = !!c && canEditCenter(viewer, c.centerId);
+  const { data: teachers } = useApi<Teacher[]>(editable ? "/api/teachers" : null);
+  const teacherLink = (t: { id: number; displayName: string }) =>
+    canSeeTeachers(viewer) || t.id === viewer.teacherId ? <Link href={`/teachers/${t.id}`}>{t.displayName}</Link> : t.displayName;
   const [adding, setAdding] = useState(false);
   const [session, setSession] = useState<SessionRow | null>(null);
   const [editAssist, setEditAssist] = useState<number[] | null>(null);
@@ -156,27 +162,29 @@ export default function ClassDetailPage() {
           size="small"
           title="Giáo viên & trợ giảng"
           extra={
-            <Button size="small" onClick={() => setEditAssist(c.assistants.map((a) => a.teacherId))}>
-              Sửa trợ giảng
-            </Button>
+            editable && (
+              <Button size="small" onClick={() => setEditAssist(c.assistants.map((a) => a.teacherId))}>
+                Sửa trợ giảng
+              </Button>
+            )
           }
         >
           <div>
-            Giáo viên chính: <Link href={`/teachers/${c.teacher.id}`}>{c.teacher.displayName}</Link>
+            Giáo viên chính: {teacherLink(c.teacher)}
           </div>
           <div style={{ marginTop: 8 }}>
             Trợ giảng:{" "}
             {c.assistants.length
               ? c.assistants.map((a) => (
-                  <Tag key={a.teacherId}>
-                    <Link href={`/teachers/${a.teacher.id}`}>{a.teacher.displayName}</Link>
-                  </Tag>
+                  <Tag key={a.teacherId}>{teacherLink(a.teacher)}</Tag>
                 ))
               : <Dash />}
           </div>
-          <div className="sub" style={{ marginTop: 8 }}>
-            Đổi giáo viên cho từng buổi (dạy thay) ở tab Buổi học.
-          </div>
+          {editable && (
+            <div className="sub" style={{ marginTop: 8 }}>
+              Đổi giáo viên cho từng buổi (dạy thay) ở tab Buổi học.
+            </div>
+          )}
         </Card>
       </Col>
     </Row>
@@ -189,9 +197,11 @@ export default function ClassDetailPage() {
           {active.length}/{Math.min(c.maxStudents, c.room.capacity)} chỗ đã dùng
         </span>
         <div className="spacer" />
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setAdding(true)}>
-          Xếp học sinh
-        </Button>
+        {editable && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setAdding(true)}>
+            Xếp học sinh
+          </Button>
+        )}
       </div>
       <Table
         rowKey="id"
@@ -215,6 +225,7 @@ export default function ClassDetailPage() {
           {
             title: "",
             render: (_, e) =>
+              editable &&
               !e.leftAt && (
                 <Popconfirm title={`${e.student.fullName} rời lớp ${c.code}?`} okText="Rời lớp" cancelText="Hủy" onConfirm={() => leave(e.id)}>
                   <Button size="small" danger type="text">
@@ -268,14 +279,18 @@ export default function ClassDetailPage() {
             ),
         },
         { title: "Ghi chú", render: (_, s) => s.note ?? <Dash /> },
-        {
-          title: "",
-          render: (_, s) => (
-            <Button size="small" onClick={() => setSession(s)}>
-              {s.status === "CANCELLED" ? "Xem" : "Đổi / hủy"}
-            </Button>
-          ),
-        },
+        ...(editable
+          ? [
+              {
+                title: "",
+                render: (_: unknown, s: SessionRow) => (
+                  <Button size="small" onClick={() => setSession(s)}>
+                    {s.status === "CANCELLED" ? "Xem" : "Đổi / hủy"}
+                  </Button>
+                ),
+              },
+            ]
+          : []),
       ]}
     />
   );
@@ -291,6 +306,7 @@ export default function ClassDetailPage() {
         }
         description={`${c.code} · ${c.center.name} · ${c.teacher.displayName}`}
         actions={
+          editable && (
           <Dropdown
             trigger={["click"]}
             menu={{
@@ -315,6 +331,7 @@ export default function ClassDetailPage() {
           >
             <Button>Đổi trạng thái lớp</Button>
           </Dropdown>
+          )
         }
       />
       <div className="panel">
@@ -323,7 +340,7 @@ export default function ClassDetailPage() {
             { key: "overview", label: "Tổng quan", children: overview },
             { key: "students", label: `Học sinh (${active.length})`, children: students },
             { key: "sessions", label: `Buổi học (${c.sessions.length})`, children: sessions },
-            { key: "audit", label: "Lịch sử thay đổi", children: <AuditTimeline entity="Class" id={c.id} /> },
+            ...(canSeeAudit(viewer) ? [{ key: "audit", label: "Lịch sử thay đổi", children: <AuditTimeline entity="Class" id={c.id} /> }] : []),
           ]}
         />
       </div>

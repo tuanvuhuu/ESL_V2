@@ -1,19 +1,21 @@
+import { canEditCenter } from "@/lib/permissions";
 import { logChange } from "@/server/audit";
 import { nextSessionDate } from "@/server/classes";
 import { prisma } from "@/server/db";
-import { badRequest, body, idParam, notFound, route, type IdCtx } from "@/server/http";
+import { allow, badRequest, body, idParam, notFound, route, type IdCtx } from "@/server/http";
 import { assertNoConflicts, toSlot } from "@/server/slots";
 import { sessionUpdateSchema } from "@/server/validators";
 
 const include = { room: true, class: { include: { center: true, assistants: true } } } as const;
 
 /** Thao tác trên một buổi: hủy (có thể nối buổi vào cuối lịch), khôi phục, dời / đổi phòng / dạy thay. */
-export const PATCH = route<IdCtx>(async (req, { params }) => {
+export const PATCH = route<IdCtx>(async (req, { params }, viewer) => {
   const id = idParam((await params).id);
   const input = await body(req, sessionUpdateSchema);
   return prisma.$transaction(async (tx) => {
     const s = await tx.classSession.findUnique({ where: { id }, include });
     if (!s) throw notFound("Không tìm thấy buổi học");
+    allow(canEditCenter(viewer, s.class.centerId), "Chỉ sửa được buổi học của trung tâm mình");
 
     if (input.action === "cancel") {
       if (s.status === "CANCELLED") throw badRequest("Buổi này đã hủy");
