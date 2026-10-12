@@ -1,27 +1,30 @@
 "use client";
 
-import "@ant-design/v5-patch-for-react-19";
-import { App, ConfigProvider } from "antd";
-import viVN from "antd/locale/vi_VN";
+import "@primer/primitives/dist/css/primitives.css";
+import "@primer/primitives/dist/css/functional/themes/light.css";
+import { BaseStyles, ThemeProvider } from "@primer/react";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { CenterProvider } from "@/client/centers";
 import { SessionProvider } from "@/client/session";
-import { theme } from "@/client/theme";
+import { ToastContainer } from "@/client/toast";
 
 dayjs.locale("vi");
 
 export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   return (
-    <ConfigProvider locale={viVN} theme={theme}>
-      <App message={{ top: 16, duration: 2.5 }}>
+    <ThemeProvider colorMode="light">
+      <BaseStyles>
         <SessionProvider enabled={Boolean(pathname && pathname !== "/login")}>
-          <CenterProvider>{children}</CenterProvider>
+          <CenterProvider>
+            {children}
+            <ToastContainer />
+          </CenterProvider>
         </SessionProvider>
-      </App>
-    </ConfigProvider>
+      </BaseStyles>
+    </ThemeProvider>
   );
 }

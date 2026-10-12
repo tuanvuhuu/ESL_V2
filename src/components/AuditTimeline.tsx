@@ -1,6 +1,6 @@
 "use client";
 
-import { Empty, Skeleton, Timeline } from "antd";
+import { Empty, Skeleton, Timeline } from "@/client/primer-compat";
 import dayjs from "dayjs";
 import { qs, useApi } from "@/client/api";
 import type { AuditRow } from "@/client/types";

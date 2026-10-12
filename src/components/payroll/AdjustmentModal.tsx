@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Form, Input, InputNumber, Modal, Radio, message } from "antd";
+import { Form, Input, InputNumber, Radio, message } from "@/client/primer-compat";
 import { api } from "@/client/api";
+import { PrimerModal } from "@/components/PrimerModal";
 import { ADJUSTMENT_TYPES } from "@/lib/payroll";
 
 export function AdjustmentModal({
@@ -42,14 +43,15 @@ export function AdjustmentModal({
   };
 
   return (
-    <Modal
+    <PrimerModal
       open={open}
       title={`Thêm điều chỉnh lương - ${teacherName || ""}`}
-      onCancel={onClose}
+      subtitle="Thưởng, phụ cấp trách nhiệm hoặc phạt phát sinh trong kỳ lương"
+      onClose={onClose}
       onOk={() => form.submit()}
       confirmLoading={loading}
       okText="Lưu điều chỉnh"
-      destroyOnClose
+      width="large"
     >
       <Form
         form={form}
@@ -86,6 +88,6 @@ export function AdjustmentModal({
           <Input.TextArea rows={2} placeholder="Thưởng chuyên cần, phụ cấp trách nhiệm, trừ đi muộn..." />
         </Form.Item>
       </Form>
-    </Modal>
+    </PrimerModal>
   );
 }

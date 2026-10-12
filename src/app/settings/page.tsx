@@ -1,7 +1,7 @@
 "use client";
 
-import { PlusOutlined } from "@ant-design/icons";
-import { App, Button, ColorPicker, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Select, Spin, Switch, Table, Tabs, Tag } from "antd";
+import { PlusOutlined } from "@/client/primer-icons";
+import { App, Button, ColorPicker, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Select, Spin, Switch, Table, Tabs, Tag } from "@/client/primer-compat";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, type ReactNode } from "react";
 import { api, useApi } from "@/client/api";

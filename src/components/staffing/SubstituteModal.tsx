@@ -1,6 +1,6 @@
 "use client";
 
-import { App, Button, List, Modal, Skeleton, Space, Tag } from "antd";
+import { App, Button, List, Modal, Skeleton, Space, Tag } from "@/client/primer-compat";
 import { useState } from "react";
 import { api, useApi } from "@/client/api";
 import { formatDateVN } from "@/lib/dates";

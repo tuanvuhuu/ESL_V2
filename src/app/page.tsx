@@ -1,7 +1,7 @@
 "use client";
 
-import { CalendarOutlined, CheckSquareOutlined, StopOutlined, SwapOutlined } from "@ant-design/icons";
-import { Badge, Button, Col, Empty, List, Row, Statistic, Tabs, Tag } from "antd";
+import { CalendarOutlined, CheckSquareOutlined, StopOutlined, SwapOutlined } from "@/client/primer-icons";
+import { Badge, Button, Col, Empty, List, Row, Statistic, Tabs, Tag } from "@/client/primer-compat";
 import Link from "next/link";
 import { useState } from "react";
 import { qs, useApi } from "@/client/api";

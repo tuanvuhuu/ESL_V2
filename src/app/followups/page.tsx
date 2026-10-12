@@ -1,6 +1,6 @@
 "use client";
 
-import { App, Button, Card, Col, Empty, List, Popconfirm, Row, Skeleton, Space, Tag } from "antd";
+import { App, Button, Card, Col, Empty, List, Popconfirm, Row, Skeleton, Space, Tag } from "@/client/primer-compat";
 import Link from "next/link";
 import { useState } from "react";
 import { api, qs, useApi } from "@/client/api";

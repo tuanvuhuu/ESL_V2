@@ -1,7 +1,7 @@
 "use client";
 
-import { PlusOutlined } from "@ant-design/icons";
-import { App, Button, Card, DatePicker, Empty, Form, Input, List, Modal, Popconfirm, Skeleton, Space, Tag } from "antd";
+import { PlusOutlined } from "@/client/primer-icons";
+import { App, Button, Card, DatePicker, Empty, Form, Input, List, Modal, Popconfirm, Skeleton, Space, Tag } from "@/client/primer-compat";
 import type { Dayjs } from "dayjs";
 import Link from "next/link";
 import { useState } from "react";

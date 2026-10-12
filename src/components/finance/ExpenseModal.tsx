@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { DatePicker, Form, Input, InputNumber, Modal, Select, message } from "antd";
+import { DatePicker, Form, Input, InputNumber, Select, message } from "@/client/primer-compat";
 import dayjs from "dayjs";
 import { api } from "@/client/api";
 import { useCenters } from "@/client/centers";
+import { PrimerModal } from "@/components/PrimerModal";
 
 export const EXPENSE_CATEGORIES = [
   { value: "RENT", label: "Mặt bằng", color: "#1F6FEB" },
@@ -50,14 +51,15 @@ export function ExpenseModal({
   };
 
   return (
-    <Modal
+    <PrimerModal
       open={open}
       title="Ghi nhận chi phí hoạt động"
-      onCancel={onClose}
+      subtitle="Theo dõi chi phí mặt bằng, điện nước, marketing theo trung tâm"
+      onClose={onClose}
       onOk={() => form.submit()}
       confirmLoading={loading}
       okText="Lưu chi phí"
-      destroyOnClose
+      width="large"
     >
       <Form
         form={form}
@@ -118,13 +120,13 @@ export function ExpenseModal({
           name="payer"
           rules={[{ required: true, message: "Vui lòng nhập tên người chi" }]}
         >
-          <Input placeholder="Tên giáo vụ hoặc người phụ trách chi..." />
+          <Input placeholder="Vd: Nguyễn Văn A..." />
         </Form.Item>
 
-        <Form.Item label="Ghi chú / Chi tiết" name="note">
-          <Input.TextArea rows={2} placeholder="Hóa đơn tiền điện tháng 10, mua sách mới..." />
+        <Form.Item label="Ghi chú thêm" name="note">
+          <Input.TextArea rows={2} placeholder="Hóa đơn, số hợp đồng, chi tiết..." />
         </Form.Item>
       </Form>
-    </Modal>
+    </PrimerModal>
   );
 }

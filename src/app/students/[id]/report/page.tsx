@@ -1,7 +1,7 @@
 "use client";
 
-import { ArrowLeftOutlined, CopyOutlined, PrinterOutlined } from "@ant-design/icons";
-import { App, Button, Empty, Skeleton, Space } from "antd";
+import { ArrowLeftOutlined, CopyOutlined, PrinterOutlined } from "@/client/primer-icons";
+import { App, Button, Empty, Skeleton, Space } from "@/client/primer-compat";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useMemo } from "react";

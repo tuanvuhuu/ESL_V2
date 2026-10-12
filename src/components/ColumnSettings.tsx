@@ -1,8 +1,8 @@
 "use client";
 
-import { SettingOutlined } from "@ant-design/icons";
-import { Button, Checkbox, Popover, Segmented, Space } from "antd";
-import type { ColumnType } from "antd/es/table";
+import { SettingOutlined } from "@/client/primer-icons";
+import { Button, Checkbox, Popover, Segmented, Space } from "@/client/primer-compat";
+import type { ColumnType } from "@/client/primer-compat";
 import { useEffect, useMemo, useState } from "react";
 
 type Pin = "left" | "none" | "right";

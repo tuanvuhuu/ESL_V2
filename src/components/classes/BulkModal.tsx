@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, App, DatePicker, Form, Input, Modal, Select } from "antd";
+import { Alert, App, DatePicker, Form, Input, Modal, Select } from "@/client/primer-compat";
 import dayjs, { type Dayjs } from "dayjs";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Empty, Segmented, Skeleton } from "antd";
+import { Empty, Segmented, Skeleton } from "@/client/primer-compat";
 import { useState } from "react";
 import { qs, useApi } from "@/client/api";
 import { useViewer } from "@/client/session";

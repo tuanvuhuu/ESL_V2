@@ -1,17 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckOutlined, LockOutlined, PlusOutlined, UnorderedListOutlined } from "@ant-design/icons";
-import { Button, Card, Col, DatePicker, Dropdown, Row, Space, Tag, message } from "antd";
-import type { MenuProps } from "antd";
-import type { ColumnsType } from "antd/es/table";
+import { DatePicker, message } from "@/client/primer-compat";
+import type { ColumnsType } from "@/client/primer-compat";
 import dayjs from "dayjs";
 import { api, qs } from "@/client/api";
 import { useCenters } from "@/client/centers";
 import { useSession } from "@/client/session";
+import { ActionMenu, DotLabel, PageHeader } from "@/components/ui";
 import { AdjustmentModal } from "@/components/payroll/AdjustmentModal";
 import { SessionDetailModal, type PayrollPeriodRow } from "@/components/payroll/SessionDetailModal";
-import { DataGrid } from "@/components/DataGrid";
+import { PrimerGrid } from "@/components/PrimerGrid";
 import { formatCurrency } from "@/lib/finance";
 import { formatHours, payrollStatusOption } from "@/lib/payroll";
 import { isManager } from "@/lib/permissions";
@@ -106,11 +105,14 @@ export default function PayrollPage() {
       title: "Vai trò",
       dataIndex: ["teacher", "role"],
       key: "role",
-      render: (role: string) => (
-        <Tag color={role === "TEACHER" ? "blue" : role === "ASSISTANT" ? "purple" : "cyan"}>
-          {role === "TEACHER" ? "Giáo viên" : role === "ASSISTANT" ? "Trợ giảng" : "Cả hai"}
-        </Tag>
-      ),
+      render: (role: string) => {
+        const color = role === "TEACHER" ? "#0969DA" : role === "ASSISTANT" ? "#8250DF" : "#1A7F37";
+        return (
+          <DotLabel color={color}>
+            {role === "TEACHER" ? "Giáo viên" : role === "ASSISTANT" ? "Trợ giảng" : "Cả hai"}
+          </DotLabel>
+        );
+      },
     },
     {
       title: "Số buổi",
@@ -168,7 +170,7 @@ export default function PayrollPage() {
         <span
           style={{
             fontWeight: 800,
-            fontSize: 15,
+            fontSize: 14,
             fontVariantNumeric: "tabular-nums",
             color: "#1F6FEB",
           }}
@@ -182,7 +184,13 @@ export default function PayrollPage() {
       key: "status",
       render: (_, row) => {
         const opt = payrollStatusOption(row.period?.status ?? "DRAFT");
-        return <Tag color={opt?.color}>{opt?.label ?? row.period?.status}</Tag>;
+        const dotColor =
+          row.period?.status === "PAID"
+            ? "#2DA44E"
+            : row.period?.status === "LOCKED"
+            ? "#1F6FEB"
+            : "#D29922";
+        return <DotLabel color={dotColor}>{opt?.label ?? row.period?.status}</DotLabel>;
       },
     },
     {
@@ -194,10 +202,14 @@ export default function PayrollPage() {
         const isLocked = period?.status === "LOCKED" || period?.status === "PAID";
         const isPaid = period?.status === "PAID";
 
-        const items: MenuProps["items"] = [
+        const items: Array<{
+          key: string;
+          label: string;
+          danger?: boolean;
+          onClick?: () => void;
+        }> = [
           {
             key: "details",
-            icon: <UnorderedListOutlined />,
             label: "Xem chi tiết buổi dạy",
             onClick: () =>
               setDetailModal({
@@ -211,7 +223,6 @@ export default function PayrollPage() {
             ? [
                 {
                   key: "adj",
-                  icon: <PlusOutlined />,
                   label: "Thêm thưởng / phạt",
                   onClick: () =>
                     setAdjustmentModal({
@@ -226,7 +237,6 @@ export default function PayrollPage() {
             ? [
                 {
                   key: "lock",
-                  icon: <LockOutlined />,
                   label: "Chốt lương tháng",
                   onClick: () => handleLock(period.id),
                 },
@@ -236,7 +246,6 @@ export default function PayrollPage() {
             ? [
                 {
                   key: "pay",
-                  icon: <CheckOutlined />,
                   label: "Đánh dấu đã trả lương",
                   onClick: () => handlePay(period.id),
                 },
@@ -244,67 +253,94 @@ export default function PayrollPage() {
             : []),
         ];
 
-        return (
-          <Dropdown menu={{ items }}>
-            <Button size="small">⋯</Button>
-          </Dropdown>
-        );
+        return <ActionMenu items={items} title={row.teacher.fullName} />;
       },
     },
   ];
 
   return (
     <div style={{ padding: "0 0 24px 0" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px 0" }}>Bảng lương giáo viên & trợ giảng</h1>
-          <div style={{ color: "#59636E" }}>
-            Tự động tổng hợp giờ dạy theo buổi thực tế, xử lý trùng giờ và chốt lương hàng tháng
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        title="Bảng lương giáo viên & trợ giảng"
+        description="Tự động tổng hợp giờ dạy theo buổi thực tế, xử lý trùng giờ và chốt lương hàng tháng"
+      />
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        <Col xs={24} sm={8}>
-          <Card size="small" style={{ borderRadius: 8 }}>
-            <div style={{ color: "#59636E", fontSize: 13 }}>Tổng quỹ lương tháng {month}</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "#1F6FEB", fontVariantNumeric: "tabular-nums" }}>
-              {formatCurrency(totalPayroll)}
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card size="small" style={{ borderRadius: 8 }}>
-            <div style={{ color: "#59636E", fontSize: 13 }}>Tổng giờ dạy thực tế</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
-              {formatHours(totalHours)}
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card size="small" style={{ borderRadius: 8 }}>
-            <div style={{ color: "#59636E", fontSize: 13 }}>Đã thanh toán</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "#1F2328", fontVariantNumeric: "tabular-nums" }}>
-              {paidCount} / {payrollList.length} người
-            </div>
-          </Card>
-        </Col>
-      </Row>
-
-      <Card size="small" style={{ marginBottom: 16 }}>
-        <Space wrap>
-          <span>Tháng tính lương:</span>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", marginBottom: 16 }}>
+        <div
+          style={{
+            background: "#fff",
+            border: "1px solid #d0d7de",
+            borderRadius: 6,
+            padding: "8px 14px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <span style={{ fontSize: 13, color: "#59636E" }}>Tháng tính lương:</span>
           <DatePicker
             picker="month"
             value={dayjs(month, "YYYY-MM")}
             onChange={(d) => setMonth(d ? d.format("YYYY-MM") : todayISO().slice(0, 7))}
             format="MM/YYYY"
             allowClear={false}
+            size="small"
           />
-        </Space>
-      </Card>
+        </div>
 
-      <DataGrid<PayrollRow>
+        <div
+          style={{
+            background: "#fff",
+            border: "1px solid #d0d7de",
+            borderRadius: 6,
+            padding: "8px 14px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <span style={{ color: "#59636E", fontSize: 13 }}>Tổng quỹ lương:</span>
+          <span style={{ fontSize: 15, fontWeight: 700, color: "#1F6FEB", fontVariantNumeric: "tabular-nums" }}>
+            {formatCurrency(totalPayroll)}
+          </span>
+        </div>
+
+        <div
+          style={{
+            background: "#fff",
+            border: "1px solid #d0d7de",
+            borderRadius: 6,
+            padding: "8px 14px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <span style={{ color: "#59636E", fontSize: 13 }}>Tổng giờ dạy:</span>
+          <span style={{ fontSize: 15, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+            {formatHours(totalHours)}
+          </span>
+        </div>
+
+        <div
+          style={{
+            background: "#fff",
+            border: "1px solid #d0d7de",
+            borderRadius: 6,
+            padding: "8px 14px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <span style={{ color: "#59636E", fontSize: 13 }}>Đã thanh toán:</span>
+          <span style={{ fontSize: 15, fontWeight: 700, color: "#1F2328", fontVariantNumeric: "tabular-nums" }}>
+            {paidCount} / {payrollList.length} người
+          </span>
+        </div>
+      </div>
+
+      <PrimerGrid<PayrollRow>
         dataSource={payrollList}
         columns={columns}
         rowKey={(r) => r.teacher.id}

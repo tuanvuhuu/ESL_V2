@@ -1,7 +1,7 @@
 "use client";
 
-import { LeftOutlined, RightOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Descriptions, Empty, Row, Skeleton, Space, Table, Tabs, Tag } from "antd";
+import { LeftOutlined, RightOutlined } from "@/client/primer-icons";
+import { Button, Card, Col, Descriptions, Empty, Row, Skeleton, Space, Table, Tabs, Tag } from "@/client/primer-compat";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";

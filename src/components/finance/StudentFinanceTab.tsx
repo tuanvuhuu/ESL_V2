@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DollarOutlined, PlusOutlined, PrinterOutlined, RollbackOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Form, Input, InputNumber, Modal, Row, Space, Table, Tag, message } from "antd";
+import { DollarOutlined, PlusOutlined, PrinterOutlined, RollbackOutlined } from "@/client/primer-icons";
+import { Button, Card, Col, Form, Input, InputNumber, Modal, Row, Space, Table, Tag, message } from "@/client/primer-compat";
 import { api } from "@/client/api";
 import { useSession } from "@/client/session";
 import { PaymentModal, type PaymentTarget } from "./PaymentModal";

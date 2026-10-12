@@ -1,32 +1,36 @@
 "use client";
 
 import {
-  AccountBookOutlined,
-  AppstoreOutlined,
-  BarChartOutlined,
-  BookOutlined,
-  CalendarOutlined,
-  ControlOutlined,
-  DollarOutlined,
-  DownOutlined,
-  FileTextOutlined,
-  HomeOutlined,
-  IdcardOutlined,
-  KeyOutlined,
-  LogoutOutlined,
-  PhoneOutlined,
-  ReadOutlined,
-  ScheduleOutlined,
-  SearchOutlined,
-  SettingOutlined,
-  SolutionOutlined,
-  TeamOutlined,
-  UserOutlined,
-  UsergroupAddOutlined,
-  WalletOutlined,
-} from "@ant-design/icons";
-import { ActionMenu as PrimerActionMenu, ActionList, Breadcrumbs as PrimerBreadcrumbs } from "@primer/react";
-import { AutoComplete, Avatar, Button, Drawer, Dropdown, Grid, Input, Layout, Menu, Result, Select, Spin } from "antd";
+  AlertIcon,
+  AppsIcon,
+  BookIcon,
+  BriefcaseIcon,
+  CalendarIcon,
+  ChecklistIcon,
+  ChevronDownIcon,
+  ClockIcon,
+  CreditCardIcon,
+  DeviceMobileIcon,
+  GearIcon,
+  GraphIcon,
+  HomeIcon,
+  KeyIcon,
+  MortarBoardIcon,
+  PeopleIcon,
+  PersonIcon,
+  SearchIcon,
+  SignOutIcon,
+  TagIcon,
+  XIcon,
+} from "@primer/octicons-react";
+import {
+  ActionList,
+  ActionMenu as PrimerActionMenu,
+  Breadcrumbs as PrimerBreadcrumbs,
+  NavList,
+  Spinner,
+  TextInput,
+} from "@primer/react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
@@ -52,62 +56,62 @@ export const SETTINGS_TABS = [
 
 /** Menu nhiều cấp: nhóm (cấp 1) › trang (cấp 2) › mục con (cấp 3). Nhóm không còn mục nào thì ẩn. */
 const NAV: NavGroup[] = [
-  { key: "today", label: "Tổng quan", icon: <HomeOutlined />, single: true, items: [{ key: "/", icon: <HomeOutlined />, label: "Hôm nay" }] },
+  { key: "today", label: "Tổng quan", icon: <HomeIcon size={16} />, single: true, items: [{ key: "/", icon: <HomeIcon size={16} />, label: "Hôm nay" }] },
   {
     key: "teaching",
     label: "Đào tạo",
-    icon: <BookOutlined />,
+    icon: <MortarBoardIcon size={16} />,
     items: [
-      { key: "/schedule", icon: <CalendarOutlined />, label: "Lịch học" },
-      { key: "/classes", icon: <ReadOutlined />, label: "Lớp học" },
-      { key: "/makeups", icon: <ScheduleOutlined />, label: "Học bù" },
+      { key: "/schedule", icon: <CalendarIcon size={16} />, label: "Lịch học" },
+      { key: "/classes", icon: <BookIcon size={16} />, label: "Lớp học" },
+      { key: "/makeups", icon: <ClockIcon size={16} />, label: "Học bù" },
     ],
   },
   {
     key: "people",
     label: "Con người",
-    icon: <TeamOutlined />,
+    icon: <PeopleIcon size={16} />,
     items: [
-      { key: "/students", icon: <UserOutlined />, label: "Học sinh" },
-      { key: "/parents", icon: <UsergroupAddOutlined />, label: "Phụ huynh" },
-      { key: "/followups", icon: <PhoneOutlined />, label: "Cần gọi lại" },
-      { key: "/teachers", icon: <SolutionOutlined />, label: "Giáo viên" },
+      { key: "/students", icon: <PersonIcon size={16} />, label: "Học sinh" },
+      { key: "/parents", icon: <PeopleIcon size={16} />, label: "Phụ huynh" },
+      { key: "/followups", icon: <DeviceMobileIcon size={16} />, label: "Cần gọi lại" },
+      { key: "/teachers", icon: <BriefcaseIcon size={16} />, label: "Giáo viên" },
     ],
   },
   {
     key: "finance",
     label: "Tài chính",
-    icon: <DollarOutlined />,
+    icon: <CreditCardIcon size={16} />,
     items: [
-      { key: "/finance", icon: <FileTextOutlined />, label: "Thu học phí" },
-      { key: "/finance/debts", icon: <WalletOutlined />, label: "Công nợ" },
-      { key: "/finance/expenses", icon: <AccountBookOutlined />, label: "Chi phí" },
+      { key: "/finance", icon: <CreditCardIcon size={16} />, label: "Thu học phí" },
+      { key: "/finance/debts", icon: <AlertIcon size={16} />, label: "Công nợ" },
+      { key: "/finance/expenses", icon: <GraphIcon size={16} />, label: "Chi phí" },
     ],
   },
   {
     key: "payroll",
     label: "Lương",
-    icon: <AccountBookOutlined />,
+    icon: <ChecklistIcon size={16} />,
     items: [
-      { key: "/payroll", icon: <CalendarOutlined />, label: "Bảng lương tháng" },
-      { key: "/payroll/rates", icon: <SettingOutlined />, label: "Đơn giá giờ" },
+      { key: "/payroll", icon: <CalendarIcon size={16} />, label: "Bảng lương tháng" },
+      { key: "/payroll/rates", icon: <TagIcon size={16} />, label: "Đơn giá giờ" },
     ],
   },
   {
     key: "reports",
     label: "Báo cáo",
-    icon: <BarChartOutlined />,
+    icon: <GraphIcon size={16} />,
     single: true,
-    items: [{ key: "/reports", icon: <BarChartOutlined />, label: "Báo cáo & Thống kê" }],
+    items: [{ key: "/reports", icon: <GraphIcon size={16} />, label: "Báo cáo & Thống kê" }],
   },
   {
     key: "system",
     label: "Hệ thống",
-    icon: <ControlOutlined />,
+    icon: <GearIcon size={16} />,
     items: [
       {
         key: "/settings",
-        icon: <SettingOutlined />,
+        icon: <GearIcon size={16} />,
         label: "Cài đặt",
         children: SETTINGS_TABS.map((t) => ({ key: `/settings?tab=${t.key}`, label: t.label })),
       },
@@ -117,11 +121,11 @@ const NAV: NavGroup[] = [
 
 /** Giáo viên, trợ giảng (DESIGN 4.2): 5 mục Hôm nay · Lịch · Lớp của tôi · Lương của tôi · Tài khoản. */
 const STAFF_NAV: NavItem[] = [
-  { key: "/", icon: <HomeOutlined />, label: "Hôm nay" },
-  { key: "/my/schedule", icon: <CalendarOutlined />, label: "Lịch" },
-  { key: "/my/classes", icon: <ReadOutlined />, label: "Lớp của tôi" },
-  { key: "/my/payroll", icon: <DollarOutlined />, label: "Lương của tôi" },
-  { key: "/my/account", icon: <IdcardOutlined />, label: "Tài khoản" },
+  { key: "/", icon: <HomeIcon size={16} />, label: "Hôm nay" },
+  { key: "/my/schedule", icon: <CalendarIcon size={16} />, label: "Lịch" },
+  { key: "/my/classes", icon: <BookIcon size={16} />, label: "Lớp của tôi" },
+  { key: "/my/payroll", icon: <CreditCardIcon size={16} />, label: "Lương của tôi" },
+  { key: "/my/account", icon: <PersonIcon size={16} />, label: "Tài khoản" },
 ];
 
 /** Menu theo vai trò: mục không có quyền thì ẩn hẳn (DESIGN mục 7). */
@@ -135,30 +139,6 @@ function navFor(v: Viewer): NavGroup[] {
 
 function isActive(key: string, pathname: string) {
   return key === "/" ? pathname === "/" : pathname === key || pathname.startsWith(`${key}/`);
-}
-
-/** Khóa của mọi mục cha có thể mở/đóng (nhóm và trang có mục con). */
-function parentKeys(groups: NavGroup[]) {
-  return groups.flatMap((g) => [...(g.single ? [] : [g.key]), ...g.items.filter((n) => n.children).map((n) => n.key)]);
-}
-
-const OPEN_KEYS_STORAGE = "esl.nav.open";
-
-function loadOpenKeys(): string[] | null {
-  try {
-    const raw = localStorage.getItem(OPEN_KEYS_STORAGE);
-    return raw ? (JSON.parse(raw) as string[]) : null;
-  } catch {
-    return null;
-  }
-}
-
-function saveOpenKeys(keys: string[]) {
-  try {
-    localStorage.setItem(OPEN_KEYS_STORAGE, JSON.stringify(keys));
-  } catch {
-    // Trình duyệt chặn lưu thì thôi, lần sau mở lại mặc định.
-  }
 }
 
 function Brand({ collapsed }: { collapsed?: boolean }) {
@@ -186,14 +166,28 @@ function UserMenu({ viewer, compact }: { viewer: Viewer; compact: boolean }) {
           className="user-btn"
           aria-label="Tài khoản"
         >
-          <Avatar size={32} style={{ background: "#1F6FEB", flexShrink: 0 }}>{initials(viewer.fullName)}</Avatar>
+          <span
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              background: "#1F6FEB",
+              color: "#fff",
+              display: "grid",
+              placeItems: "center",
+              fontWeight: 700,
+              fontSize: 13,
+              flexShrink: 0,
+            }}
+          >
+            {initials(viewer.fullName)}
+          </span>
           {!compact && (
             <span className="user-btn-text">
               <b>{viewer.fullName}</b>
               <span>{roleLabel(viewer.role)}</span>
             </span>
           )}
-          {!compact && <DownOutlined style={{ fontSize: 10, color: "#8C959F" }} />}
         </PrimerActionMenu.Button>
         <PrimerActionMenu.Overlay align="end" width="medium">
           <ActionList>
@@ -203,11 +197,11 @@ function UserMenu({ viewer, compact }: { viewer: Viewer; compact: boolean }) {
             </ActionList.Item>
             <ActionList.Divider />
             <ActionList.Item onSelect={() => setChanging(true)}>
-              <ActionList.LeadingVisual><KeyOutlined /></ActionList.LeadingVisual>
+              <ActionList.LeadingVisual><KeyIcon size={16} /></ActionList.LeadingVisual>
               Đổi mật khẩu
             </ActionList.Item>
             <ActionList.Item variant="danger" onSelect={() => void logout()}>
-              <ActionList.LeadingVisual><LogoutOutlined /></ActionList.LeadingVisual>
+              <ActionList.LeadingVisual><SignOutIcon size={16} /></ActionList.LeadingVisual>
               Đăng xuất
             </ActionList.Item>
           </ActionList>
@@ -229,6 +223,7 @@ function GlobalSearch({ placeholder }: { placeholder: string }) {
   const [q, setQ] = useState("");
   const dq = useDebounced(q);
   const [res, setRes] = useState<SearchResult | null>(null);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (dq.trim().length < 2) {
@@ -237,51 +232,113 @@ function GlobalSearch({ placeholder }: { placeholder: string }) {
     }
     let alive = true;
     api<SearchResult>(`/api/search${qs({ q: dq })}`)
-      .then((r) => alive && setRes(r))
+      .then((r) => {
+        if (alive) {
+          setRes(r);
+          setOpen(true);
+        }
+      })
       .catch(() => alive && setRes(null));
     return () => {
       alive = false;
     };
   }, [dq]);
 
-  const options = useMemo(() => {
-    if (!res) return [];
-    const groups = [];
-    if (res.students.length)
-      groups.push({
-        label: "Học sinh",
-        options: res.students.map((s) => ({
-          value: `/students/${s.id}`,
-          label: `${s.fullName}${s.englishName ? ` (${s.englishName})` : ""} · ${s.code} · ${s.center.name}`,
-        })),
-      });
-    if (res.parents.length)
-      groups.push({
-        label: "Phụ huynh",
-        options: res.parents.map((p) => ({ value: `/parents/${p.id}`, label: `${p.fullName} · ${formatPhone(p.phone)}` })),
-      });
-    if (res.teachers.length)
-      groups.push({
-        label: "Giáo viên",
-        options: res.teachers.map((t) => ({ value: `/teachers/${t.id}`, label: `${t.displayName} · ${t.code}` })),
-      });
-    return groups;
-  }, [res]);
+  const hasResults = res && (res.students.length > 0 || res.parents.length > 0 || res.teachers.length > 0);
 
   return (
-    <AutoComplete
-      style={{ width: "100%", maxWidth: 420 }}
-      options={options}
-      value={q}
-      onChange={setQ}
-      onSelect={(v: string) => {
-        setQ("");
-        router.push(v);
-      }}
-      notFoundContent={dq.trim().length >= 2 ? "Không tìm thấy" : null}
-    >
-      <Input.Search placeholder={placeholder} allowClear />
-    </AutoComplete>
+    <div style={{ position: "relative", width: 280 }}>
+      <TextInput
+        block
+        leadingVisual={SearchIcon}
+        placeholder={placeholder}
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        onFocus={() => { if (res) setOpen(true); }}
+        onBlur={() => setTimeout(() => setOpen(false), 250)}
+      />
+      {open && (
+        <div
+          style={{
+            position: "absolute",
+            top: "calc(100% + 4px)",
+            left: 0,
+            right: 0,
+            background: "#fff",
+            borderRadius: 6,
+            boxShadow: "0 8px 24px rgba(140,149,159,0.2)",
+            border: "1px solid #d0d7de",
+            zIndex: 100,
+            maxHeight: 360,
+            overflowY: "auto",
+            padding: "4px 0",
+          }}
+        >
+          {!hasResults ? (
+            <div style={{ padding: "8px 12px", color: "#8c959f", fontSize: 13 }}>
+              {dq.trim().length >= 2 ? "Không tìm thấy kết quả" : "Nhập ít nhất 2 ký tự..."}
+            </div>
+          ) : (
+            <>
+              {res.students.length > 0 && (
+                <div>
+                  <div style={{ padding: "6px 12px", fontSize: 11, fontWeight: 600, color: "#59636e", textTransform: "uppercase" }}>Học sinh</div>
+                  {res.students.map((s) => (
+                    <div
+                      key={s.id}
+                      style={{ padding: "6px 12px", cursor: "pointer", fontSize: 13 }}
+                      onMouseDown={() => {
+                        setOpen(false);
+                        setQ("");
+                        router.push(`/students/${s.id}`);
+                      }}
+                    >
+                      <b style={{ color: "#0969da" }}>{s.fullName}</b> {s.englishName ? `(${s.englishName})` : ""} · {s.code} · {s.center.name}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {res.parents.length > 0 && (
+                <div>
+                  <div style={{ padding: "6px 12px", fontSize: 11, fontWeight: 600, color: "#59636e", textTransform: "uppercase" }}>Phụ huynh</div>
+                  {res.parents.map((p) => (
+                    <div
+                      key={p.id}
+                      style={{ padding: "6px 12px", cursor: "pointer", fontSize: 13 }}
+                      onMouseDown={() => {
+                        setOpen(false);
+                        setQ("");
+                        router.push(`/parents/${p.id}`);
+                      }}
+                    >
+                      <b style={{ color: "#0969da" }}>{p.fullName}</b> · {formatPhone(p.phone)}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {res.teachers.length > 0 && (
+                <div>
+                  <div style={{ padding: "6px 12px", fontSize: 11, fontWeight: 600, color: "#59636e", textTransform: "uppercase" }}>Giáo viên</div>
+                  {res.teachers.map((t) => (
+                    <div
+                      key={t.id}
+                      style={{ padding: "6px 12px", cursor: "pointer", fontSize: 13 }}
+                      onMouseDown={() => {
+                        setOpen(false);
+                        setQ("");
+                        router.push(`/teachers/${t.id}`);
+                      }}
+                    >
+                      <b style={{ color: "#0969da" }}>{t.displayName}</b> · {t.code}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -299,52 +356,38 @@ export function AppShell({ children }: { children: ReactNode }) {
 function FullPageSpin() {
   return (
     <div style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
-      <Spin size="large" />
+      <Spinner size="large" />
     </div>
   );
 }
 
 function SignedInShell({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
-  const tab = useSearchParams().get("tab") ?? SETTINGS_TABS[0].key;
-  const screens = Grid.useBreakpoint();
-  const isMobile = !screens.md;
   const { viewer } = useSession();
   const { centers, centerId, setCenterId } = useCenters();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab") || "centers";
+
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   const [collapsed, setCollapsed] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const groups = useMemo(() => (viewer ? navFor(viewer) : []), [viewer]);
-  // Mặc định mở hết các nhóm; người dùng đóng/mở nhóm nào thì nhớ lại cho lần sau.
-  const [openKeys, setOpenKeys] = useState<string[] | null>(null);
-  // Khi menu thu gọn, nhóm bung ra dạng popup, tách riêng để không ghi đè lựa chọn ở trên.
-  const [popupKeys, setPopupKeys] = useState<string[]>([]);
+
   // Ô "Tìm kiếm chức năng" ở đầu menu: lọc mục menu theo tên.
   const [navQuery, setNavQuery] = useState("");
-
-  useEffect(() => {
-    if (!groups.length) return;
-    // Trang đang mở luôn nằm trong nhóm đang bung.
-    const active = groups.flatMap((g) =>
-      g.items.filter((n) => isActive(n.key, pathname)).flatMap((n) => [...(g.single ? [] : [g.key]), ...(n.children ? [n.key] : [])]),
-    );
-    setOpenKeys((prev) => {
-      const base = prev ?? loadOpenKeys() ?? parentKeys(groups);
-      return [...new Set([...base, ...active])];
-    });
-    setPopupKeys([]);
-  }, [groups, pathname]);
 
   if (!viewer) return <FullPageSpin />;
 
   const flat = groups.flatMap((g) => g.items);
   const selected = flat.filter((n) => isActive(n.key, pathname)).map((n) => n.key);
-  const menuSelected = flat
-    .filter((n) => isActive(n.key, pathname))
-    .map((n) => (n.children ? `${n.key}?tab=${tab}` : n.key));
-  const toMenu = (n: NavItem) =>
-    n.children
-      ? { key: n.key, icon: n.icon, label: n.label, children: n.children.map((c) => ({ key: c.key, label: <Link href={c.key}>{c.label}</Link> })) }
-      : { key: n.key, icon: n.icon, label: <Link href={n.key}>{n.label}</Link> };
+  const bestKey = [...selected].sort((a, b) => b.length - a.length)[0];
   const fold = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").toLowerCase();
   const needle = fold(navQuery.trim());
   const shownGroups = needle
@@ -355,11 +398,7 @@ function SignedInShell({ children }: { children: ReactNode }) {
         }))
         .filter((g) => g.items.length > 0)
     : groups;
-  const menuItems = shownGroups.map((g) =>
-    g.single ? toMenu(g.items[0]) : { key: g.key, icon: g.icon, label: g.label, children: g.items.map(toMenu) },
-  );
-  // Đang tìm thì mở hết nhóm để thấy kết quả.
-  const menuOpenKeys = collapsed ? popupKeys : needle ? parentKeys(shownGroups) : (openKeys ?? []);
+
   // Đường dẫn hiển thị trên đầu trang: Nhóm › Trang.
   const crumbItem = flat
     .filter((n) => isActive(n.key, pathname))
@@ -368,99 +407,119 @@ function SignedInShell({ children }: { children: ReactNode }) {
   const crumbs = crumbItem
     ? [...(crumbGroup && !crumbGroup.single ? [{ title: crumbGroup.label }] : []), { title: crumbItem.label }]
     : [];
-  const onOpenChange = (keys: string[]) => {
-    if (collapsed) return setPopupKeys(keys);
-    setOpenKeys(keys);
-    saveOpenKeys(keys);
-  };
+
   const allowed = canOpenPage(viewer, pathname);
   // Di động: 4 mục đầu ở thanh dưới, phần còn lại trong "Thêm".
   const bottom = flat.length > 5 ? flat.slice(0, 4) : flat;
   const moreActive = flat.length > 5 && !bottom.some((n) => selected.includes(n.key));
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#f6f8fa" }}>
       {!isMobile && (
-        <Layout.Sider
-          collapsible
-          collapsed={collapsed}
-          onCollapse={setCollapsed}
-          breakpoint="xl"
-          width={232}
-          collapsedWidth={72}
-          theme="light"
-          className="sider"
+        <aside
+          className={`sider${collapsed ? " collapsed" : ""}`}
+          style={{
+            width: collapsed ? 72 : 232,
+            borderRight: "1px solid #eef1f4",
+            background: "#fff",
+            display: "flex",
+            flexDirection: "column",
+            position: "sticky",
+            top: 0,
+            height: "100vh",
+            overflowY: "auto",
+            flexShrink: 0,
+          }}
         >
           <Brand collapsed={collapsed} />
           {!collapsed && (
-            <div className="nav-search">
-              <Input
-                allowClear
+            <div className="nav-search" style={{ padding: "0 12px 8px 12px" }}>
+              <TextInput
+                block
                 size="small"
-                prefix={<SearchOutlined style={{ color: "#8C959F" }} />}
-                placeholder="Tìm kiếm chức năng"
+                leadingVisual={SearchIcon}
+                placeholder="Tìm chức năng..."
                 value={navQuery}
                 onChange={(e) => setNavQuery(e.target.value)}
               />
             </div>
           )}
-          <Menu
-            mode="inline"
-            selectedKeys={menuSelected}
-            openKeys={menuOpenKeys}
-            onOpenChange={onOpenChange}
-            onClick={() => setPopupKeys([])}
-            inlineIndent={18}
-            items={menuItems}
-            className="side-menu"
-          />
-        </Layout.Sider>
-      )}
-      <Layout>
-        <Layout.Header className="topbar">
-          {!isStaff(viewer) && (
-            <PrimerActionMenu>
-              <PrimerActionMenu.Button size="small">
-                {centerId === 0
-                  ? "Tất cả trung tâm"
-                  : (() => {
-                      const cur = centers.find((c) => c.id === centerId);
-                      return cur ? (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                          <span className="dot" style={{ background: cur.color }} />
-                          {cur.name}
-                        </span>
-                      ) : (
-                        "Chọn trung tâm"
+          <nav aria-label="Menu chính" style={{ padding: collapsed ? "0 4px" : "0 8px 24px 8px", flex: 1 }}>
+            <NavList>
+              {shownGroups.map((g) => {
+                if (g.single) {
+                  const item = g.items[0];
+                  const active = item.key === bestKey;
+                  return (
+                    <NavList.Item
+                      key={item.key}
+                      as={Link}
+                      href={item.key}
+                      aria-current={active ? "page" : undefined}
+                      title={collapsed ? item.label : undefined}
+                    >
+                      <NavList.LeadingVisual>{item.icon}</NavList.LeadingVisual>
+                      {!collapsed && item.label}
+                    </NavList.Item>
+                  );
+                }
+                return (
+                  <NavList.Group key={g.key} title={!collapsed ? g.label : undefined}>
+                    {g.items.map((item) => {
+                      const active = item.key === bestKey;
+                      if (item.children) {
+                        return (
+                          <NavList.Item
+                            key={item.key}
+                            defaultOpen={active}
+                            title={collapsed ? item.label : undefined}
+                          >
+                            <NavList.LeadingVisual>{item.icon}</NavList.LeadingVisual>
+                            {!collapsed && item.label}
+                            {!collapsed && (
+                              <NavList.SubNav>
+                                {item.children.map((c) => {
+                                  const subActive = pathname === "/settings" && tab === c.key.split("tab=")[1];
+                                  return (
+                                    <NavList.Item
+                                      key={c.key}
+                                      as={Link}
+                                      href={c.key}
+                                      aria-current={subActive ? "page" : undefined}
+                                    >
+                                      {c.label}
+                                    </NavList.Item>
+                                  );
+                                })}
+                              </NavList.SubNav>
+                            )}
+                          </NavList.Item>
+                        );
+                      }
+                      return (
+                        <NavList.Item
+                          key={item.key}
+                          as={Link}
+                          href={item.key}
+                          aria-current={active ? "page" : undefined}
+                          title={collapsed ? item.label : undefined}
+                        >
+                          <NavList.LeadingVisual>{item.icon}</NavList.LeadingVisual>
+                          {!collapsed && item.label}
+                        </NavList.Item>
                       );
-                    })()}
-              </PrimerActionMenu.Button>
-              <PrimerActionMenu.Overlay align="start" width="medium">
-                <ActionList selectionVariant="single">
-                  {canSeeAllCenters(viewer) && (
-                    <ActionList.Item selected={centerId === 0} onSelect={() => setCenterId(0)}>
-                      Tất cả trung tâm
-                    </ActionList.Item>
-                  )}
-                  {centers.map((c) => (
-                    <ActionList.Item key={c.id} selected={centerId === c.id} onSelect={() => setCenterId(c.id)}>
-                      <ActionList.LeadingVisual>
-                        <span className="dot" style={{ background: c.color }} />
-                      </ActionList.LeadingVisual>
-                      {c.name}
-                    </ActionList.Item>
-                  ))}
-                </ActionList>
-              </PrimerActionMenu.Overlay>
-            </PrimerActionMenu>
-          )}
-          <GlobalSearch placeholder={isStaff(viewer) ? "Tìm học sinh lớp mình" : "Tìm HS / PH / GV, tên hoặc SĐT"} />
-          <div style={{ flex: 1 }} />
-          <UserMenu viewer={viewer} compact={isMobile} />
-        </Layout.Header>
-        <Layout.Content className="content" style={{ paddingBottom: isMobile ? 72 : 24 }}>
+                    })}
+                  </NavList.Group>
+                );
+              })}
+            </NavList>
+          </nav>
+        </aside>
+      )}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+        <header className="topbar">
           {allowed && !isMobile && crumbs.length > 0 && (
-            <PrimerBreadcrumbs className="crumbs">
+            <PrimerBreadcrumbs className="crumbs" style={{ margin: 0, fontSize: 13 }}>
               {crumbs.map((c, i) => (
                 <PrimerBreadcrumbs.Item key={i} selected={i === crumbs.length - 1}>
                   {c.title}
@@ -468,8 +527,60 @@ function SignedInShell({ children }: { children: ReactNode }) {
               ))}
             </PrimerBreadcrumbs>
           )}
-          {allowed ? children : <Result status="403" title="Không có quyền" subTitle="Tài khoản của bạn không mở được trang này." extra={<Link href="/">Về trang Hôm nay</Link>} />}
-        </Layout.Content>
+          <div style={{ flex: 1 }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            {!isStaff(viewer) && (
+              <PrimerActionMenu>
+                <PrimerActionMenu.Button size="small">
+                  {centerId === 0
+                    ? "Tất cả trung tâm"
+                    : (() => {
+                        const cur = centers.find((c) => c.id === centerId);
+                        return cur ? (
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                            <span className="dot" style={{ background: cur.color }} />
+                            {cur.name}
+                          </span>
+                        ) : (
+                          "Chọn trung tâm"
+                        );
+                      })()}
+                </PrimerActionMenu.Button>
+                <PrimerActionMenu.Overlay align="end" width="medium">
+                  <ActionList selectionVariant="single">
+                    {canSeeAllCenters(viewer) && (
+                      <ActionList.Item selected={centerId === 0} onSelect={() => setCenterId(0)}>
+                        Tất cả trung tâm
+                      </ActionList.Item>
+                    )}
+                    {centers.map((c) => (
+                      <ActionList.Item key={c.id} selected={centerId === c.id} onSelect={() => setCenterId(c.id)}>
+                        <ActionList.LeadingVisual>
+                          <span className="dot" style={{ background: c.color }} />
+                        </ActionList.LeadingVisual>
+                        {c.name}
+                      </ActionList.Item>
+                    ))}
+                  </ActionList>
+                </PrimerActionMenu.Overlay>
+              </PrimerActionMenu>
+            )}
+            <GlobalSearch placeholder={isStaff(viewer) ? "Tìm học sinh lớp mình" : "Tìm HS / PH / GV, tên hoặc SĐT"} />
+            <UserMenu viewer={viewer} compact={isMobile} />
+          </div>
+        </header>
+        <main className="content" style={{ paddingBottom: isMobile ? 72 : 24, flex: 1 }}>
+          {allowed ? (
+            children
+          ) : (
+            <div style={{ textAlign: "center", padding: "64px 20px" }}>
+              <AlertIcon size={48} fill="#CF222E" />
+              <h2 style={{ fontSize: 20, fontWeight: 700, margin: "16px 0 8px 0" }}>Không có quyền</h2>
+              <p style={{ color: "#59636E", marginBottom: 20 }}>Tài khoản của bạn không mở được trang này.</p>
+              <Link href="/" style={{ color: "#0969DA", fontWeight: 600 }}>Về trang Hôm nay</Link>
+            </div>
+          )}
+        </main>
         {isMobile && (
           <nav className="bottom-nav">
             {bottom.map((n) => (
@@ -480,30 +591,81 @@ function SignedInShell({ children }: { children: ReactNode }) {
             ))}
             {flat.length > 5 && (
               <button type="button" className={moreActive ? "active" : ""} onClick={() => setMoreOpen(true)}>
-                <AppstoreOutlined />
+                <AppsIcon size={16} />
                 <span>Thêm</span>
               </button>
             )}
           </nav>
         )}
-        {isMobile && (
-          <Drawer placement="bottom" height="auto" open={moreOpen} onClose={() => setMoreOpen(false)} title="Tất cả mục" className="more-drawer">
-            {groups.map((g) => (
-              <div key={g.key} className="more-group">
-                <div className="more-group-label">{g.label}</div>
-                <div className="more-grid">
-                  {g.items.map((n) => (
-                    <Link key={n.key} href={n.key} onClick={() => setMoreOpen(false)} className={selected.includes(n.key) ? "active" : ""}>
-                      {n.icon}
-                      <span>{n.label}</span>
-                    </Link>
-                  ))}
-                </div>
+        {isMobile && moreOpen && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.5)",
+              zIndex: 1000,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "flex-end",
+            }}
+            onClick={() => setMoreOpen(false)}
+          >
+            <div
+              style={{
+                background: "#fff",
+                borderTopLeftRadius: 16,
+                borderTopRightRadius: 16,
+                padding: 16,
+                maxHeight: "80vh",
+                overflowY: "auto",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <b style={{ fontSize: 16 }}>Tất cả mục</b>
+                <button
+                  type="button"
+                  style={{ border: "none", background: "none", cursor: "pointer", padding: 4 }}
+                  onClick={() => setMoreOpen(false)}
+                >
+                  <XIcon size={18} />
+                </button>
               </div>
-            ))}
-          </Drawer>
+              {groups.map((g) => (
+                <div key={g.key} className="more-group" style={{ marginBottom: 16 }}>
+                  <div className="more-group-label" style={{ fontWeight: 600, fontSize: 12, color: "#59636E", marginBottom: 8 }}>{g.label}</div>
+                  <div className="more-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+                    {g.items.map((n) => (
+                      <Link
+                        key={n.key}
+                        href={n.key}
+                        onClick={() => setMoreOpen(false)}
+                        className={selected.includes(n.key) ? "active" : ""}
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          padding: "12px 8px",
+                          borderRadius: 8,
+                          textDecoration: "none",
+                          color: "#1F2328",
+                          background: selected.includes(n.key) ? "#DDF4FF" : "#F6F8FA",
+                          fontSize: 12,
+                          gap: 6,
+                          textAlign: "center",
+                        }}
+                      >
+                        {n.icon}
+                        <span>{n.label}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
-      </Layout>
-    </Layout>
+      </div>
+    </div>
   );
 }

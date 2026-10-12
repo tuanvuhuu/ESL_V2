@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, App, Col, DatePicker, Form, InputNumber, Modal, Radio, Row, Select } from "antd";
+import { Alert, App, Col, DatePicker, Form, InputNumber, Modal, Radio, Row, Select } from "@/client/primer-compat";
 import { useEffect, useMemo, useState } from "react";
 import { api, useApi } from "@/client/api";
 import { useViewer } from "@/client/session";

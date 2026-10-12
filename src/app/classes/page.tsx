@@ -1,7 +1,7 @@
 "use client";
 
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Input, Select } from "antd";
+import { PlusOutlined, SearchOutlined } from "@/client/primer-icons";
+import { Button, Input, Select } from "@/client/primer-compat";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -120,34 +120,6 @@ export default function ClassesPage() {
       <PageHeader
         title="Danh sách lớp học"
         description={`${rows.length} lớp học`}
-        actions={
-          <>
-            <Input
-              allowClear
-              prefix={<SearchOutlined style={{ color: "#8c959f" }} />}
-              placeholder="Tìm mã, tên lớp, GV"
-              style={{ width: 220 }}
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-            <Select
-              value={status}
-              onChange={setStatus}
-              style={{ width: 160 }}
-              popupMatchSelectWidth={false}
-              options={[
-                { value: "ALL", label: `Tất cả (${counts.ALL ?? 0})` },
-                ...CLASS_STATUSES.map((s) => ({ value: s.value, label: `${s.label} (${counts[s.value] ?? 0})` })),
-              ]}
-            />
-            {button}
-            {canAdd && (
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreating(true)}>
-                Mở lớp mới
-              </Button>
-            )}
-          </>
-        }
       />
       <div>
         <PrimerGrid<Row>
@@ -157,6 +129,38 @@ export default function ClassesPage() {
           columns={columns}
           dataSource={rows}
           scroll={{ x: "max-content" }}
+          toolbar={
+            <>
+              <Input
+                allowClear
+                prefix={<SearchOutlined style={{ color: "#8c959f" }} />}
+                placeholder="Tìm mã, tên lớp, GV"
+                style={{ width: 260 }}
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
+              <Select
+                value={status}
+                onChange={setStatus}
+                style={{ width: 160 }}
+                popupMatchSelectWidth={false}
+                options={[
+                  { value: "ALL", label: `Tất cả (${counts.ALL ?? 0})` },
+                  ...CLASS_STATUSES.map((s) => ({ value: s.value, label: `${s.label} (${counts[s.value] ?? 0})` })),
+                ]}
+              />
+            </>
+          }
+          actionsComponent={
+            <>
+              {button}
+              {canAdd && (
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreating(true)}>
+                  Mở lớp mới
+                </Button>
+              )}
+            </>
+          }
           locale={{ emptyText: dq || status !== "ALL" ? "Không tìm thấy lớp phù hợp." : <Dash /> }}
           pagination={{ defaultPageSize: 50, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100], showTotal: (t, [a, b]) => `${a}–${b} trong ${t} lớp` }}
         />

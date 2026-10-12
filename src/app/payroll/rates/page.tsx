@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PlusOutlined, SettingOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Divider, Modal, Radio, Row, Select, Space, Table, Tag, message } from "antd";
+import { PlusIcon } from "@primer/octicons-react";
+import { Button as PrimerButton } from "@primer/react";
+import { message } from "@/client/primer-compat";
 import { api } from "@/client/api";
 import { RateModal } from "@/components/payroll/RateModal";
+import { PrimerGrid } from "@/components/PrimerGrid";
+import { DotLabel, PageHeader } from "@/components/ui";
 import { formatCurrency } from "@/lib/finance";
-import { OVERLAP_POLICIES, overlapPolicyOption } from "@/lib/payroll";
 import { formatDateVN } from "@/lib/dates";
 
 export default function PayrollRatesPage() {
@@ -52,9 +54,9 @@ export default function PayrollRatesPage() {
       dataIndex: "role",
       key: "role",
       render: (role: string) => (
-        <Tag color={role === "TEACHER" ? "blue" : "purple"}>
+        <DotLabel color={role === "TEACHER" ? "#0969DA" : "#8250DF"}>
           {role === "TEACHER" ? "Giáo viên chính" : "Trợ giảng"}
-        </Tag>
+        </DotLabel>
       ),
     },
     {
@@ -85,9 +87,9 @@ export default function PayrollRatesPage() {
       key: "action",
       align: "center" as const,
       render: (_: any, row: any) => (
-        <Button
+        <PrimerButton
           size="small"
-          icon={<PlusOutlined />}
+          leadingVisual={PlusIcon}
           onClick={() =>
             setModalState({
               open: true,
@@ -97,29 +99,25 @@ export default function PayrollRatesPage() {
           }
         >
           Đổi mức giá
-        </Button>
+        </PrimerButton>
       ),
     },
   ];
 
   return (
     <div style={{ padding: "0 0 24px 0" }}>
-      <div style={{ marginBottom: 16 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px 0" }}>Cài đặt đơn giá giờ & tính lương</h1>
-        <div style={{ color: "#59636E" }}>
-          Quản lý lịch sử đơn giá theo giờ riêng cho vai trò giáo viên và trợ giảng, có ngày bắt đầu hiệu lực
-        </div>
-      </div>
+      <PageHeader
+        title="Cài đặt đơn giá giờ & tính lương"
+        description="Quản lý lịch sử đơn giá theo giờ riêng cho vai trò giáo viên và trợ giảng, có ngày bắt đầu hiệu lực"
+      />
 
-      <Card size="small" title="Lịch sử đơn giá giờ giáo viên" style={{ borderRadius: 8 }}>
-        <Table
-          dataSource={rates}
-          columns={columns}
-          rowKey="id"
-          loading={loading}
-          pagination={{ pageSize: 50, showSizeChanger: true }}
-        />
-      </Card>
+      <PrimerGrid
+        dataSource={rates}
+        columns={columns}
+        rowKey="id"
+        loading={loading}
+        pagination={{ pageSize: 50, showSizeChanger: true }}
+      />
 
       <RateModal
         open={modalState.open}

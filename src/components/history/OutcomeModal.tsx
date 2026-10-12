@@ -1,6 +1,6 @@
 "use client";
 
-import { App, Form, Input, Modal, Radio } from "antd";
+import { App, Form, Input, Modal, Radio } from "@/client/primer-compat";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api";
 import { COURSE_OUTCOMES } from "@/lib/constants";

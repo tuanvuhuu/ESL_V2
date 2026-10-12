@@ -1,7 +1,7 @@
 "use client";
 
-import { PlusOutlined } from "@ant-design/icons";
-import { Alert, App, Button, Card, Col, Descriptions, Dropdown, Empty, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Skeleton, Space, Table, Tabs, Tag } from "antd";
+import { PlusOutlined } from "@/client/primer-icons";
+import { Alert, App, Button, Card, Col, Descriptions, Dropdown, Empty, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Skeleton, Space, Table, Tabs, Tag } from "@/client/primer-compat";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";

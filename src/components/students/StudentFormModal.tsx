@@ -1,10 +1,11 @@
 "use client";
 
-import { Alert, App, Button, Col, DatePicker, Divider, Form, Input, Modal, Row, Select } from "antd";
+import { Alert, App, Button, Col, DatePicker, Divider, Form, Input, Row, Select } from "@/client/primer-compat";
 import dayjs, { type Dayjs } from "dayjs";
 import { useEffect, useState } from "react";
 import { api, qs, useDebounced } from "@/client/api";
 import { useCenters } from "@/client/centers";
+import { PrimerModal } from "@/components/PrimerModal";
 import type { Student } from "@/client/types";
 import { AUDIENCES, GENDERS, QUIT_REASONS, RELATIONS, STUDENT_STATUSES } from "@/lib/constants";
 import { formatDateVN } from "@/lib/dates";
@@ -133,21 +134,15 @@ export function StudentFormModal({ open, student, onClose, onSaved }: Props) {
   };
 
   return (
-    <Modal
+    <PrimerModal
       open={open}
       width="min(880px, calc(100vw - 48px))"
-      style={{ top: 60 }}
       title={isEdit ? `Sửa học sinh · ${student!.code}` : "Thêm học sinh"}
-      onCancel={onClose}
-      destroyOnHidden
-      footer={[
-        <Button key="c" onClick={onClose}>
-          Hủy
-        </Button>,
-        <Button key="s" type="primary" loading={saving} onClick={submit}>
-          Lưu
-        </Button>,
-      ]}
+      subtitle={isEdit ? "Cập nhật hồ sơ học viên" : "Tạo mới học sinh và liên kết phụ huynh"}
+      onClose={onClose}
+      onOk={submit}
+      confirmLoading={saving}
+      okText="Lưu học sinh"
     >
       {dups.length > 0 && (
         <Alert
@@ -300,6 +295,6 @@ export function StudentFormModal({ open, student, onClose, onSaved }: Props) {
         )}
         <div className="sub">Thông tin chi tiết khác bổ sung sau trong hồ sơ.</div>
       </Form>
-    </Modal>
+    </PrimerModal>
   );
 }

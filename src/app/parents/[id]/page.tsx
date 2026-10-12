@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Card, Col, Descriptions, Empty, Row, Skeleton, Space, Tabs } from "antd";
+import { Button, Card, Col, Descriptions, Empty, Row, Skeleton, Space, Tabs } from "@/client/primer-compat";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";

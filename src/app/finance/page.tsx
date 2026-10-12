@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PlusOutlined, PrinterOutlined, StopOutlined } from "@ant-design/icons";
-import { Button, Card, Col, DatePicker, Dropdown, Input, Modal, Row, Select, Space, Tag, message } from "antd";
+import { PlusOutlined, PrinterOutlined, StopOutlined } from "@/client/primer-icons";
+import { Button, Card, Col, DatePicker, Input, Modal, Row, Select, Tag, message } from "@/client/primer-compat";
 import dayjs from "dayjs";
 import { api, qs } from "@/client/api";
-import { DataGrid } from "@/components/DataGrid";
+import { PrimerGrid } from "@/components/PrimerGrid";
 import { useCenters } from "@/client/centers";
 import { useSession } from "@/client/session";
+import { ActionMenu, DotLabel, PageHeader } from "@/components/ui";
 import { PaymentModal } from "@/components/finance/PaymentModal";
 import { ReceiptModal, type ReceiptData } from "@/components/finance/ReceiptModal";
 import { formatCurrency, paymentOption } from "@/lib/finance";
@@ -116,7 +117,7 @@ export default function FinancePage() {
       dataIndex: ["center", "name"],
       key: "center",
       render: (_: any, row: any) => (
-        <Tag color={row.center.color}>{row.center.name}</Tag>
+        <DotLabel color={row.center.color}>{row.center.name}</DotLabel>
       ),
     },
     {
@@ -166,44 +167,53 @@ export default function FinancePage() {
       title: "Thao tác",
       key: "actions",
       align: "center" as const,
+      width: 48,
       render: (_: any, row: any) => (
-        <Dropdown
-          menu={{
-            items: [
-              {
-                key: "print",
-                icon: <PrinterOutlined />,
-                label: "In phiếu thu",
-                onClick: () => setSelectedReceipt(row),
-              },
-              ...(row.status === "VALID"
-                ? [
-                    {
-                      key: "cancel",
-                      icon: <StopOutlined />,
-                      danger: true,
-                      label: "Hủy phiếu thu",
-                      onClick: () => setCancelModal({ open: true, paymentId: row.id }),
-                    },
-                  ]
-                : []),
-            ],
-          }}
-        >
-          <Button size="small">⋯</Button>
-        </Dropdown>
+        <ActionMenu
+          title={`Phiếu thu #${row.id}`}
+          items={[
+            {
+              key: "print",
+              label: "In phiếu thu",
+              onClick: () => setSelectedReceipt(row),
+            },
+            ...(row.status === "VALID"
+              ? [
+                  {
+                    key: "cancel",
+                    danger: true,
+                    label: "Hủy phiếu thu",
+                    onClick: () => setCancelModal({ open: true, paymentId: row.id }),
+                  },
+                ]
+              : []),
+          ]}
+        />
       ),
     },
   ];
 
   return (
-    <div style={{ padding: "0 0 24px 0" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px 0" }}>Quản lý thu học phí</h1>
-          <div style={{ color: "#59636E" }}>Lập, in và theo dõi phiếu thu học phí của học sinh các trung tâm</div>
-        </div>
-      </div>
+    <>
+      <PageHeader
+        title="Quản lý thu học phí"
+        description="Lập, in và theo dõi phiếu thu học phí của học sinh các trung tâm"
+        actions={
+          <div className="grid-toolbar" style={{ margin: 0 }}>
+            <Select
+              value={statusFilter}
+              onChange={setStatusFilter}
+              style={{ width: 150 }}
+              popupMatchSelectWidth={false}
+              options={[
+                { label: "Hợp lệ", value: "VALID" },
+                { label: "Đã hủy", value: "CANCELLED" },
+                { label: "Tất cả", value: "ALL" },
+              ]}
+            />
+          </div>
+        }
+      />
 
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col xs={24} sm={8}>
@@ -232,29 +242,16 @@ export default function FinancePage() {
         </Col>
       </Row>
 
-      <Card size="small" style={{ marginBottom: 16 }}>
-        <Space wrap>
-          <span>Trạng thái:</span>
-          <Select
-            value={statusFilter}
-            onChange={setStatusFilter}
-            style={{ width: 140 }}
-            options={[
-              { label: "Hợp lệ", value: "VALID" },
-              { label: "Đã hủy", value: "CANCELLED" },
-              { label: "Tất cả", value: "ALL" },
-            ]}
-          />
-        </Space>
-      </Card>
-
-      <DataGrid
-        dataSource={payments}
-        columns={columns}
-        rowKey="id"
-        loading={loading}
-        pagination={{ pageSize: 50, showSizeChanger: true }}
-      />
+      <div>
+        <PrimerGrid
+          dataSource={payments}
+          columns={columns}
+          rowKey="id"
+          loading={loading}
+          scroll={{ x: "max-content" }}
+          pagination={{ pageSize: 50, showSizeChanger: true }}
+        />
+      </div>
 
       <ReceiptModal
         open={selectedReceipt != null}
@@ -284,6 +281,6 @@ export default function FinancePage() {
           placeholder="Nhập nhầm số tiền, học sinh đổi ý..."
         />
       </Modal>
-    </div>
+    </>
   );
 }

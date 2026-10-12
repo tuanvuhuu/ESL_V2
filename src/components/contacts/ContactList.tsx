@@ -1,7 +1,7 @@
 "use client";
 
-import { PlusOutlined } from "@ant-design/icons";
-import { Button, Empty, Skeleton, Tag, Timeline } from "antd";
+import { PlusOutlined } from "@/client/primer-icons";
+import { Button, Empty, Skeleton, Tag, Timeline } from "@/client/primer-compat";
 import dayjs from "dayjs";
 import Link from "next/link";
 import { useState } from "react";

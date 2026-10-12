@@ -1,6 +1,6 @@
 "use client";
 
-import { Tag, Tooltip } from "antd";
+import { Tag, Tooltip } from "@/client/primer-compat";
 import type { ReactNode } from "react";
 import { LOW_BALANCE, attendanceOption, type Balance } from "@/lib/attendance";
 import { Dash } from "../ui";

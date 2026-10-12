@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button, Result } from "antd";
+import { Button, Result } from "@/client/primer-compat";
 
 export default function NotFound() {
   return (

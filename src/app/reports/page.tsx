@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DownloadOutlined } from "@ant-design/icons";
-import { Button, Card, Col, DatePicker, Row, Select, Space, Table, Tabs, Tag, message } from "antd";
+import { DownloadOutlined } from "@/client/primer-icons";
+import { Button, Card, Col, DatePicker, Row, Select, Space, Table, Tabs, Tag, message } from "@/client/primer-compat";
 import dayjs from "dayjs";
 import { api, qs } from "@/client/api";
 import { useCenters } from "@/client/centers";

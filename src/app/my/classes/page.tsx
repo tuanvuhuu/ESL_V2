@@ -1,6 +1,6 @@
 "use client";
 
-import { Collapse, Empty, List, Skeleton, Space, Tag } from "antd";
+import { Collapse, Empty, List, Skeleton, Space, Tag } from "@/client/primer-compat";
 import Link from "next/link";
 import { useApi } from "@/client/api";
 import type { Balance } from "@/client/types";

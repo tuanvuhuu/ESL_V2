@@ -1,7 +1,8 @@
 "use client";
 
-import { PrinterOutlined } from "@ant-design/icons";
-import { Button, Descriptions, Divider, Modal, Tag } from "antd";
+import { Button as PrimerButton } from "@primer/react";
+import { Descriptions, Divider, Tag } from "@/client/primer-compat";
+import { PrimerModal } from "@/components/PrimerModal";
 import { formatCurrency, paymentOption } from "@/lib/finance";
 import { formatDateVN } from "@/lib/dates";
 
@@ -37,19 +38,20 @@ export function ReceiptModal({
   const methodOpt = paymentOption(receipt.method);
 
   return (
-    <Modal
+    <PrimerModal
       open={open}
-      onCancel={onClose}
-      width={640}
+      onClose={onClose}
+      width="xlarge"
       title="Phiếu thu học phí"
-      footer={[
-        <Button key="close" onClick={onClose}>
-          Đóng
-        </Button>,
-        <Button key="print" type="primary" icon={<PrinterOutlined />} onClick={handlePrint}>
-          In phiếu thu
-        </Button>,
-      ]}
+      subtitle="Biên lai chứng từ thu tiền học phí của học sinh"
+      footer={
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", width: "100%" }}>
+          <PrimerButton onClick={onClose}>Đóng</PrimerButton>
+          <PrimerButton variant="primary" onClick={handlePrint}>
+            In phiếu thu
+          </PrimerButton>
+        </div>
+      }
     >
       <div id="printable-receipt" style={{ padding: "16px 8px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
@@ -114,6 +116,6 @@ export function ReceiptModal({
           </div>
         </div>
       </div>
-    </Modal>
+    </PrimerModal>
   );
 }

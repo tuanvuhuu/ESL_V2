@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DeleteOutlined } from "@ant-design/icons";
-import { Button, Descriptions, Divider, Modal, Popconfirm, Table, Tag, message } from "antd";
-import type { ColumnsType } from "antd/es/table";
+import { DeleteOutlined } from "@/client/primer-icons";
+import { Button, Descriptions, Divider, Modal, Popconfirm, Table, Tag, message } from "@/client/primer-compat";
+import type { ColumnsType } from "@/client/primer-compat";
 import { api } from "@/client/api";
 import { DataGrid } from "@/components/DataGrid";
 import { formatCurrency } from "@/lib/finance";

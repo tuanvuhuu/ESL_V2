@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Alert, DatePicker, Form, Input, InputNumber, Modal, Radio, Select, message } from "antd";
+import { Alert, DatePicker, Form, Input, InputNumber, Radio, Select, message } from "@/client/primer-compat";
 import dayjs from "dayjs";
 import { api } from "@/client/api";
+import { PrimerModal } from "@/components/PrimerModal";
 import { formatCurrency, PAYMENT_METHODS } from "@/lib/finance";
 import { todayISO } from "@/lib/dates";
 
@@ -71,14 +72,15 @@ export function PaymentModal({
   };
 
   return (
-    <Modal
+    <PrimerModal
       open={open}
       title="Lập phiếu thu học phí"
-      onCancel={onClose}
+      subtitle="Ghi nhận khoản thanh toán học phí của học sinh và tạo phiếu thu"
+      onClose={onClose}
       onOk={() => form.submit()}
       confirmLoading={loading}
       okText="Lưu và in phiếu thu"
-      destroyOnClose
+      width="large"
     >
       {target && (
         <Alert
@@ -142,6 +144,6 @@ export function PaymentModal({
           <Input.TextArea rows={2} placeholder="Đóng đợt 1, đóng theo chuyển khoản..." />
         </Form.Item>
       </Form>
-    </Modal>
+    </PrimerModal>
   );
 }

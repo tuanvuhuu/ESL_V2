@@ -46,9 +46,10 @@ const WD_SHORT = ["", "T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 /** "T2, 12/10/2026" */
 export function formatDateVN(s: string, withWeekday = false): string {
   if (!s) return "";
-  const [y, m, d] = s.split("-");
+  const dateOnly = s.includes("T") ? s.split("T")[0] : s;
+  const [y, m, d] = dateOnly.split("-");
   const base = `${d}/${m}/${y}`;
-  return withWeekday ? `${WD_SHORT[isoWeekday(s)]}, ${base}` : base;
+  return withWeekday ? `${WD_SHORT[isoWeekday(dateOnly)]}, ${base}` : base;
 }
 
 export function todayISO(): string {

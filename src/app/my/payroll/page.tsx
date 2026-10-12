@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Alert, Card, Col, DatePicker, Divider, Grid, Row, Space, Table, Tag, message } from "antd";
+import { Alert, Card, Col, DatePicker, Divider, Grid, Row, Space, Table, Tag, message } from "@/client/primer-compat";
 import dayjs from "dayjs";
 import { api } from "@/client/api";
 import { useSession } from "@/client/session";

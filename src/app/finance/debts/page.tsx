@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DollarOutlined, ExclamationCircleOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Input, Row, Select, Tag, message } from "antd";
+import { DollarOutlined, ExclamationCircleOutlined, SearchOutlined } from "@/client/primer-icons";
+import { Button, Card, Col, Input, Row, Select, Tag, message } from "@/client/primer-compat";
 import { api, qs, useDebounced } from "@/client/api";
 import { PrimerGrid } from "@/components/PrimerGrid";
 import { useCenters } from "@/client/centers";

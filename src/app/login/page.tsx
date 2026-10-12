@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Button, Form, Input, Spin } from "antd";
+import { Alert, Button, Form, Input, Spin } from "@/client/primer-compat";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { api } from "@/client/api";

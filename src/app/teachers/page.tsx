@@ -1,7 +1,7 @@
 "use client";
 
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import { App, Button, Input, Select } from "antd";
+import { PlusOutlined, SearchOutlined } from "@/client/primer-icons";
+import { App, Button, Input, Select } from "@/client/primer-compat";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -11,6 +11,7 @@ import { useViewer } from "@/client/session";
 import type { Teacher } from "@/client/types";
 import { useColumnSettings, type ColumnDef } from "@/components/ColumnSettings";
 import { TeacherFormModal } from "@/components/teachers/TeacherFormModal";
+import { TeacherViewDrawer } from "@/components/teachers/TeacherViewDrawer";
 import { ActionMenu, CenterTag, CertTag, Dash, DotLabel, PageHeader, StatusTag, TwoLine } from "@/components/ui";
 import { PrimerGrid } from "@/components/PrimerGrid";
 import { EMPLOYMENTS, TEACHER_ORIGINS, TEACHER_ROLES, TEACHER_STATUSES, optionOf } from "@/lib/constants";
@@ -28,6 +29,7 @@ export default function TeachersPage() {
   const dq = useDebounced(q);
   const [status, setStatus] = useState("ALL");
   const [editing, setEditing] = useState<Teacher | null | undefined>(undefined);
+  const [viewing, setViewing] = useState<Row | null>(null);
   const { data, loading, reload } = useApi<Row[]>(`/api/teachers${qs({ q: dq, centerId })}`);
 
   const rows = useMemo(() => (data ?? []).filter((t) => status === "ALL" || t.status === status), [data, status]);
@@ -45,7 +47,36 @@ export default function TeachersPage() {
         title: "Giáo viên",
         width: 230,
         defaultPin: "left",
-        render: (_, r) => <TwoLine main={<Link className="cell-main" href={`/teachers/${r.id}`}>{r.displayName}</Link>} sub={r.fullName} />,
+        render: (_, r) => (
+          <TwoLine
+            main={
+              <button
+                type="button"
+                className="cell-main-btn"
+                onClick={() => setViewing(r)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  font: "inherit",
+                  fontWeight: 600,
+                  color: "var(--color-fg-default, #1f2328)",
+                  cursor: "pointer",
+                  textAlign: "left",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.color = "var(--color-accent-fg, #0969da)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.color = "var(--color-fg-default, #1f2328)";
+                }}
+              >
+                {r.displayName}
+              </button>
+            }
+            sub={r.fullName}
+          />
+        ),
       },
       { key: "role", title: "Vai trò", width: 140, render: (_, r) => <StatusTag options={TEACHER_ROLES} value={r.role} /> },
       {
@@ -76,7 +107,7 @@ export default function TeachersPage() {
           <ActionMenu
             title={`${r.displayName} · ${r.code}`}
             items={[
-              { key: "view", label: "Xem hồ sơ", onClick: () => router.push(`/teachers/${r.id}`) },
+              { key: "view", label: "Xem hồ sơ", onClick: () => setViewing(r) },
               ...(canEdit ? [{ key: "edit", label: "Sửa thông tin", onClick: () => setEditing(r) }] : []),
               ...(r.phone
                 ? [
@@ -108,34 +139,6 @@ export default function TeachersPage() {
       <PageHeader
         title="Danh sách giáo viên"
         description={`${rows.length} giáo viên`}
-        actions={
-          <>
-            <Input
-              allowClear
-              prefix={<SearchOutlined style={{ color: "#8c959f" }} />}
-              placeholder="Tìm tên, mã, SĐT"
-              style={{ width: 220 }}
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-            <Select
-              value={status}
-              onChange={setStatus}
-              style={{ width: 160 }}
-              popupMatchSelectWidth={false}
-              options={[
-                { value: "ALL", label: `Tất cả (${counts.ALL ?? 0})` },
-                ...TEACHER_STATUSES.map((s) => ({ value: s.value, label: `${s.label} (${counts[s.value] ?? 0})` })),
-              ]}
-            />
-            {button}
-            {canEdit && (
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing(null)}>
-                Thêm giáo viên
-              </Button>
-            )}
-          </>
-        }
       />
       <div>
         <PrimerGrid<Row>
@@ -145,6 +148,38 @@ export default function TeachersPage() {
           columns={columns}
           dataSource={rows}
           scroll={{ x: "max-content" }}
+          toolbar={
+            <>
+              <Input
+                allowClear
+                prefix={<SearchOutlined style={{ color: "#8c959f" }} />}
+                placeholder="Tìm tên, mã, SĐT"
+                style={{ width: 260 }}
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
+              <Select
+                value={status}
+                onChange={setStatus}
+                style={{ width: 160 }}
+                popupMatchSelectWidth={false}
+                options={[
+                  { value: "ALL", label: `Tất cả (${counts.ALL ?? 0})` },
+                  ...TEACHER_STATUSES.map((s) => ({ value: s.value, label: `${s.label} (${counts[s.value] ?? 0})` })),
+                ]}
+              />
+            </>
+          }
+          actionsComponent={
+            <>
+              {button}
+              {canEdit && (
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing(null)}>
+                  Thêm giáo viên
+                </Button>
+              )}
+            </>
+          }
           locale={{ emptyText: dq || status !== "ALL" ? "Không tìm thấy giáo viên phù hợp." : "Chưa có giáo viên nào." }}
           pagination={{
             defaultPageSize: 50,
@@ -162,6 +197,13 @@ export default function TeachersPage() {
           setEditing(undefined);
           void reload();
         }}
+      />
+      <TeacherViewDrawer
+        open={!!viewing}
+        teacher={viewing}
+        canEdit={canEdit}
+        onClose={() => setViewing(null)}
+        onEdit={(t) => setEditing(t)}
       />
     </>
   );

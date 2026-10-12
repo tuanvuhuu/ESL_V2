@@ -1,6 +1,6 @@
 "use client";
 
-import { ActionMenu as PrimerActionMenu, ActionList } from "@primer/react";
+import { ActionMenu as PrimerActionMenu, ActionList, IconButton } from "@primer/react";
 import {
   ClockIcon,
   CopyIcon,
@@ -12,7 +12,6 @@ import {
   SyncIcon,
   TrashIcon,
 } from "@primer/octicons-react";
-import { Avatar, Tag, Typography, type MenuProps } from "antd";
 import type { ReactNode } from "react";
 import { CERT_WARN_DAYS, optionOf, type Option } from "@/lib/constants";
 import { addDays, formatDateVN, todayISO } from "@/lib/dates";
@@ -23,9 +22,20 @@ export function StatusTag({ options, value, sub }: { options: readonly Option[];
   if (!opt) return <Dash />;
   return (
     <div>
-      <Tag color={undefined} style={{ color: opt.color, borderColor: opt.color, background: `${opt.color}12`, marginInlineEnd: 0 }}>
+      <span
+        style={{
+          display: "inline-block",
+          padding: "2px 8px",
+          borderRadius: 12,
+          fontSize: 12,
+          fontWeight: 500,
+          color: opt.color,
+          border: `1px solid ${opt.color}`,
+          background: `${opt.color}12`,
+        }}
+      >
         {opt.label}
-      </Tag>
+      </span>
       {sub ? <div className="sub">{sub}</div> : null}
     </div>
   );
@@ -34,7 +44,20 @@ export function StatusTag({ options, value, sub }: { options: readonly Option[];
 export function CenterTag({ center }: { center?: { name: string; color: string } | null }) {
   if (!center) return <Dash />;
   return (
-    <Tag style={{ color: center.color, borderColor: center.color, background: `${center.color}12` }}>{center.name}</Tag>
+    <span
+      style={{
+        display: "inline-block",
+        padding: "2px 8px",
+        borderRadius: 12,
+        fontSize: 12,
+        fontWeight: 500,
+        color: center.color,
+        border: `1px solid ${center.color}`,
+        background: `${center.color}12`,
+      }}
+    >
+      {center.name}
+    </span>
   );
 }
 
@@ -42,8 +65,42 @@ export function CenterTag({ center }: { center?: { name: string; color: string }
 export function CertTag({ expiry, always }: { expiry: string | null | undefined; always?: boolean }) {
   if (!expiry) return always ? <Dash /> : null;
   const today = todayISO();
-  if (expiry < today) return <Tag color="red">Hết hạn {formatDateVN(expiry)}</Tag>;
-  if (expiry <= addDays(today, CERT_WARN_DAYS)) return <Tag color="orange">Hết hạn {formatDateVN(expiry)}</Tag>;
+  if (expiry < today) {
+    return (
+      <span
+        style={{
+          display: "inline-block",
+          padding: "2px 8px",
+          borderRadius: 12,
+          fontSize: 12,
+          fontWeight: 500,
+          color: "#CF222E",
+          background: "#FFEBE9",
+          border: "1px solid #FF8182",
+        }}
+      >
+        Hết hạn {formatDateVN(expiry)}
+      </span>
+    );
+  }
+  if (expiry <= addDays(today, CERT_WARN_DAYS)) {
+    return (
+      <span
+        style={{
+          display: "inline-block",
+          padding: "2px 8px",
+          borderRadius: 12,
+          fontSize: 12,
+          fontWeight: 500,
+          color: "#9A6700",
+          background: "#FFF8C5",
+          border: "1px solid #D4A72C",
+        }}
+      >
+        Hết hạn {formatDateVN(expiry)}
+      </span>
+    );
+  }
   return always ? <span className="sub">Đến {formatDateVN(expiry)}</span> : null;
 }
 
@@ -64,9 +121,22 @@ export function DotLabel({ color, children }: { color?: string; children: ReactN
 export function PersonAvatar({ name, color, size = 32 }: { name: string; color?: string; size?: number }) {
   const c = color ?? "#8C959F";
   return (
-    <Avatar size={size} style={{ background: `${c}2e`, color: c, fontWeight: 600, flexShrink: 0 }}>
+    <span
+      style={{
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        background: `${c}2e`,
+        color: c,
+        fontWeight: 600,
+        fontSize: size >= 32 ? 13 : 11,
+        display: "inline-grid",
+        placeItems: "center",
+        flexShrink: 0,
+      }}
+    >
       {initials(name)}
-    </Avatar>
+    </span>
   );
 }
 
@@ -82,13 +152,13 @@ export function TwoLine({ main, sub }: { main: ReactNode; sub?: ReactNode }) {
 export function PageHeader({ title, description, actions }: { title: ReactNode; description?: ReactNode; actions?: ReactNode }) {
   return (
     <div className="page-header">
-      <div>
-        <Typography.Title level={4} style={{ margin: 0, fontSize: 16 }}>
+      <div className="page-header-title-group">
+        <h2 className="page-header-title">
           {title}
-        </Typography.Title>
-        {description ? <div className="page-desc">{description}</div> : null}
+        </h2>
+        {description ? <span className="page-desc">{description}</span> : null}
       </div>
-      <div className="page-actions">{actions}</div>
+      {actions ? <div className="page-actions">{actions}</div> : null}
     </div>
   );
 }
@@ -107,18 +177,20 @@ export type ActionMenuItem = {
  * Nút ⋯ cuối dòng chuẩn Primer React: ActionMenu + ActionList (theo Storybook).
  * Tự động gắn icon phù hợp theo key, có divider và variant="danger" cho tác vụ huỷ/xoá.
  */
-export function ActionMenu({ title, items }: { title: string; items?: (ActionMenuItem | null | undefined | false)[] | MenuProps["items"] }) {
+export function ActionMenu({ title, items }: { title: string; items?: (ActionMenuItem | null | undefined | false)[] | any[] }) {
   const list = (items ?? []).filter(Boolean) as (ActionMenuItem & Record<string, any>)[];
 
   return (
     <PrimerActionMenu>
-      <PrimerActionMenu.Button
-        aria-label="Thao tác"
-        size="small"
-        variant="invisible"
-        leadingVisual={KebabHorizontalIcon}
-        className="action-menu-btn"
-      />
+      <PrimerActionMenu.Anchor>
+        <IconButton
+          icon={KebabHorizontalIcon}
+          variant="invisible"
+          size="small"
+          aria-label="Thao tác"
+          className="action-menu-btn"
+        />
+      </PrimerActionMenu.Anchor>
       <PrimerActionMenu.Overlay align="end" width="medium">
         <ActionList showDividers={false}>
           {title && (

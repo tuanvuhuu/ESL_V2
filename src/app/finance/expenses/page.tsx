@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Popconfirm, Row, Select, Space, Tag, message } from "antd";
+import { PlusIcon, TrashIcon } from "@primer/octicons-react";
+import { Button as PrimerButton, IconButton } from "@primer/react";
+import { Popconfirm, Select, message } from "@/client/primer-compat";
 import { api, qs } from "@/client/api";
-import { DataGrid } from "@/components/DataGrid";
+import { PrimerGrid } from "@/components/PrimerGrid";
 import { useCenters } from "@/client/centers";
+import { DotLabel, PageHeader } from "@/components/ui";
 import { ExpenseModal, EXPENSE_CATEGORIES } from "@/components/finance/ExpenseModal";
 import { formatCurrency } from "@/lib/finance";
 import { formatDateVN } from "@/lib/dates";
@@ -55,7 +57,7 @@ export default function ExpensesPage() {
       title: "Mã chi",
       dataIndex: "code",
       key: "code",
-      render: (code: string) => <span style={{ fontFamily: "monospace", fontWeight: 600 }}>{code}</span>,
+      render: (code: string) => <span style={{ fontFamily: "monospace", fontWeight: 600, color: "#1F6FEB" }}>{code}</span>,
     },
     {
       title: "Ngày chi",
@@ -66,7 +68,7 @@ export default function ExpensesPage() {
     {
       title: "Trung tâm",
       key: "center",
-      render: (_: any, row: any) => <Tag color={row.center.color}>{row.center.name}</Tag>,
+      render: (_: any, row: any) => <DotLabel color={row.center.color}>{row.center.name}</DotLabel>,
     },
     {
       title: "Khoản mục",
@@ -74,7 +76,22 @@ export default function ExpensesPage() {
       key: "category",
       render: (cat: string) => {
         const item = EXPENSE_CATEGORIES.find((c) => c.value === cat);
-        return <Tag color={item?.color}>{item?.label ?? cat}</Tag>;
+        return (
+          <span
+            style={{
+              display: "inline-block",
+              padding: "2px 8px",
+              borderRadius: 12,
+              fontSize: 12,
+              fontWeight: 500,
+              background: "#F6F8FA",
+              border: "1px solid #D0D7DE",
+              color: "#24292F",
+            }}
+          >
+            {item?.label ?? cat}
+          </span>
+        );
       },
     },
     {
@@ -117,7 +134,12 @@ export default function ExpensesPage() {
           cancelText="Hủy"
           okButtonProps={{ danger: true }}
         >
-          <Button size="small" danger icon={<DeleteOutlined />} />
+          <IconButton
+            icon={TrashIcon}
+            aria-label="Xóa khoản chi"
+            size="small"
+            variant="danger"
+          />
         </Popconfirm>
       ),
     },
@@ -125,43 +147,49 @@ export default function ExpensesPage() {
 
   return (
     <div style={{ padding: "0 0 24px 0" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px 0" }}>Quản lý chi phí trung tâm</h1>
-          <div style={{ color: "#59636E" }}>Theo dõi các khoản chi phí hoạt động, mặt bằng, điện nước, marketing theo trung tâm</div>
+      <PageHeader
+        title="Quản lý chi phí trung tâm"
+        description="Theo dõi các khoản chi phí hoạt động, mặt bằng, điện nước, marketing theo trung tâm"
+        actions={
+          <PrimerButton variant="primary" leadingVisual={PlusIcon} onClick={() => setModalOpen(true)}>
+            Thêm khoản chi
+          </PrimerButton>
+        }
+      />
+
+      <div style={{ display: "flex", gap: 16, alignItems: "center", marginBottom: 16 }}>
+        <div
+          style={{
+            background: "#fff",
+            border: "1px solid #d0d7de",
+            borderRadius: 6,
+            padding: "8px 16px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <span style={{ color: "#59636E", fontSize: 13 }}>Tổng chi phí ({expenses.length} khoản):</span>
+          <span style={{ fontSize: 16, fontWeight: 700, color: "#CF222E", fontVariantNumeric: "tabular-nums" }}>
+            {formatCurrency(totalExpense)}
+          </span>
         </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
-          Thêm khoản chi
-        </Button>
-      </div>
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        <Col xs={24} sm={8}>
-          <Card size="small" style={{ borderRadius: 8 }}>
-            <div style={{ color: "#59636E", fontSize: 13 }}>Tổng chi phí ({expenses.length} khoản)</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "#CF222E", fontVariantNumeric: "tabular-nums" }}>
-              {formatCurrency(totalExpense)}
-            </div>
-          </Card>
-        </Col>
-      </Row>
-
-      <Card size="small" style={{ marginBottom: 16 }}>
-        <Space wrap>
-          <span>Khoản mục:</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 13, color: "#59636E" }}>Khoản mục:</span>
           <Select
             value={categoryFilter}
             onChange={setCategoryFilter}
-            style={{ width: 200 }}
+            style={{ width: 190 }}
             options={[
               { label: "Tất cả khoản mục", value: "ALL" },
               ...EXPENSE_CATEGORIES.map((c) => ({ label: c.label, value: c.value })),
             ]}
           />
-        </Space>
-      </Card>
+        </div>
+      </div>
 
-      <DataGrid
+      <PrimerGrid
         dataSource={expenses}
         columns={columns}
         rowKey="id"

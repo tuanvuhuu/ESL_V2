@@ -1,7 +1,7 @@
 "use client";
 
-import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import { App, Button, Empty, Select, Skeleton, Space, TimePicker } from "antd";
+import { DeleteOutlined, PlusOutlined } from "@/client/primer-icons";
+import { App, Button, Empty, Select, Skeleton, Space, TimePicker } from "@/client/primer-compat";
 import dayjs, { type Dayjs } from "dayjs";
 import { useState } from "react";
 import { api, useApi } from "@/client/api";

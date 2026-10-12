@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DatePicker, Form, Input, InputNumber, Modal, Radio, message } from "antd";
+import { DatePicker, Form, Input, InputNumber, Radio, message } from "@/client/primer-compat";
 import dayjs from "dayjs";
 import { api } from "@/client/api";
+import { PrimerModal } from "@/components/PrimerModal";
 
 export function RateModal({
   open,
@@ -53,14 +54,15 @@ export function RateModal({
   };
 
   return (
-    <Modal
+    <PrimerModal
       open={open}
       title={`Đặt đơn giá giờ - ${teacherName || ""}`}
-      onCancel={onClose}
+      subtitle="Thiết lập mức giá tính lương theo giờ và ngày bắt đầu hiệu lực"
+      onClose={onClose}
       onOk={() => form.submit()}
       confirmLoading={loading}
       okText="Lưu đơn giá"
-      destroyOnClose
+      width="large"
     >
       <Form form={form} layout="vertical" onFinish={handleFinish}>
         <Form.Item label="Vai trò áp dụng" name="role" rules={[{ required: true }]}>
@@ -101,6 +103,6 @@ export function RateModal({
           <Input.TextArea rows={2} placeholder="Tăng lương theo năm, mức giá thử việc..." />
         </Form.Item>
       </Form>
-    </Modal>
+    </PrimerModal>
   );
 }

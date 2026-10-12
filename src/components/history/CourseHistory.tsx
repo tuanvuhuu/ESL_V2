@@ -1,7 +1,7 @@
 "use client";
 
-import { CopyOutlined, EditOutlined, PrinterOutlined } from "@ant-design/icons";
-import { App, Button, Card, Col, Collapse, Descriptions, Empty, List, Row, Space, Statistic, Tag } from "antd";
+import { CopyOutlined, EditOutlined, PrinterOutlined } from "@/client/primer-icons";
+import { App, Button, Card, Col, Collapse, Descriptions, Empty, List, Row, Space, Statistic, Tag } from "@/client/primer-compat";
 import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
 import { BalanceCell } from "@/components/attendance/parts";

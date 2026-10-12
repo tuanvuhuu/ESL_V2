@@ -1,7 +1,7 @@
 "use client";
 
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import { App, Button, Input } from "antd";
+import { PlusOutlined, SearchOutlined } from "@/client/primer-icons";
+import { App, Button, Input } from "@/client/primer-compat";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -99,22 +99,6 @@ export default function ParentsPage() {
       <PageHeader
         title="Danh sách phụ huynh"
         description={`${data?.length ?? 0} phụ huynh`}
-        actions={
-          <>
-            <Input
-              allowClear
-              prefix={<SearchOutlined style={{ color: "#8c959f" }} />}
-              placeholder="Tìm tên, SĐT, tên con"
-              style={{ width: 240 }}
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-            {button}
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing(null)}>
-              Thêm phụ huynh
-            </Button>
-          </>
-        }
       />
       <div>
         <PrimerGrid<Row>
@@ -124,6 +108,24 @@ export default function ParentsPage() {
           columns={columns}
           dataSource={data}
           scroll={{ x: "max-content" }}
+          toolbar={
+            <Input
+              allowClear
+              prefix={<SearchOutlined style={{ color: "#8c959f" }} />}
+              placeholder="Tìm tên, SĐT, tên con"
+              style={{ width: 280 }}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+          }
+          actionsComponent={
+            <>
+              {button}
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing(null)}>
+                Thêm phụ huynh
+              </Button>
+            </>
+          }
           locale={{ emptyText: dq ? "Không tìm thấy phụ huynh phù hợp." : "Chưa có phụ huynh nào." }}
           pagination={{
             defaultPageSize: 50,

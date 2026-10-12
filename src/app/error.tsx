@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Button, Result } from "antd";
+import { Button, Result } from "@/client/primer-compat";
 
 export default function Error({
   error,

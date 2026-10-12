@@ -1,14 +1,16 @@
 "use client";
 
-import { App, Button, Popconfirm, Table, Tabs, Tag } from "antd";
+import { App, Popconfirm } from "@/client/primer-compat";
 import Link from "next/link";
 import { useState } from "react";
+import { Button as PrimerButton } from "@primer/react";
 import { api, qs, useApi } from "@/client/api";
 import { useCenters } from "@/client/centers";
 import { useViewer } from "@/client/session";
 import { AttendanceTag } from "@/components/attendance/parts";
 import { MakeupModal, type AbsenceLite } from "@/components/makeups/MakeupModal";
-import { CenterTag, PageHeader } from "@/components/ui";
+import { PrimerGrid, FilterTabs } from "@/components/PrimerGrid";
+import { DotLabel, PageHeader } from "@/components/ui";
 import { formatDateVN } from "@/lib/dates";
 import { canEditCenter } from "@/lib/permissions";
 
@@ -30,6 +32,7 @@ export default function MakeupsPage() {
   const { message } = App.useApp();
   const { centerId } = useCenters();
   const { data, loading, reload } = useApi<{ pending: Pending[]; booked: Booked[] }>(`/api/makeups${qs({ centerId })}`);
+  const [tab, setTab] = useState<"pending" | "booked">("pending");
   const [absence, setAbsence] = useState<AbsenceLite | null>(null);
 
   const remove = async (id: number) => {
@@ -43,118 +46,169 @@ export default function MakeupsPage() {
   };
 
   const student = (s: StudentLite) => (
-    <>
-      <Link href={`/students/${s.id}`}>{s.fullName}</Link>
-      <div className="sub">
-        {s.code} · {s.center.name}
+    <div>
+      <Link href={`/students/${s.id}`} style={{ fontWeight: 600, color: "#0969da" }}>
+        {s.fullName}
+      </Link>
+      <div style={{ fontSize: 12, color: "#8C959F" }}>
+        {s.code} · <DotLabel color={s.center.color}>{s.center.name}</DotLabel>
       </div>
-    </>
+    </div>
   );
 
-  const pending = (
-    <Table<Pending>
-      rowKey="id"
-      loading={loading}
-      dataSource={data?.pending ?? []}
-      pagination={{ pageSize: 50, hideOnSinglePage: true }}
-      scroll={{ x: "max-content" }}
-      locale={{ emptyText: "Không có buổi vắng nào chờ bù." }}
-      columns={[
-        { title: "Học sinh", render: (_, a) => student(a.student) },
-        {
-          title: "Buổi vắng",
-          render: (_, a) => (
-            <>
-              <b>{formatDateVN(a.session.date, true)}</b> {a.session.startTime}
-              <div className="sub">
-                <Link href={`/classes/${a.session.class.id}`}>{a.session.class.code}</Link> · buổi {a.session.index}
-              </div>
-            </>
-          ),
-        },
-        { title: "Khóa", render: (_, a) => a.session.class.course?.name ?? "—" },
-        { title: "Trạng thái", render: (_, a) => <AttendanceTag status={a.status} /> },
-        { title: "Ghi chú", render: (_, a) => a.comment ?? <span className="muted">—</span> },
-        {
-          title: "",
-          render: (_, a) =>
-            canEditCenter(viewer, a.student.centerId) && (
-              <Button
-                size="small"
-                type="primary"
-                ghost
-                onClick={() => setAbsence({ id: a.id, studentName: a.student.fullName, classCode: a.session.class.code, date: a.session.date, index: a.session.index })}
-              >
-                Xếp học bù
-              </Button>
-            ),
-        },
-      ]}
-    />
-  );
+  const pendingColumns = [
+    { title: "Học sinh", key: "student", render: (_: any, a: Pending) => student(a.student) },
+    {
+      title: "Buổi vắng",
+      key: "session",
+      render: (_: any, a: Pending) => (
+        <div>
+          <b>{formatDateVN(a.session.date, true)}</b> {a.session.startTime}
+          <div style={{ fontSize: 12, color: "#8C959F" }}>
+            <Link href={`/classes/${a.session.class.id}`} style={{ color: "#0969da" }}>
+              {a.session.class.code}
+            </Link>{" "}
+            · buổi {a.session.index}
+          </div>
+        </div>
+      ),
+    },
+    { title: "Khóa", key: "course", render: (_: any, a: Pending) => a.session.class.course?.name ?? "—" },
+    { title: "Trạng thái", key: "status", render: (_: any, a: Pending) => <AttendanceTag status={a.status} /> },
+    { title: "Ghi chú", key: "comment", render: (_: any, a: Pending) => a.comment ?? <span style={{ color: "#8C959F" }}>—</span> },
+    {
+      title: "Thao tác",
+      key: "actions",
+      align: "center" as const,
+      render: (_: any, a: Pending) =>
+        canEditCenter(viewer, a.student.centerId) && (
+          <PrimerButton
+            size="small"
+            variant="default"
+            onClick={() =>
+              setAbsence({
+                id: a.id,
+                studentName: a.student.fullName,
+                classCode: a.session.class.code,
+                date: a.session.date,
+                index: a.session.index,
+              })
+            }
+          >
+            Xếp học bù
+          </PrimerButton>
+        ),
+    },
+  ];
 
-  const booked = (
-    <Table<Booked>
-      rowKey="id"
-      loading={loading}
-      dataSource={data?.booked ?? []}
-      pagination={{ pageSize: 50, hideOnSinglePage: true }}
-      scroll={{ x: "max-content" }}
-      locale={{ emptyText: "Chưa có lịch học bù sắp tới." }}
-      columns={[
-        { title: "Học sinh", render: (_, m) => student(m.student) },
-        {
-          title: "Bù cho buổi",
-          render: (_, m) => (
-            <>
-              {formatDateVN(m.absence.session.date)} · {m.absence.session.class.code} buổi {m.absence.session.index}
-              <div>
-                <AttendanceTag status={m.absence.status} />
-              </div>
-            </>
-          ),
-        },
-        {
-          title: "Học bù vào",
-          render: (_, m) => (
-            <>
-              <b>{formatDateVN(m.session.date, true)}</b> {m.session.startTime}–{m.session.endTime}
-              <div className="sub">
-                <Link href={`/sessions/${m.session.id}`}>{m.session.class.code}</Link> buổi {m.session.index} · phòng {m.session.room.name}{" "}
-                <CenterTag center={m.session.class.center} />
-              </div>
-            </>
-          ),
-        },
-        { title: "Kết quả", render: (_, m) => (m.attendance ? <AttendanceTag status={m.attendance.status} /> : <Tag color="purple">Chờ học bù</Tag>) },
-        { title: "Người xếp", dataIndex: "createdBy" },
-        {
-          title: "",
-          render: (_, m) =>
-            !m.attendance &&
-            canEditCenter(viewer, m.student.centerId) && (
-              <Popconfirm title="Bỏ lịch học bù này?" okText="Bỏ" cancelText="Không" onConfirm={() => remove(m.id)}>
-                <Button size="small" danger type="text">
-                  Bỏ
-                </Button>
-              </Popconfirm>
-            ),
-        },
-      ]}
-    />
-  );
+  const bookedColumns = [
+    { title: "Học sinh", key: "student", render: (_: any, m: Booked) => student(m.student) },
+    {
+      title: "Bù cho buổi",
+      key: "absence",
+      render: (_: any, m: Booked) => (
+        <div>
+          {formatDateVN(m.absence.session.date)} · {m.absence.session.class.code} buổi {m.absence.session.index}
+          <div style={{ marginTop: 2 }}>
+            <AttendanceTag status={m.absence.status} />
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Học bù vào",
+      key: "bookedSession",
+      render: (_: any, m: Booked) => (
+        <div>
+          <b>{formatDateVN(m.session.date, true)}</b> {m.session.startTime}–{m.session.endTime}
+          <div style={{ fontSize: 12, color: "#8C959F" }}>
+            <Link href={`/sessions/${m.session.id}`} style={{ color: "#0969da" }}>
+              {m.session.class.code}
+            </Link>{" "}
+            buổi {m.session.index} · phòng {m.session.room.name} ·{" "}
+            <DotLabel color={m.session.class.center.color}>{m.session.class.center.name}</DotLabel>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Kết quả",
+      key: "result",
+      render: (_: any, m: Booked) =>
+        m.attendance ? (
+          <AttendanceTag status={m.attendance.status} />
+        ) : (
+          <span
+            style={{
+              display: "inline-block",
+              padding: "2px 8px",
+              borderRadius: 12,
+              fontSize: 12,
+              fontWeight: 500,
+              background: "#FBEFFF",
+              border: "1px solid #D1B8E8",
+              color: "#8250DF",
+            }}
+          >
+            Chờ học bù
+          </span>
+        ),
+    },
+    { title: "Người xếp", dataIndex: "createdBy", key: "createdBy" },
+    {
+      title: "Thao tác",
+      key: "actions",
+      align: "center" as const,
+      render: (_: any, m: Booked) =>
+        !m.attendance &&
+        canEditCenter(viewer, m.student.centerId) && (
+          <Popconfirm title="Bỏ lịch học bù này?" okText="Bỏ" cancelText="Không" onConfirm={() => remove(m.id)}>
+            <PrimerButton size="small" variant="danger">
+              Bỏ
+            </PrimerButton>
+          </Popconfirm>
+        ),
+    },
+  ];
 
   return (
-    <>
-      <PageHeader title="Học bù" description="Buổi vắng trong 60 ngày gần nhất chưa xếp bù, và lịch học bù đã xếp." />
-      <div className="panel">
-        <Tabs
+    <div style={{ padding: "0 0 24px 0" }}>
+      <PageHeader
+        title="Học bù"
+        description="Buổi vắng trong 60 ngày gần nhất chưa xếp bù, và lịch học bù đã xếp."
+      />
+
+      <div style={{ marginBottom: 12 }}>
+        <FilterTabs
+          value={tab}
+          onChange={(v) => setTab(v as any)}
           items={[
-            { key: "pending", label: `Buổi vắng chưa bù (${data?.pending.length ?? 0})`, children: pending },
-            { key: "booked", label: `Đã xếp học bù (${data?.booked.length ?? 0})`, children: booked },
+            { value: "pending", label: "Buổi vắng chưa bù", count: data?.pending.length ?? 0 },
+            { value: "booked", label: "Đã xếp học bù", count: data?.booked.length ?? 0 },
           ]}
         />
       </div>
+
+      {tab === "pending" ? (
+        <PrimerGrid<Pending>
+          rowKey="id"
+          loading={loading}
+          dataSource={data?.pending ?? []}
+          pagination={{ pageSize: 50, showSizeChanger: true }}
+          locale={{ emptyText: "Không có buổi vắng nào chờ bù." }}
+          columns={pendingColumns}
+        />
+      ) : (
+        <PrimerGrid<Booked>
+          rowKey="id"
+          loading={loading}
+          dataSource={data?.booked ?? []}
+          pagination={{ pageSize: 50, showSizeChanger: true }}
+          locale={{ emptyText: "Chưa có lịch học bù sắp tới." }}
+          columns={bookedColumns}
+        />
+      )}
+
       <MakeupModal
         absence={absence}
         onClose={() => setAbsence(null)}
@@ -163,6 +217,6 @@ export default function MakeupsPage() {
           void reload();
         }}
       />
-    </>
+    </div>
   );
 }
