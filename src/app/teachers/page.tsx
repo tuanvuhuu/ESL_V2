@@ -1,7 +1,7 @@
 "use client";
 
-import { PlusOutlined } from "@ant-design/icons";
-import { App, Button, Input, Segmented, Table } from "antd";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { App, Button, Input, Select } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -11,7 +11,7 @@ import { useViewer } from "@/client/session";
 import type { Teacher } from "@/client/types";
 import { useColumnSettings, type ColumnDef } from "@/components/ColumnSettings";
 import { TeacherFormModal } from "@/components/teachers/TeacherFormModal";
-import { ActionMenu, CenterTag, CertTag, Dash, PageHeader, PersonAvatar, StatusTag, TwoLine } from "@/components/ui";
+import { ActionMenu, CenterTag, CertTag, Dash, DotLabel, PageHeader, StatusTag, TwoLine } from "@/components/ui";
 import { PrimerGrid } from "@/components/PrimerGrid";
 import { EMPLOYMENTS, TEACHER_ORIGINS, TEACHER_ROLES, TEACHER_STATUSES, optionOf } from "@/lib/constants";
 import { canEditTeachers } from "@/lib/permissions";
@@ -45,12 +45,7 @@ export default function TeachersPage() {
         title: "Giáo viên",
         width: 230,
         defaultPin: "left",
-        render: (_, r) => (
-          <div className="person-cell">
-            <PersonAvatar name={r.displayName} color={r.centers[0]?.center.color} />
-            <TwoLine main={<Link href={`/teachers/${r.id}`}>{r.displayName}</Link>} sub={r.fullName} />
-          </div>
-        ),
+        render: (_, r) => <TwoLine main={<Link className="cell-main" href={`/teachers/${r.id}`}>{r.displayName}</Link>} sub={r.fullName} />,
       },
       { key: "role", title: "Vai trò", width: 140, render: (_, r) => <StatusTag options={TEACHER_ROLES} value={r.role} /> },
       {
@@ -111,37 +106,45 @@ export default function TeachersPage() {
   return (
     <>
       <PageHeader
-        title="Giáo viên và trợ giảng"
-        description="Hồ sơ, trung tâm dạy và giờ dạy theo lịch"
+        title="Danh sách giáo viên"
+        description={`${rows.length} giáo viên`}
         actions={
-          canEdit && (
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing(null)}>
-              Thêm giáo viên
-            </Button>
-          )
+          <>
+            <Input
+              allowClear
+              prefix={<SearchOutlined style={{ color: "#8c959f" }} />}
+              placeholder="Tìm tên, mã, SĐT"
+              style={{ width: 220 }}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+            <Select
+              value={status}
+              onChange={setStatus}
+              style={{ width: 160 }}
+              popupMatchSelectWidth={false}
+              options={[
+                { value: "ALL", label: `Tất cả (${counts.ALL ?? 0})` },
+                ...TEACHER_STATUSES.map((s) => ({ value: s.value, label: `${s.label} (${counts[s.value] ?? 0})` })),
+              ]}
+            />
+            {button}
+            {canEdit && (
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing(null)}>
+                Thêm giáo viên
+              </Button>
+            )}
+          </>
         }
       />
-      <div className="panel">
-        <div className="filter-bar">
-          <Input.Search allowClear placeholder="Tìm tên, mã, SĐT…" style={{ width: 280 }} value={q} onChange={(e) => setQ(e.target.value)} />
-          <Segmented
-            value={status}
-            onChange={(v) => setStatus(v as string)}
-            options={[
-              { value: "ALL", label: `Tất cả ${counts.ALL}` },
-              ...TEACHER_STATUSES.map((s) => ({ value: s.value, label: `${s.label} ${counts[s.value] ?? 0}` })),
-            ]}
-          />
-          <div className="spacer" />
-          {button}
-        </div>
+      <div>
         <PrimerGrid<Row>
           selectable
           rowKey="id"
           loading={loading}
           columns={columns}
           dataSource={rows}
-          scroll={{ x: "max-content", y: "calc(100vh - 330px)" }}
+          scroll={{ x: "max-content" }}
           locale={{ emptyText: dq || status !== "ALL" ? "Không tìm thấy giáo viên phù hợp." : "Chưa có giáo viên nào." }}
           pagination={{
             defaultPageSize: 50,

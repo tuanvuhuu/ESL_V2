@@ -1,7 +1,7 @@
 "use client";
 
-import { PlusOutlined } from "@ant-design/icons";
-import { Button, Input, Segmented, Table } from "antd";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { Button, Input, Select } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -11,7 +11,7 @@ import { useViewer } from "@/client/session";
 import type { CenterLite } from "@/client/types";
 import { ClassFormModal } from "@/components/classes/ClassFormModal";
 import { useColumnSettings, type ColumnDef } from "@/components/ColumnSettings";
-import { ActionMenu, CenterTag, Dash, PageHeader, StatusTag, TwoLine } from "@/components/ui";
+import { ActionMenu, Dash, DotLabel, PageHeader, StatusTag, TwoLine } from "@/components/ui";
 import { PrimerGrid } from "@/components/PrimerGrid";
 import { CLASS_STATUSES, weekdayText } from "@/lib/constants";
 import { formatDateVN } from "@/lib/dates";
@@ -58,7 +58,7 @@ export default function ClassesPage() {
     () => [
       { key: "code", title: "Mã", width: 110, defaultPin: "left", render: (_, r) => <Link href={`/classes/${r.id}`}>{r.code}</Link> },
       { key: "name", title: "Lớp", width: 200, defaultPin: "left", render: (_, r) => <TwoLine main={r.name} sub={r.course?.name} /> },
-      { key: "center", title: "Trung tâm", width: 140, render: (_, r) => <CenterTag center={r.center} /> },
+      { key: "center", title: "Trung tâm", width: 140, render: (_, r) => <DotLabel color={r.center.color}>{r.center.name}</DotLabel> },
       {
         key: "schedule",
         title: "Lịch học",
@@ -118,37 +118,45 @@ export default function ClassesPage() {
   return (
     <>
       <PageHeader
-        title="Lớp học"
-        description="Mở lớp, xếp học sinh và quản lý buổi học"
+        title="Danh sách lớp học"
+        description={`${rows.length} lớp học`}
         actions={
-          canAdd && (
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreating(true)}>
-              Mở lớp mới
-            </Button>
-          )
+          <>
+            <Input
+              allowClear
+              prefix={<SearchOutlined style={{ color: "#8c959f" }} />}
+              placeholder="Tìm mã, tên lớp, GV"
+              style={{ width: 220 }}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+            <Select
+              value={status}
+              onChange={setStatus}
+              style={{ width: 160 }}
+              popupMatchSelectWidth={false}
+              options={[
+                { value: "ALL", label: `Tất cả (${counts.ALL ?? 0})` },
+                ...CLASS_STATUSES.map((s) => ({ value: s.value, label: `${s.label} (${counts[s.value] ?? 0})` })),
+              ]}
+            />
+            {button}
+            {canAdd && (
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreating(true)}>
+                Mở lớp mới
+              </Button>
+            )}
+          </>
         }
       />
-      <div className="panel">
-        <div className="filter-bar">
-          <Input.Search allowClear placeholder="Tìm mã, tên lớp, giáo viên…" style={{ width: 280 }} value={q} onChange={(e) => setQ(e.target.value)} />
-          <Segmented
-            value={status}
-            onChange={(v) => setStatus(v as string)}
-            options={[
-              { value: "ALL", label: `Tất cả ${counts.ALL}` },
-              ...CLASS_STATUSES.map((s) => ({ value: s.value, label: `${s.label} ${counts[s.value] ?? 0}` })),
-            ]}
-          />
-          <div className="spacer" />
-          {button}
-        </div>
+      <div>
         <PrimerGrid<Row>
           selectable
           rowKey="id"
           loading={loading}
           columns={columns}
           dataSource={rows}
-          scroll={{ x: "max-content", y: "calc(100vh - 330px)" }}
+          scroll={{ x: "max-content" }}
           locale={{ emptyText: dq || status !== "ALL" ? "Không tìm thấy lớp phù hợp." : <Dash /> }}
           pagination={{ defaultPageSize: 50, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100], showTotal: (t, [a, b]) => `${a}–${b} trong ${t} lớp` }}
         />

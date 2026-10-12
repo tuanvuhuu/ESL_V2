@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { DollarOutlined, ExclamationCircleOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Input, Row, Select, Space, Tag, message } from "antd";
+import { Button, Card, Col, Input, Row, Select, Tag, message } from "antd";
 import { api, qs, useDebounced } from "@/client/api";
 import { PrimerGrid } from "@/components/PrimerGrid";
 import { useCenters } from "@/client/centers";
+import { DotLabel, PageHeader } from "@/components/ui";
 import { PaymentModal, type PaymentTarget } from "@/components/finance/PaymentModal";
 import { ReceiptModal, type ReceiptData } from "@/components/finance/ReceiptModal";
 import { DEBT_STATUSES, debtStatusOption, formatCurrency, type DebtStatus } from "@/lib/finance";
@@ -73,7 +74,7 @@ export default function DebtsPage() {
     {
       title: "Trung tâm",
       key: "center",
-      render: (_: any, row: any) => <Tag color={row.center.color}>{row.center.name}</Tag>,
+      render: (_: any, row: any) => <DotLabel color={row.center.color}>{row.center.name}</DotLabel>,
     },
     {
       title: "Học phí",
@@ -162,13 +163,11 @@ export default function DebtsPage() {
   ];
 
   return (
-    <div style={{ padding: "0 0 24px 0" }}>
-      <div style={{ marginBottom: 16 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px 0" }}>Sổ theo dõi công nợ học sinh</h1>
-        <div style={{ color: "#59636E" }}>
-          Tự động tính công nợ từ học phí thỏa thuận và các phiếu thu, cảnh báo học sinh quá hạn đóng tiền
-        </div>
-      </div>
+    <>
+      <PageHeader
+        title="Sổ theo dõi công nợ học sinh"
+        description="Tự động tính công nợ từ học phí thỏa thuận và các phiếu thu, cảnh báo học sinh quá hạn đóng tiền"
+      />
 
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col xs={24} sm={6}>
@@ -205,39 +204,40 @@ export default function DebtsPage() {
         </Col>
       </Row>
 
-      <Card size="small" style={{ marginBottom: 16 }}>
-        <Space wrap>
-          <Input
-            placeholder="Tìm tên, mã học sinh hoặc tên lớp..."
-            prefix={<SearchOutlined />}
-            style={{ width: 280 }}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            allowClear
-          />
-          <span>Trạng thái:</span>
-          <Select
-            value={statusFilter}
-            onChange={setStatusFilter}
-            style={{ width: 170 }}
-            options={[
-              { label: "Tất cả trạng thái", value: "ALL" },
-              { label: "Quá hạn", value: "OVERDUE" },
-              { label: "Đang nợ một phần", value: "PARTIAL" },
-              { label: "Chưa đóng", value: "UNPAID" },
-              { label: "Đã hoàn tất", value: "PAID" },
-            ]}
-          />
-        </Space>
-      </Card>
+      <div className="grid-toolbar">
+        <Input
+          placeholder="Tìm tên, mã học sinh hoặc lớp..."
+          prefix={<SearchOutlined style={{ color: "#8C959F" }} />}
+          style={{ width: 260 }}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          allowClear
+        />
+        <Select
+          value={statusFilter}
+          onChange={setStatusFilter}
+          style={{ width: 170 }}
+          popupMatchSelectWidth={false}
+          options={[
+            { label: "Tất cả trạng thái", value: "ALL" },
+            { label: "Quá hạn", value: "OVERDUE" },
+            { label: "Đang nợ một phần", value: "PARTIAL" },
+            { label: "Chưa đóng", value: "UNPAID" },
+            { label: "Đã hoàn tất", value: "PAID" },
+          ]}
+        />
+      </div>
 
-      <PrimerGrid
-        dataSource={data.items}
-        columns={columns}
-        rowKey="enrollmentId"
-        loading={loading}
-        pagination={{ pageSize: 50, showSizeChanger: true }}
-      />
+      <div>
+        <PrimerGrid
+          dataSource={data.items}
+          columns={columns}
+          rowKey="enrollmentId"
+          loading={loading}
+          scroll={{ x: "max-content" }}
+          pagination={{ pageSize: 50, showSizeChanger: true }}
+        />
+      </div>
 
       <PaymentModal
         open={paymentTarget != null}
@@ -254,6 +254,6 @@ export default function DebtsPage() {
         receipt={receipt}
         onClose={() => setReceipt(null)}
       />
-    </div>
+    </>
   );
 }
