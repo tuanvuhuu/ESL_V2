@@ -232,7 +232,7 @@ export default function StudentsPage() {
           loading={loading}
           columns={columns}
           dataSource={data?.items}
-          scroll={{ x: "max-content", y: "calc(100vh - 250px)" }}
+          scroll={{ x: "max-content" }}
           onChange={(_p, _f, sorter) => {
             const s = Array.isArray(sorter) ? sorter[0] : sorter;
             setSort(s?.order ? { field: String(s.columnKey), order: s.order === "ascend" ? "asc" : "desc" } : {});

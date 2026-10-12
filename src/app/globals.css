@@ -849,18 +849,17 @@ body {
   border-bottom-color: #eef1f4;
 }
 
-/* Bảng Primer (PrimerGrid) — kiểu lưới gọn: viền ô, tiêu đề xám, dòng hover */
+/* Bảng Primer (PrimerGrid) — kiểu phẳng theo mẫu: không viền ngoài, không viền cột, chỉ kẻ ngang mờ */
 .primer-grid {
   position: relative;
   background: #fff;
-  border: 1px solid #d8dee4;
-  border-radius: 6px;
-  overflow: hidden;
+  border: none !important;
+  border-radius: 0 !important;
   font-size: 13px;
 }
 
 .primer-grid-scroll {
-  overflow: auto;
+  overflow-x: auto;
 }
 
 .primer-grid.is-loading .primer-grid-scroll {
@@ -875,20 +874,17 @@ body {
   font-family: inherit;
   font-size: 13px;
   color: #1f2328;
+  border-collapse: collapse;
 }
 
 .primer-grid th,
 .primer-grid td {
-  padding: 7px 12px !important;
-  border-right: 1px solid #eef1f4;
-  border-bottom: 1px solid #eef1f4 !important;
+  padding: 11px 14px !important;
+  border-right: none !important;
+  border-left: none !important;
+  border-bottom: 1px solid #f0f2f5 !important;
   vertical-align: middle;
   line-height: 1.45;
-}
-
-.primer-grid th:last-child,
-.primer-grid td:last-child {
-  border-right: 0;
 }
 
 .primer-grid thead th {
@@ -900,8 +896,9 @@ body {
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
-  height: 36px;
-  border-bottom: 1px solid #d8dee4 !important;
+  height: 40px;
+  border-top: 1px solid #eaedf1 !important;
+  border-bottom: 1px solid #eaedf1 !important;
 }
 
 .primer-grid thead th button {
@@ -1118,8 +1115,8 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 12px;
-  border-top: 1px solid #d8dee4;
+  padding: 12px 4px;
+  border-top: 1px solid #f0f2f5;
   background: #fff;
   flex-wrap: wrap;
 }
