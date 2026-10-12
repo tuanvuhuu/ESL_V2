@@ -17,6 +17,7 @@ import {
   PhoneOutlined,
   ReadOutlined,
   ScheduleOutlined,
+  SearchOutlined,
   SettingOutlined,
   SolutionOutlined,
   TeamOutlined,
@@ -24,7 +25,7 @@ import {
   UsergroupAddOutlined,
   WalletOutlined,
 } from "@ant-design/icons";
-import { AutoComplete, Avatar, Button, Drawer, Dropdown, Grid, Input, Layout, Menu, Result, Select, Spin } from "antd";
+import { AutoComplete, Avatar, Breadcrumb, Button, Drawer, Dropdown, Grid, Input, Layout, Menu, Result, Select, Spin } from "antd";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
@@ -305,6 +306,8 @@ function SignedInShell({ children }: { children: ReactNode }) {
   const [openKeys, setOpenKeys] = useState<string[] | null>(null);
   // Khi menu thu gọn, nhóm bung ra dạng popup, tách riêng để không ghi đè lựa chọn ở trên.
   const [popupKeys, setPopupKeys] = useState<string[]>([]);
+  // Ô "Tìm kiếm chức năng" ở đầu menu: lọc mục menu theo tên.
+  const [navQuery, setNavQuery] = useState("");
 
   useEffect(() => {
     if (!groups.length) return;
@@ -330,9 +333,29 @@ function SignedInShell({ children }: { children: ReactNode }) {
     n.children
       ? { key: n.key, icon: n.icon, label: n.label, children: n.children.map((c) => ({ key: c.key, label: <Link href={c.key}>{c.label}</Link> })) }
       : { key: n.key, icon: n.icon, label: <Link href={n.key}>{n.label}</Link> };
-  const menuItems = groups.map((g) =>
+  const fold = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").toLowerCase();
+  const needle = fold(navQuery.trim());
+  const shownGroups = needle
+    ? groups
+        .map((g) => ({
+          ...g,
+          items: g.items.filter((n) => fold(n.label).includes(needle) || fold(g.label).includes(needle)),
+        }))
+        .filter((g) => g.items.length > 0)
+    : groups;
+  const menuItems = shownGroups.map((g) =>
     g.single ? toMenu(g.items[0]) : { key: g.key, icon: g.icon, label: g.label, children: g.items.map(toMenu) },
   );
+  // Đang tìm thì mở hết nhóm để thấy kết quả.
+  const menuOpenKeys = collapsed ? popupKeys : needle ? parentKeys(shownGroups) : (openKeys ?? []);
+  // Đường dẫn hiển thị trên đầu trang: Nhóm › Trang.
+  const crumbItem = flat
+    .filter((n) => isActive(n.key, pathname))
+    .sort((a, b) => b.key.length - a.key.length)[0];
+  const crumbGroup = groups.find((g) => g.items.some((n) => n.key === crumbItem?.key));
+  const crumbs = crumbItem
+    ? [...(crumbGroup && !crumbGroup.single ? [{ title: crumbGroup.label }] : []), { title: crumbItem.label }]
+    : [];
   const onOpenChange = (keys: string[]) => {
     if (collapsed) return setPopupKeys(keys);
     setOpenKeys(keys);
@@ -357,10 +380,22 @@ function SignedInShell({ children }: { children: ReactNode }) {
           className="sider"
         >
           <Brand collapsed={collapsed} />
+          {!collapsed && (
+            <div className="nav-search">
+              <Input
+                allowClear
+                size="small"
+                prefix={<SearchOutlined style={{ color: "#8C959F" }} />}
+                placeholder="Tìm kiếm chức năng"
+                value={navQuery}
+                onChange={(e) => setNavQuery(e.target.value)}
+              />
+            </div>
+          )}
           <Menu
             mode="inline"
             selectedKeys={menuSelected}
-            openKeys={collapsed ? popupKeys : (openKeys ?? [])}
+            openKeys={menuOpenKeys}
             onOpenChange={onOpenChange}
             onClick={() => setPopupKeys([])}
             inlineIndent={18}
@@ -396,6 +431,7 @@ function SignedInShell({ children }: { children: ReactNode }) {
           <UserMenu viewer={viewer} compact={isMobile} />
         </Layout.Header>
         <Layout.Content className="content" style={{ paddingBottom: isMobile ? 72 : 24 }}>
+          {allowed && !isMobile && crumbs.length > 0 && <Breadcrumb className="crumbs" items={crumbs} />}
           {allowed ? children : <Result status="403" title="Không có quyền" subTitle="Tài khoản của bạn không mở được trang này." extra={<Link href="/">Về trang Hôm nay</Link>} />}
         </Layout.Content>
         {isMobile && (
