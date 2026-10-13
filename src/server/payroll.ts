@@ -10,7 +10,7 @@ import {
   type TeachingRole,
   type TeachingSession,
 } from "@/lib/payroll";
-import { canManagePayroll, canSeePayroll, type Viewer } from "@/lib/permissions";
+import { canEditCenter, canManagePayroll, canSeePayroll, type Viewer } from "@/lib/permissions";
 import { logChange } from "./audit";
 import { prisma } from "./db";
 import { allow, badRequest, notFound } from "./http";
@@ -97,6 +97,24 @@ export async function updateTeacherOverlapSettings(input: z.infer<typeof UpdateT
   return teacher;
 }
 
+/** B2: điều kiện lọc các buổi mà `teacherId` được tính lương (dạy chính/dạy thay, trợ giảng riêng của buổi, hoặc trợ giảng cả lớp khi buổi không có trợ giảng riêng). */
+function sessionsOfTeacherWhere(teacherId: number) {
+  return [
+    { teacherId },
+    { assistants: { some: { teacherId } } },
+    { AND: [{ assistants: { none: {} } }, { class: { assistants: { some: { teacherId } } } }] },
+  ];
+}
+
+/** B2: số phút tính lương của một buổi cho `teacherId`: trợ giảng dùng số phút riêng của mình trước, rồi mới tới giờ sửa tay (B1). */
+function payrollMinutesFor(s: { teacherId: number; payrollMinutes: number | null; assistants: { teacherId: number; minutes: number | null }[] }, teacherId: number): number | undefined {
+  if (s.teacherId !== teacherId) {
+    const own = s.assistants.find((a) => a.teacherId === teacherId)?.minutes;
+    if (own != null) return own;
+  }
+  return s.payrollMinutes ?? undefined;
+}
+
 /** Lấy đơn giá áp dụng cho một buổi dạy dựa vào ngày hiệu lực */
 function findEffectiveRate(rates: { role: string; hourlyRate: number; effectiveDate: string }[], role: TeachingRole, sessionDate: string): number {
   const matching = rates
@@ -136,13 +154,11 @@ export async function generateOrGetMonthlyPayroll(params: {
       where: {
         date: { startsWith: month },
         status: { not: "CANCELLED" },
-        OR: [
-          { teacherId: t.id }, // Dạy chính hoặc dạy thay
-          { class: { assistants: { some: { teacherId: t.id } } } }, // Trợ giảng của lớp
-        ],
+        OR: sessionsOfTeacherWhere(t.id), // Dạy chính/dạy thay, trợ giảng của buổi hoặc của lớp
       },
       include: {
         class: { select: { id: true, name: true, code: true, centerId: true, center: true } },
+        assistants: true,
       },
       orderBy: [{ date: "asc" }, { startTime: "asc" }],
     });
@@ -160,7 +176,7 @@ export async function generateOrGetMonthlyPayroll(params: {
         centerId: s.class.centerId,
         role,
         hourlyRate: rate,
-        durationMinutes: s.payrollMinutes ?? undefined,
+        durationMinutes: payrollMinutesFor(s, t.id),
       };
     });
 
@@ -383,14 +399,12 @@ export async function getTeacherMonthlyDetails(teacherId: number, month: string)
     where: {
       date: { startsWith: month },
       status: { not: "CANCELLED" },
-      OR: [
-        { teacherId },
-        { class: { assistants: { some: { teacherId } } } },
-      ],
+      OR: sessionsOfTeacherWhere(teacherId),
     },
     include: {
       class: { select: { id: true, name: true, code: true, center: true } },
       room: { select: { name: true } },
+      assistants: true,
     },
     orderBy: [{ date: "asc" }, { startTime: "asc" }],
   });
@@ -407,7 +421,7 @@ export async function getTeacherMonthlyDetails(teacherId: number, month: string)
       centerId: s.class.center.id,
       role,
       hourlyRate: rate,
-      durationMinutes: s.payrollMinutes ?? undefined,
+      durationMinutes: payrollMinutesFor(s, teacherId),
     };
   });
 
@@ -435,7 +449,7 @@ export async function getTeacherMonthlyDetails(teacherId: number, month: string)
       durationMinutes: duration,
       hours: duration / 60,
       isOverlapping,
-      isManual: s.payrollMinutes != null,
+      isManual: s.payrollMinutes != null || (ts.role === "ASSISTANT" && s.assistants.find((a) => a.teacherId === teacherId)?.minutes != null),
       payrollNote: s.payrollNote,
       pay,
     };
@@ -467,12 +481,12 @@ export async function setSessionPayrollMinutes(sessionId: number, input: z.infer
   return prisma.$transaction(async (tx) => {
     const s = await tx.classSession.findUnique({
       where: { id: sessionId },
-      include: { class: { include: { assistants: true } } },
+      include: { class: { include: { assistants: true } }, assistants: true },
     });
     if (!s) throw notFound("Không tìm thấy buổi học");
     if (s.status === "CANCELLED") throw badRequest("Buổi đã hủy không tính lương");
 
-    const teacherIds = [s.teacherId, ...s.class.assistants.map((a) => a.teacherId)];
+    const teacherIds = [s.teacherId, ...s.class.assistants.map((a) => a.teacherId), ...s.assistants.map((a) => a.teacherId)];
     const locked = await tx.payrollPeriod.findFirst({
       where: { month: s.date.slice(0, 7), teacherId: { in: teacherIds }, status: { not: "DRAFT" } },
     });
@@ -488,4 +502,74 @@ export async function setSessionPayrollMinutes(sessionId: number, input: z.infer
     });
     return { id: updated.id, payrollMinutes: updated.payrollMinutes, payrollNote: updated.payrollNote };
   });
+}
+
+/** B2: danh sách trợ giảng riêng của một buổi. Danh sách rỗng = quay về trợ giảng cả lớp. */
+export const SetSessionAssistantsInput = z.object({
+  assistants: z
+    .array(
+      z.object({
+        teacherId: z.number().int().positive(),
+        minutes: z.number().int().min(0, "Số phút không được âm").max(960, "Tối đa 960 phút").nullable().optional(),
+      }),
+    )
+    .max(10, "Tối đa 10 trợ giảng"),
+});
+
+/**
+ * B2: gắn trợ giảng theo từng buổi, kèm số phút có mặt riêng (trống = bằng thời lượng buổi), dùng khi tính lương.
+ * Quản lý hoặc Giáo vụ của trung tâm. Tháng đã chốt của người bị ảnh hưởng thì không sửa được.
+ */
+export async function setSessionAssistants(sessionId: number, input: z.infer<typeof SetSessionAssistantsInput>, viewer: Viewer) {
+  const data = SetSessionAssistantsInput.parse(input);
+
+  return prisma.$transaction(async (tx) => {
+    const s = await tx.classSession.findUnique({
+      where: { id: sessionId },
+      include: { class: { include: { assistants: true } }, assistants: true },
+    });
+    if (!s) throw notFound("Không tìm thấy buổi học");
+    allow(canEditCenter(viewer, s.class.centerId), "Không có quyền sửa trợ giảng của buổi này");
+    if (s.status === "CANCELLED") throw badRequest("Buổi đã hủy không tính lương");
+
+    const ids = data.assistants.map((a) => a.teacherId);
+    if (new Set(ids).size !== ids.length) throw badRequest("Một trợ giảng chỉ được thêm một lần");
+    if (ids.includes(s.teacherId)) throw badRequest("Người dạy chính không thể là trợ giảng của cùng buổi");
+    const found = await tx.teacher.count({ where: { id: { in: ids }, status: "ACTIVE" } });
+    if (found !== ids.length) throw badRequest("Có trợ giảng không tồn tại hoặc đã nghỉ");
+
+    const affected = [...new Set([...ids, ...s.assistants.map((a) => a.teacherId), ...s.class.assistants.map((a) => a.teacherId)])];
+    const locked = await tx.payrollPeriod.findFirst({
+      where: { month: s.date.slice(0, 7), teacherId: { in: affected }, status: { not: "DRAFT" } },
+    });
+    if (locked) throw badRequest("Tháng lương này đã chốt, không sửa được trợ giảng của buổi");
+
+    await tx.sessionAssistant.deleteMany({ where: { sessionId } });
+    for (const a of data.assistants) {
+      await tx.sessionAssistant.create({ data: { sessionId, teacherId: a.teacherId, minutes: a.minutes ?? null } });
+    }
+    await logChange(tx, "Session", sessionId, "assistants", {
+      assistants: [
+        s.assistants.map((a) => `${a.teacherId}:${a.minutes ?? "-"}`).join(",") || null,
+        data.assistants.map((a) => `${a.teacherId}:${a.minutes ?? "-"}`).join(",") || null,
+      ],
+    });
+    return tx.sessionAssistant.findMany({ where: { sessionId }, orderBy: { teacherId: "asc" } });
+  });
+}
+
+/** B2: trợ giảng đang áp dụng cho buổi: riêng của buổi nếu có, không thì của cả lớp. */
+export async function getSessionAssistants(sessionId: number) {
+  const s = await prisma.classSession.findUnique({
+    where: { id: sessionId },
+    include: {
+      assistants: { include: { teacher: { select: { id: true, displayName: true } } } },
+      class: { include: { assistants: { include: { teacher: { select: { id: true, displayName: true } } } } } },
+    },
+  });
+  if (!s) throw notFound("Không tìm thấy buổi học");
+  if (s.assistants.length > 0) {
+    return { source: "SESSION" as const, assistants: s.assistants.map((a) => ({ teacherId: a.teacherId, name: a.teacher.displayName, minutes: a.minutes })) };
+  }
+  return { source: "CLASS" as const, assistants: s.class.assistants.map((a) => ({ teacherId: a.teacherId, name: a.teacher.displayName, minutes: null as number | null })) };
 }

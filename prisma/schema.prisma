@@ -130,6 +130,7 @@ model Teacher {
   centers        TeacherCenter[]
   mainClasses    ClassGroup[]          @relation("MainTeacher")
   assistantIn    ClassAssistant[]
+  sessionAssists SessionAssistant[]
   sessions       ClassSession[]
   availability   TeacherAvailability[]
   leaves         TeacherLeave[]
@@ -224,6 +225,17 @@ model ClassAssistant {
   @@id([classId, teacherId])
 }
 
+// B2: trợ giảng gắn theo từng buổi, kèm số phút có mặt riêng (trống = bằng thời lượng buổi).
+model SessionAssistant {
+  sessionId Int
+  session   ClassSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  teacherId Int
+  teacher   Teacher      @relation(fields: [teacherId], references: [id])
+  minutes   Int?
+
+  @@id([sessionId, teacherId])
+}
+
 model ClassSession {
   id                Int          @id @default(autoincrement())
   classId           Int
@@ -250,6 +262,8 @@ model ClassSession {
   attendances       Attendance[]
   makeups           Makeup[]
   scores            TestScore[]
+  // B2: trợ giảng riêng của buổi. Có dòng nào thì chỉ những người này được tính lương trợ giảng buổi đó.
+  assistants        SessionAssistant[]
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 

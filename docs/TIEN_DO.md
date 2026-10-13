@@ -13,7 +13,7 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm dở · `[x]` xong (lint, ty
 Mô tả từ `docs/KE_HOACH.md` mục 2. Mỗi việc một commit.
 
 - [x] B1. Sửa giờ tính lương từng buổi bằng tay, bắt buộc ghi lý do, ghi nhật ký thay đổi
-- [ ] B2. Trợ giảng gắn theo từng buổi (hiện chỉ gắn cả lớp), có thời lượng có mặt riêng, dùng khi tính lương
+- [x] B2. Trợ giảng gắn theo từng buổi (hiện chỉ gắn cả lớp), có thời lượng có mặt riêng, dùng khi tính lương
 - [ ] B3. Lương tự đưa vào chi phí của trung tâm nơi buổi dạy diễn ra (lãi lỗ hiện chia theo bảng lương)
 - [ ] B4. Đổi cách tính trùng giờ có ngày hiệu lực; tháng lương đã chốt giữ nguyên cách cũ
 - [ ] B5. Cấp độ dạy được của giáo viên, dùng khi gợi ý người dạy thay
@@ -29,10 +29,13 @@ Công cụ nào dừng giữa chừng thì ghi vào đây: việc đang làm, đ
 
 **B1 đã xong về code, cần Tuấn chạy SQL:** chạy file `docs/sql/2026-10-13-B1-gio-luong-sua-tay.sql` lên `prisma/dev.db` rồi `npx prisma generate`. Chưa chạy thì `dev.db` thật thiếu cột `payrollMinutes/payrollNote` nên test B1 và màn lương sẽ lỗi. Đã kiểm tra trên bản sao dev.db.
 
-Tiếp theo: B2.
+B2 cũng cần SQL: `docs/sql/2026-10-13-B2-tro-giang-theo-buoi.sql` (thêm bảng `SessionAssistant`), chạy sau file B1.
+
+Tiếp theo: B3.
 
 ## Nhật ký
 
 | Ngày | Việc | Công cụ | Ghi chú |
 |---|---|---|---|
 | 13/10/2026 | B1 | Antigravity | Sửa giờ lương từng buổi kèm lý do: `src/server/payroll.ts`, route `api/sessions/[id]/payroll-hours`, `SessionDetailModal.tsx`, `tests/api-payroll-hours.test.ts`, SQL `docs/sql/2026-10-13-B1-gio-luong-sua-tay.sql`. Lint/typecheck/test xanh (167/167) trên bản sao dev.db đã áp SQL. |
+| 13/10/2026 | B2 | Antigravity | Trợ giảng theo từng buổi, có số phút riêng dùng khi tính lương (buổi có trợ giảng riêng thì bỏ trợ giảng cả lớp): bảng `SessionAssistant`, `src/server/payroll.ts`, route `api/sessions/[id]/assistants`, `tests/api-assistants.test.ts`, SQL `docs/sql/2026-10-13-B2-tro-giang-theo-buoi.sql`. Lint/typecheck/test xanh (171/171) trên bản sao dev.db đã áp SQL. |
