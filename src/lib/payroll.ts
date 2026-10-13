@@ -73,6 +73,9 @@ export type TeachingSession = {
   hourlyRate: number;
   /** Ghi đè thời lượng khi buổi học bị rút ngắn hoặc kéo dài. */
   durationMinutes?: number;
+  /** B4: cách tính trùng giờ theo ngày hiệu lực của buổi này; trống thì dùng cách chung của cả bảng lương. */
+  overlapPolicy?: OverlapPolicy;
+  overlapRatio?: number;
 };
 
 /** Khoản cộng / trừ thêm ngoài tiền dạy. */
@@ -223,7 +226,7 @@ export function computeMonthlySalary({
       hours: sessionHours(s),
       basePay: sessionBasePay(s),
       overlapCount,
-      pay: computeSessionPay(s, overlapCount, overlapPolicy, defaultRatio),
+      pay: computeSessionPay(s, overlapCount, s.overlapPolicy ?? overlapPolicy, s.overlapRatio ?? defaultRatio),
     };
   });
   const totalHours = Math.round(details.reduce((n, d) => n + d.hours, 0) * 100) / 100;

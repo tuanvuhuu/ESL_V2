@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { todayISO } from "@/lib/dates";
 import {
   computeMonthlySalary,
   computeSessionPay,
@@ -27,6 +28,9 @@ export const UpdateTeacherOverlapInput = z.object({
   teacherId: z.number().int().positive(),
   overlapPolicy: z.enum(["SINGLE", "FULL", "RATIO"]),
   overlapRatio: z.number().positive().max(5).optional(),
+  /** B4: ngày bắt đầu áp dụng (YYYY-MM-DD), mặc định hôm nay. Buổi dạy trước ngày này giữ cách cũ. */
+  effectiveDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày định dạng YYYY-MM-DD").optional(),
+  note: z.string().trim().max(500).optional().nullable(),
 });
 
 export const AddAdjustmentInput = z.object({
@@ -81,22 +85,79 @@ export async function saveTeacherRate(input: z.infer<typeof SaveTeacherRateInput
   });
 }
 
-/** Cập nhật tùy chọn tính lương khi trùng giờ (chỉ Quản lý) */
+/**
+ * Cập nhật cách tính lương khi trùng giờ (chỉ Quản lý), có ngày hiệu lực (B4).
+ * Buổi dạy trước ngày hiệu lực giữ cách cũ. Ngày hiệu lực không được rơi vào tháng đã chốt hoặc đã trả lương của giáo viên đó,
+ * để tháng đã chốt luôn giữ nguyên cách tính cũ.
+ */
 export async function updateTeacherOverlapSettings(input: z.infer<typeof UpdateTeacherOverlapInput>, viewer: Viewer) {
   allow(canManagePayroll(viewer), "Chỉ Quản lý mới có quyền đổi tùy chọn trùng giờ");
   const validated = UpdateTeacherOverlapInput.parse(input);
+  const effectiveDate = validated.effectiveDate ?? todayISO();
+  const ratio = validated.overlapRatio ?? 1.5;
 
-  const teacher = await prisma.teacher.update({
-    where: { id: validated.teacherId },
-    data: {
-      overlapPolicy: validated.overlapPolicy,
-      overlapRatio: validated.overlapRatio ?? 1.5,
-    },
+  return prisma.$transaction(async (tx) => {
+    const teacher = await tx.teacher.findUnique({ where: { id: validated.teacherId }, include: { overlapHistory: true } });
+    if (!teacher) throw notFound("Không tìm thấy giáo viên");
+
+    const locked = await tx.payrollPeriod.findFirst({
+      where: { teacherId: teacher.id, month: { gte: effectiveDate.slice(0, 7) }, status: { not: "DRAFT" } },
+    });
+    if (locked) throw badRequest(`Tháng ${locked.month} đã chốt lương, ngày hiệu lực phải sau tháng đã chốt`);
+
+    // Lần đầu có lịch sử: lưu cách cũ làm mốc từ đầu, để buổi trước ngày hiệu lực không bị đổi theo.
+    if (teacher.overlapHistory.length === 0) {
+      await tx.teacherOverlapPolicy.create({
+        data: { teacherId: teacher.id, effectiveDate: OVERLAP_BASELINE_DATE, overlapPolicy: teacher.overlapPolicy, overlapRatio: teacher.overlapRatio, note: "Cách tính trước khi có lịch sử", createdBy: viewer.fullName },
+      });
+    }
+    await tx.teacherOverlapPolicy.upsert({
+      where: { teacherId_effectiveDate: { teacherId: teacher.id, effectiveDate } },
+      create: { teacherId: teacher.id, effectiveDate, overlapPolicy: validated.overlapPolicy, overlapRatio: ratio, note: validated.note ?? null, createdBy: viewer.fullName },
+      update: { overlapPolicy: validated.overlapPolicy, overlapRatio: ratio, note: validated.note ?? null, createdBy: viewer.fullName },
+    });
+
+    // Teacher.overlapPolicy luôn là cách mới nhất (hiển thị trên màn hình); phép tính dùng lịch sử theo ngày buổi dạy.
+    const latest = await tx.teacherOverlapPolicy.findFirstOrThrow({ where: { teacherId: teacher.id }, orderBy: { effectiveDate: "desc" } });
+    const updated = await tx.teacher.update({
+      where: { id: teacher.id },
+      data: { overlapPolicy: latest.overlapPolicy, overlapRatio: latest.overlapRatio ?? 1.5 },
+    });
+    await logChange(tx, "Teacher", teacher.id, "overlap-policy", {
+      overlapPolicy: [teacher.overlapPolicy, validated.overlapPolicy],
+      effectiveDate: [null, effectiveDate],
+    });
+    return updated;
   });
-
-  return teacher;
 }
 
+/** B4: lịch sử cách tính trùng giờ của giáo viên, mới nhất trước. */
+export async function listTeacherOverlapHistory(teacherId: number) {
+  return prisma.teacherOverlapPolicy.findMany({ where: { teacherId }, orderBy: { effectiveDate: "desc" } });
+}
+
+/** B4: ngày mốc cho cách tính cũ (trước mọi ngày hiệu lực). */
+const OVERLAP_BASELINE_DATE = "0000-01-01";
+
+type OverlapRule = { policy: OverlapPolicy; ratio: number };
+
+const ruleFields = (r: OverlapRule) => ({ overlapPolicy: r.policy, overlapRatio: r.ratio });
+
+/** B4: cách tính trùng giờ áp dụng cho buổi dạy ngày `date`: dòng lịch sử mới nhất có ngày hiệu lực <= `date`; chưa có lịch sử thì dùng cài đặt hiện tại. */
+export function overlapRuleAt(
+  t: { overlapPolicy: string; overlapRatio: number | null; overlapHistory: { effectiveDate: string; overlapPolicy: string; overlapRatio: number | null }[] },
+  date: string,
+): OverlapRule {
+  const row = t.overlapHistory
+    .filter((h) => h.effectiveDate <= date)
+    .sort((a, b) => b.effectiveDate.localeCompare(a.effectiveDate))[0];
+  if (row) return { policy: (row.overlapPolicy as OverlapPolicy) ?? "SINGLE", ratio: row.overlapRatio ?? 1.5 };
+  if (t.overlapHistory.length > 0) {
+    const first = [...t.overlapHistory].sort((a, b) => a.effectiveDate.localeCompare(b.effectiveDate))[0];
+    return { policy: (first.overlapPolicy as OverlapPolicy) ?? "SINGLE", ratio: first.overlapRatio ?? 1.5 };
+  }
+  return { policy: (t.overlapPolicy as OverlapPolicy) ?? "SINGLE", ratio: t.overlapRatio ?? 1.5 };
+}
 /** B2: điều kiện lọc các buổi mà `teacherId` được tính lương (dạy chính/dạy thay, trợ giảng riêng của buổi, hoặc trợ giảng cả lớp khi buổi không có trợ giảng riêng). */
 function sessionsOfTeacherWhere(teacherId: number) {
   return [
@@ -142,6 +203,7 @@ export async function generateOrGetMonthlyPayroll(params: {
     },
     include: {
       rates: true,
+      overlapHistory: true,
       centers: { include: { center: true } },
     },
   });
@@ -177,6 +239,7 @@ export async function generateOrGetMonthlyPayroll(params: {
         role,
         hourlyRate: rate,
         durationMinutes: payrollMinutesFor(s, t.id),
+        ...ruleFields(overlapRuleAt(t, s.date)),
       };
     });
 
@@ -391,7 +454,7 @@ export async function deletePayrollAdjustment(id: number, viewer: Viewer) {
 export async function getTeacherMonthlyDetails(teacherId: number, month: string) {
   const teacher = await prisma.teacher.findUnique({
     where: { id: teacherId },
-    include: { rates: true },
+    include: { rates: true, overlapHistory: true },
   });
   if (!teacher) throw notFound("Không tìm thấy giáo viên");
 
@@ -422,6 +485,7 @@ export async function getTeacherMonthlyDetails(teacherId: number, month: string)
       role,
       hourlyRate: rate,
       durationMinutes: payrollMinutesFor(s, teacherId),
+      ...ruleFields(overlapRuleAt(teacher, s.date)),
     };
   });
 
@@ -432,7 +496,7 @@ export async function getTeacherMonthlyDetails(teacherId: number, month: string)
     const ts = teachingSessions[idx];
     const isOverlapping = overlappingSessionIds.has(s.id);
     const overlapCount = isOverlapping ? (overlapGroups.find((g) => g.some((x) => x.sessionId === s.id))?.length ?? 1) : 1;
-    const pay = computeSessionPay(ts, overlapCount, (teacher.overlapPolicy as OverlapPolicy) ?? "SINGLE", teacher.overlapRatio ?? 1.5);
+    const pay = computeSessionPay(ts, overlapCount, ts.overlapPolicy ?? "SINGLE", ts.overlapRatio);
     const duration = sessionDuration(ts);
 
     return {
@@ -580,7 +644,7 @@ export async function getSessionAssistants(sessionId: number) {
  * tính vào trung tâm của bảng lương, hoặc trung tâm dạy nhiều nhất nếu bảng lương không gắn trung tâm. Tổng các trung tâm luôn bằng tổng thực nhận.
  */
 export async function payrollCostByCenter(month: string): Promise<Map<number, number>> {
-  const periods = await prisma.payrollPeriod.findMany({ where: { month }, include: { teacher: { include: { rates: true } } } });
+  const periods = await prisma.payrollPeriod.findMany({ where: { month }, include: { teacher: { include: { rates: true, overlapHistory: true } } } });
   const cost = new Map<number, number>();
   const add = (centerId: number | null, amount: number) => {
     if (centerId == null || amount === 0) return;
@@ -604,14 +668,14 @@ export async function payrollCostByCenter(month: string): Promise<Map<number, nu
         role,
         hourlyRate: findEffectiveRate(t.rates, role, s.date),
         durationMinutes: payrollMinutesFor(s, t.id),
+        ...ruleFields(overlapRuleAt(t, s.date)),
       };
     });
     const groups = detectOverlappingSessions(ts);
-    const policy = (t.overlapPolicy as OverlapPolicy) ?? "SINGLE";
     const perCenter = new Map<number, number>();
     for (const x of ts) {
       const g = groups.find((grp) => grp.some((y) => y.sessionId === x.sessionId));
-      const pay = computeSessionPay(x, g ? g.length : 1, policy, t.overlapRatio ?? 1.5);
+      const pay = computeSessionPay(x, g ? g.length : 1, x.overlapPolicy ?? "SINGLE", x.overlapRatio);
       perCenter.set(x.centerId, (perCenter.get(x.centerId) ?? 0) + pay);
     }
     const totalPay = [...perCenter.values()].reduce((a, b) => a + b, 0);

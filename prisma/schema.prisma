@@ -137,10 +137,26 @@ model Teacher {
   overlapPolicy  String                @default("SINGLE")
   overlapRatio   Float?                @default(1.5)
   rates          TeacherRate[]
+  overlapHistory TeacherOverlapPolicy[]
   payrollPeriods PayrollPeriod[]
   user           User?
   createdAt      DateTime              @default(now())
   updatedAt      DateTime              @updatedAt
+}
+
+// B4: lịch sử cách tính trùng giờ của giáo viên, có ngày hiệu lực. Buổi dạy trước ngày hiệu lực giữ cách cũ.
+model TeacherOverlapPolicy {
+  id            Int      @id @default(autoincrement())
+  teacherId     Int
+  teacher       Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  effectiveDate String
+  overlapPolicy String
+  overlapRatio  Float?
+  note          String?
+  createdBy     String?
+  createdAt     DateTime @default(now())
+
+  @@unique([teacherId, effectiveDate])
 }
 
 model TeacherCenter {

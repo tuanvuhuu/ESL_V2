@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { PlusIcon } from "@primer/octicons-react";
 import { Button, message } from "@/client/primer-compat";
 import { api } from "@/client/api";
+import { OverlapModal } from "@/components/payroll/OverlapModal";
 import { RateModal } from "@/components/payroll/RateModal";
 import { PrimerGrid } from "@/components/PrimerGrid";
 import { DotLabel, PageHeader } from "@/components/ui";
@@ -18,6 +19,8 @@ export default function PayrollRatesPage() {
     teacherId: number | null;
     teacherName?: string;
   }>({ open: false, teacherId: null });
+
+  const [overlapModal, setOverlapModal] = useState<{ open: boolean; teacherId: number | null; teacherName?: string }>({ open: false, teacherId: null });
 
   const loadRates = async () => {
     setLoading(true);
@@ -86,6 +89,7 @@ export default function PayrollRatesPage() {
       key: "action",
       align: "center" as const,
       render: (_: any, row: any) => (
+        <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
         <Button
           size="small"
           icon={<PlusIcon />}
@@ -99,6 +103,10 @@ export default function PayrollRatesPage() {
         >
           Đổi mức giá
         </Button>
+        <Button size="small" onClick={() => setOverlapModal({ open: true, teacherId: row.teacher.id, teacherName: row.teacher.fullName })}>
+          Cách tính trùng giờ
+        </Button>
+        </div>
       ),
     },
   ];
@@ -118,7 +126,14 @@ export default function PayrollRatesPage() {
         pagination={{ pageSize: 50, showSizeChanger: true }}
       />
 
-      <RateModal
+      <OverlapModal
+        open={overlapModal.open}
+        teacherId={overlapModal.teacherId}
+        teacherName={overlapModal.teacherName}
+        onClose={() => setOverlapModal({ open: false, teacherId: null })}
+        onSuccess={loadRates}
+      />
+\r\n      <RateModal
         open={modalState.open}
         teacherId={modalState.teacherId}
         teacherName={modalState.teacherName}
