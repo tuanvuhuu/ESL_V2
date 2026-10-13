@@ -3,6 +3,7 @@ import { computeRetention, daysBetween, monthRange, percent, roomUsage } from "@
 import { canSeeReports, type Viewer } from "@/lib/permissions";
 import { prisma } from "./db";
 import { allow } from "./http";
+import { payrollCostByCenter } from "./payroll";
 
 /** Báo cáo Tổng quan hôm nay (Dashboard) */
 export async function getTodayDashboard(params: { centerId?: number; viewer: Viewer }) {
@@ -204,13 +205,8 @@ export async function getProfitLossReport(params: {
     },
   });
 
-  // 4. Lương giáo viên theo trung tâm:
-  const payrollPeriods = await prisma.payrollPeriod.findMany({
-    where: {
-      month,
-      centerId: centerId ? centerId : undefined,
-    },
-  });
+  // 4. Lương giáo viên theo trung tâm nơi buổi dạy diễn ra (B3)
+  const payrollByCenter = await payrollCostByCenter(month);
 
   const byCenter = centers.map((c) => {
     const cPayments = payments.filter((p) => p.centerId === c.id);
@@ -223,8 +219,8 @@ export async function getProfitLossReport(params: {
 
     const expenseTotal = cExpenses.reduce((s, e) => s + e.amount, 0);
 
-    // Tính lương giáo viên tại trung tâm này
-    const centerPayroll = payrollPeriods.filter((p) => p.centerId === c.id).reduce((s, p) => s + p.finalPay, 0);
+    // Lương giáo viên tính vào trung tâm này = lương các buổi dạy tại đây
+    const centerPayroll = payrollByCenter.get(c.id) ?? 0;
 
     const profit = netRevenue - centerPayroll - expenseTotal;
 

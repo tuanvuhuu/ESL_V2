@@ -573,3 +573,65 @@ export async function getSessionAssistants(sessionId: number) {
   }
   return { source: "CLASS" as const, assistants: s.class.assistants.map((a) => ({ teacherId: a.teacherId, name: a.teacher.displayName, minutes: null as number | null })) };
 }
+
+/**
+ * B3: chi phí lương của từng trung tâm trong tháng, tính theo trung tâm NƠI BUỔI DẠY DIỄN RA (không theo trung tâm chính của giáo viên).
+ * Tiền dạy của mỗi bảng lương chia theo tỷ lệ tiền từng buổi ở từng trung tâm; thưởng, phụ cấp, phạt (chênh giữa tổng thực nhận và tiền dạy)
+ * tính vào trung tâm của bảng lương, hoặc trung tâm dạy nhiều nhất nếu bảng lương không gắn trung tâm. Tổng các trung tâm luôn bằng tổng thực nhận.
+ */
+export async function payrollCostByCenter(month: string): Promise<Map<number, number>> {
+  const periods = await prisma.payrollPeriod.findMany({ where: { month }, include: { teacher: { include: { rates: true } } } });
+  const cost = new Map<number, number>();
+  const add = (centerId: number | null, amount: number) => {
+    if (centerId == null || amount === 0) return;
+    cost.set(centerId, (cost.get(centerId) ?? 0) + amount);
+  };
+
+  for (const p of periods) {
+    const t = p.teacher;
+    const sessions = await prisma.classSession.findMany({
+      where: { date: { startsWith: month }, status: { not: "CANCELLED" }, OR: sessionsOfTeacherWhere(t.id) },
+      include: { class: { select: { centerId: true } }, assistants: true },
+    });
+    const ts: TeachingSession[] = sessions.map((s) => {
+      const role: TeachingRole = s.teacherId === t.id ? "TEACHER" : "ASSISTANT";
+      return {
+        sessionId: s.id,
+        date: s.date,
+        startTime: s.startTime,
+        endTime: s.endTime,
+        centerId: s.class.centerId,
+        role,
+        hourlyRate: findEffectiveRate(t.rates, role, s.date),
+        durationMinutes: payrollMinutesFor(s, t.id),
+      };
+    });
+    const groups = detectOverlappingSessions(ts);
+    const policy = (t.overlapPolicy as OverlapPolicy) ?? "SINGLE";
+    const perCenter = new Map<number, number>();
+    for (const x of ts) {
+      const g = groups.find((grp) => grp.some((y) => y.sessionId === x.sessionId));
+      const pay = computeSessionPay(x, g ? g.length : 1, policy, t.overlapRatio ?? 1.5);
+      perCenter.set(x.centerId, (perCenter.get(x.centerId) ?? 0) + pay);
+    }
+    const totalPay = [...perCenter.values()].reduce((a, b) => a + b, 0);
+    const main = [...perCenter.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+    const extraCenter = p.centerId ?? main;
+    const extra = p.finalPay - p.teachingPay;
+
+    if (totalPay <= 0 || main == null) {
+      add(extraCenter, p.teachingPay + extra);
+      continue;
+    }
+    let given = 0;
+    for (const [centerId, pay] of perCenter) {
+      if (centerId === main) continue;
+      const part = Math.round((p.teachingPay * pay) / totalPay);
+      add(centerId, part);
+      given += part;
+    }
+    add(main, p.teachingPay - given);
+    add(extraCenter, extra);
+  }
+  return cost;
+}

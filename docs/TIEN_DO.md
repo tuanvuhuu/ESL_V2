@@ -14,7 +14,7 @@ Mô tả từ `docs/KE_HOACH.md` mục 2. Mỗi việc một commit.
 
 - [x] B1. Sửa giờ tính lương từng buổi bằng tay, bắt buộc ghi lý do, ghi nhật ký thay đổi
 - [x] B2. Trợ giảng gắn theo từng buổi (hiện chỉ gắn cả lớp), có thời lượng có mặt riêng, dùng khi tính lương
-- [ ] B3. Lương tự đưa vào chi phí của trung tâm nơi buổi dạy diễn ra (lãi lỗ hiện chia theo bảng lương)
+- [x] B3. Lương tự đưa vào chi phí của trung tâm nơi buổi dạy diễn ra (lãi lỗ hiện chia theo bảng lương)
 - [ ] B4. Đổi cách tính trùng giờ có ngày hiệu lực; tháng lương đã chốt giữ nguyên cách cũ
 - [ ] B5. Cấp độ dạy được của giáo viên, dùng khi gợi ý người dạy thay
 - [ ] B6. Cảnh báo khi ghi danh học sinh còn nợ khóa trước; cảnh báo giáo viên dạy 2 trung tâm sát giờ
@@ -31,7 +31,9 @@ Công cụ nào dừng giữa chừng thì ghi vào đây: việc đang làm, đ
 
 B2 cũng cần SQL: `docs/sql/2026-10-13-B2-tro-giang-theo-buoi.sql` (thêm bảng `SessionAssistant`), chạy sau file B1.
 
-Tiếp theo: B3.
+B3 không cần SQL.
+
+Tiếp theo: B4.
 
 ## Nhật ký
 
@@ -39,3 +41,4 @@ Tiếp theo: B3.
 |---|---|---|---|
 | 13/10/2026 | B1 | Antigravity | Sửa giờ lương từng buổi kèm lý do: `src/server/payroll.ts`, route `api/sessions/[id]/payroll-hours`, `SessionDetailModal.tsx`, `tests/api-payroll-hours.test.ts`, SQL `docs/sql/2026-10-13-B1-gio-luong-sua-tay.sql`. Lint/typecheck/test xanh (167/167) trên bản sao dev.db đã áp SQL. |
 | 13/10/2026 | B2 | Antigravity | Trợ giảng theo từng buổi, có số phút riêng dùng khi tính lương (buổi có trợ giảng riêng thì bỏ trợ giảng cả lớp): bảng `SessionAssistant`, `src/server/payroll.ts`, route `api/sessions/[id]/assistants`, `tests/api-assistants.test.ts`, SQL `docs/sql/2026-10-13-B2-tro-giang-theo-buoi.sql`. Lint/typecheck/test xanh (171/171) trên bản sao dev.db đã áp SQL. |
+| 13/10/2026 | B3 | Antigravity | Lương tự tính vào chi phí trung tâm nơi buổi dạy diễn ra (tiền dạy chia theo tiền từng buổi ở từng trung tâm, thưởng/phạt vào trung tâm của bảng lương), tổng luôn khớp thực nhận: `payrollCostByCenter` trong `src/server/payroll.ts`, dùng ở `getProfitLossReport`, `tests/payroll-by-center.test.ts`. Không đổi schema. Lint/typecheck/test xanh (173/173). |
