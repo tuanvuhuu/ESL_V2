@@ -25,12 +25,7 @@ Mô tả từ `docs/KE_HOACH.md` mục 2. Mỗi việc một commit.
 
 ## Bàn giao
 
-Đợt B (B1–B8) đã xong. Không còn việc dang dở của công cụ. Việc cho Tuấn, chạy theo thứ tự lên `prisma/dev.db` (chỉ thêm cột, thêm bảng, không xóa dữ liệu), rồi `npx prisma generate`:
-
-1. `docs/sql/2026-10-13-B1-gio-luong-sua-tay.sql`: thêm 2 cột vào `ClassSession`
-2. `docs/sql/2026-10-13-B2-tro-giang-theo-buoi.sql`: thêm bảng `SessionAssistant`
-3. `docs/sql/2026-10-13-B4-cach-tinh-trung-gio-theo-ngay.sql`: thêm bảng `TeacherOverlapPolicy`
-4. `docs/sql/2026-10-13-B5-cap-do-day-duoc.sql`: thêm cột `Teacher.teachableLevels`Chưa chạy thì `dev.db` thật thiếu cột / bảng nên các màn lương, giáo viên và gợi ý dạy thay sẽ lỗi. Kiểm tra lint, typecheck, test, build đều xanh trên bản sao `dev.db` đã áp 4 file này. Đợt C chờ Tuấn (C1 nơi lưu file, C2 câu hỏi mục 7).
+Đợt B (B1–B8) đã xong, không còn việc dang dở. 4 file SQL của B1, B2, B4, B5 đã được chạy lên `prisma/dev.db` ngày 13/10/2026 (Tuấn đồng ý, có bản sao lưu `prisma/dev.db.bak-*`) và đã `npx prisma generate`. Lint, typecheck, test (194/194) xanh trên `dev.db` thật. Đợt C chờ Tuấn (C1 nơi lưu file, C2 câu hỏi mục 7).
 
 ## Nhật ký
 
@@ -44,3 +39,4 @@ Mô tả từ `docs/KE_HOACH.md` mục 2. Mỗi việc một commit.
 | 13/10/2026 | B6 | Antigravity | Cảnh báo (không chặn): xếp lớp cho học sinh còn nợ khóa trước (`priorDebtsForStudent` trong `src/server/finance.ts`, API ghi danh trả thêm `warnings`, màn xếp lớp hiện cảnh báo); mở lớp mà giáo viên dạy 2 trung tâm cách dưới 60 phút (`findTightGaps` trong `src/lib/schedule.ts`, nối vào `planClass`). `tests/warnings-b6.test.ts`. Không đổi schema. Lint/typecheck/test xanh (188/188). |
 | 13/10/2026 | B7 | Antigravity | Báo cáo doanh thu thêm bảng theo ngày và theo trung tâm học (trung tâm của lớp đang học, khác trung tâm thu): `getRevenueReport` trong `src/server/reports.ts`, `src/app/reports/page.tsx`. Xuất .xlsx thật (3 sheet cho doanh thu) thay CSV ở mọi báo cáo: `src/lib/xlsx.ts`, `src/client/xlsx.ts`. Không thêm thư viện mới: tự ghi file xlsx (ZIP không nén), đã kiểm tra đọc lại được bằng `read-excel-file` sẵn có. `tests/xlsx.test.ts`, `tests/api-revenue-b7.test.ts`. Không đổi schema. Lint/typecheck/test xanh (194/194). |
 | 13/10/2026 | B8 | Antigravity | `npm run build` xanh; cập nhật `README.md` và bảng mục 2, mục 4 của `docs/KE_HOACH.md`; ghi Bàn giao các file SQL cho Tuấn. |
+| 13/10/2026 | Sửa lỗi thiếu cột | Antigravity | `dev.db` thật thiếu cột / bảng của B1, B2, B4, B5 nên test và màn hình lỗi. Đã chạy 4 file SQL trong `docs/sql/` lên `prisma/dev.db` (được Tuấn cho phép, có sao lưu), generate lại, 194/194 test xanh. |
