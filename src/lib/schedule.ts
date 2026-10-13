@@ -121,3 +121,36 @@ export function autoClassStatus(status: string, first: string | null, last: stri
   if (status === "PLANNED" && first <= today) return "ACTIVE";
   return status;
 }
+
+/**
+ * Cảnh báo (không chặn): một người dạy hai trung tâm khác nhau cùng ngày mà hai buổi cách nhau chưa tới `gapMinutes` phút
+ * (không tính buổi trùng giờ, vì trùng giờ đã bị chặn ở `findConflicts`). Mỗi người, mỗi ngày, mỗi cặp buổi chỉ báo một lần.
+ */
+export function findTightGaps(
+  candidates: SlotLite[],
+  existing: SlotLite[],
+  staffNames: Record<number, string> = {},
+  gapMinutes = 60,
+): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const c of candidates) {
+    for (const e of existing) {
+      if (e.date !== c.date || e.centerId === c.centerId) continue;
+      if (c.sessionId !== undefined && c.sessionId === e.sessionId) continue;
+      if (overlaps(c.startTime, c.endTime, e.startTime, e.endTime)) continue;
+      const gap = toMinutes(c.startTime) >= toMinutes(e.endTime) ? toMinutes(c.startTime) - toMinutes(e.endTime) : toMinutes(e.startTime) - toMinutes(c.endTime);
+      if (gap >= gapMinutes) continue;
+      for (const sid of c.staffIds) {
+        if (!e.staffIds.includes(sid)) continue;
+        const key = `${sid}:${c.date}:${e.sessionId ?? e.classCode}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push(
+          `${staffNames[sid] ?? "Người dạy"} dạy ${e.classCode ?? "lớp khác"} ở ${e.centerName ?? "trung tâm khác"} lúc ${e.startTime}–${e.endTime} ${formatDateVN(e.date, true)}, chỉ cách ${gap} phút trước/sau buổi này, có thể không kịp di chuyển.`,
+        );
+      }
+    }
+  }
+  return out;
+}

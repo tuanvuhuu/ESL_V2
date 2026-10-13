@@ -84,8 +84,10 @@ function AddStudentModal({
     if (!studentId) return;
     setSaving(true);
     try {
-      await api(`/api/classes/${classId}/enrollments`, { body: { studentId, purchasedSessions: purchased ?? defaultSessions } });
+      const enrolled = await api<{ warnings?: string[] }>(`/api/classes/${classId}/enrollments`, { body: { studentId, purchasedSessions: purchased ?? defaultSessions } });
       message.success("Đã xếp học sinh vào lớp");
+      // B6: cảnh báo còn nợ khóa trước (không chặn xếp lớp)
+      for (const w of enrolled.warnings ?? []) message.warning(w);
       setStudentId(undefined);
       setPurchased(defaultSessions);
       onSaved();

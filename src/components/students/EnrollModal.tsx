@@ -107,7 +107,7 @@ export function EnrollModal({ student, open, onClose, onSaved }: { student: Enro
         message.success(`${student.fullName} chờ xếp lớp khóa ${course?.name ?? ""}`);
       } else {
         const dueDate = v.dueDate ? (typeof v.dueDate === "string" ? v.dueDate : v.dueDate.format("YYYY-MM-DD")) : null;
-        await api(`/api/classes/${v.classId}/enrollments`, {
+        const enrolled = await api<{ warnings?: string[] }>(`/api/classes/${v.classId}/enrollments`, {
           body: {
             studentId: student.id,
             purchasedSessions: v.purchasedSessions,
@@ -119,6 +119,8 @@ export function EnrollModal({ student, open, onClose, onSaved }: { student: Enro
           },
         });
         message.success(`Đã xếp ${student.fullName} vào lớp ${chosen?.code ?? ""}`);
+        // B6: cảnh báo còn nợ khóa trước (không chặn xếp lớp)
+        for (const w of enrolled.warnings ?? []) message.warning(w);
       }
       onSaved();
     } catch (e) {

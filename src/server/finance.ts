@@ -383,3 +383,23 @@ export async function deleteExpense(id: number, viewer: Viewer) {
     return { ok: true };
   });
 }
+
+/** B6: các khóa trước của học sinh còn nợ học phí (khóa đang học hoặc đã kết thúc, không tính khóa đã chuyển đi). Chỉ để cảnh báo, không chặn xếp lớp. */
+export async function priorDebtsForStudent(tx: Prisma.TransactionClient | typeof prisma, studentId: number, excludeClassId: number, today = todayISO()) {
+  const rows = await tx.classEnrollment.findMany({
+    where: { studentId, classId: { not: excludeClassId }, OR: [{ leftAt: null }, { class: { status: "FINISHED" } }], class: { status: { not: "CANCELLED" } } },
+    include: {
+      class: { select: { code: true, name: true, course: { select: { tuition: true } } } },
+      payments: { where: { status: "VALID" } },
+      refunds: { where: { status: "VALID" } },
+    },
+  });
+  return rows
+    .map((e) => {
+      const finalFee = e.tuitionFee ?? e.class.course?.tuition ?? 0;
+      const paid = Math.max(0, e.payments.reduce((s, p) => s + p.amount, 0) - e.refunds.reduce((s, r) => s + r.amount, 0));
+      const debt = computeDebtStatus({ finalFee, paidAmount: paid, dueDate: e.dueDate, today });
+      return { enrollmentId: e.id, classCode: e.class.code, className: e.class.name, debtAmount: debt.debtAmount, isOverdue: debt.isOverdue };
+    })
+    .filter((d) => d.debtAmount > 0);
+}

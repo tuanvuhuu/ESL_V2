@@ -1,7 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import type { z } from "zod";
 import { addDays, todayISO } from "@/lib/dates";
-import { findConflicts, generateSessionDates, overlaps, type SlotLite } from "@/lib/schedule";
+import { findConflicts, findTightGaps, generateSessionDates, overlaps, type SlotLite } from "@/lib/schedule";
 import { prisma } from "./db";
 import { badRequest, conflict } from "./http";
 import { loadSlots } from "./slots";
@@ -58,6 +58,8 @@ export async function planClass(tx: Tx, input: ClassInput) {
   const existing = await loadSlots(tx, dates);
   const conflicts = findConflicts(candidates, existing, names);
   const warnings: string[] = [];
+  // B6: giáo viên dạy hai trung tâm sát giờ (chỉ cảnh báo, mỗi người một dòng đầu tiên mỗi ngày).
+  warnings.push(...findTightGaps(candidates, existing, names).slice(0, 5));
   if (input.maxStudents > room.capacity) {
     warnings.push(`Sĩ số tối đa ${input.maxStudents} lớn hơn sức chứa phòng ${room.name} (${room.capacity}).`);
   }

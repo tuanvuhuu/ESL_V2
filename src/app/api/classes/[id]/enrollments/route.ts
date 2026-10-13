@@ -1,7 +1,9 @@
 import { todayISO } from "@/lib/dates";
+import { formatCurrency } from "@/lib/finance";
 import { logChange } from "@/server/audit";
 import { assertCanEditClass } from "@/server/access";
 import { prisma } from "@/server/db";
+import { priorDebtsForStudent } from "@/server/finance";
 import { createEnrollment } from "@/server/enrollments";
 import { body, idParam, route, type IdCtx } from "@/server/http";
 import { enrollSchema } from "@/server/validators";
@@ -35,6 +37,9 @@ export const POST = route<IdCtx>(async (req, { params }, viewer) => {
     }
     await logChange(tx, "Student", studentId, "enroll", { class: [null, cls.code], purchasedSessions: [null, e.purchasedSessions] });
     await logChange(tx, "Class", classId, "enroll", { student: [null, student.fullName] });
-    return e;
+    // B6: cảnh báo (không chặn) khi học sinh còn nợ học phí khóa trước.
+    const debts = await priorDebtsForStudent(tx, studentId, classId);
+    const warnings = debts.map((d) => `Học sinh còn nợ khóa trước ${d.classCode}: ${formatCurrency(d.debtAmount)}${d.isOverdue ? " (quá hạn)" : ""}.`);
+    return { ...e, warnings };
   });
 });
