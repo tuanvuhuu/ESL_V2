@@ -13,6 +13,7 @@ import {
   values,
 } from "@/lib/constants";
 import { ATTENDANCE_STATUSES } from "@/lib/attendance";
+import { MAX_SCORE, TEST_KINDS } from "@/lib/curriculum";
 import { isValidISODate, isValidTime, todayISO } from "@/lib/dates";
 import { isValidPhone, normalizePhone } from "@/lib/text";
 
@@ -284,6 +285,65 @@ export const courseSchema = z.object({
   sessionMinutes: z.number().int().min(15).max(480),
   tuition: z.number().int().min(0),
   maxStudents: z.number().int().min(1).max(100),
+  nextCourseId: z.number().int().positive().optional().nullable(),
+});
+
+const lessonText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .optional()
+    .nullable()
+    .transform((v) => (v ? v : null));
+
+/** Khung chương trình của một khóa: lưu cả danh sách một lần. */
+export const lessonsSchema = z.object({
+  lessons: z
+    .array(
+      z.object({
+        index: z.number().int().min(1).max(300),
+        title: reqText("Nhập chủ đề của buổi"),
+        objectives: lessonText(1000),
+        content: lessonText(2000),
+        homework: lessonText(1000),
+        materials: z
+          .array(z.object({ name: z.string().trim().max(200).default(""), url: z.string().trim().url("Link tài liệu không hợp lệ").max(1000) }))
+          .max(20)
+          .default([]),
+        testKind: z.enum(values(TEST_KINDS)).optional().nullable(),
+      }),
+    )
+    .max(300)
+    .refine((list) => new Set(list.map((l) => l.index)).size === list.length, "Có hai bài trùng số buổi"),
+});
+
+const score = z.number().min(0, "Điểm từ 0 đến 10").max(MAX_SCORE, "Điểm từ 0 đến 10").optional().nullable();
+
+/** Điểm kiểm tra theo kỹ năng của cả buổi. Một dòng không có điểm nào = xóa điểm của học sinh đó. */
+export const scoresSchema = z.object({
+  kind: z.enum(values(TEST_KINDS)),
+  items: z
+    .array(
+      z.object({
+        studentId: z.number().int().positive(),
+        listening: score,
+        speaking: score,
+        reading: score,
+        writing: score,
+        total: score,
+        note: lessonText(300),
+      }),
+    )
+    .max(200),
+});
+
+/** Mua thêm buổi cho ghi danh đang học. */
+export const renewSchema = z.object({
+  sessions: z.number({ error: "Nhập số buổi" }).int().min(1, "Ít nhất 1 buổi").max(300),
+  amount: z.number({ error: "Nhập số tiền" }).int().min(0),
+  dueDate: isoDate("Hạn đóng không hợp lệ").optional().nullable(),
+  note: optText,
 });
 
 const ROLE_VALUES = ["MANAGER", "OFFICE", "TEACHER", "ASSISTANT"] as const;

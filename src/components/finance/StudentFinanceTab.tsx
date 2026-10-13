@@ -8,7 +8,8 @@ import { useSession } from "@/client/session";
 import { PaymentModal, type PaymentTarget } from "./PaymentModal";
 import { ReceiptModal, type ReceiptData } from "./ReceiptModal";
 import { computeDebtStatus, formatCurrency, paymentOption } from "@/lib/finance";
-import { isManager } from "@/lib/permissions";
+import { canManageFinance, isManager } from "@/lib/permissions";
+import { RenewModal, type RenewTarget } from "./RenewModal";
 import { formatDateVN, todayISO } from "@/lib/dates";
 
 export function StudentFinanceTab({
@@ -16,11 +17,14 @@ export function StudentFinanceTab({
   studentName,
   studentCode,
   enrollments,
+  onChanged,
 }: {
   studentId: number;
   studentName: string;
   studentCode: string;
   enrollments: any[];
+  /** Tải lại hồ sơ sau khi đổi học phí / số buổi (mua thêm buổi). */
+  onChanged?: () => void;
 }) {
   const { viewer } = useSession();
   const [loading, setLoading] = useState(false);
@@ -28,6 +32,7 @@ export function StudentFinanceTab({
 
   const [paymentTarget, setPaymentTarget] = useState<PaymentTarget | null>(null);
   const [receipt, setReceipt] = useState<ReceiptData | null>(null);
+  const [renewTarget, setRenewTarget] = useState<RenewTarget | null>(null);
 
   // Refund modal state
   const [refundTarget, setRefundTarget] = useState<{
@@ -72,6 +77,10 @@ export function StudentFinanceTab({
 
     return {
       enrollmentId: e.id,
+      classId: e.classId as number,
+      centerId: e.class?.centerId as number,
+      active: !e.leftAt,
+      purchasedSessions: (e.purchasedSessions ?? e.class?.totalSessions ?? 0) as number,
       className: e.class?.name ?? "Lớp học",
       classCode: e.class?.code ?? "",
       finalFee,
@@ -219,6 +228,23 @@ export function StudentFinanceTab({
                       Thu tiền
                     </Button>
                   )}
+                  {viewer && r.active && canManageFinance(viewer, r.centerId) && (
+                    <Button
+                      size="small"
+                      icon={<PlusOutlined />}
+                      onClick={() =>
+                        setRenewTarget({
+                          classId: r.classId,
+                          enrollmentId: r.enrollmentId,
+                          className: r.className,
+                          finalFee: r.finalFee,
+                          purchasedSessions: r.purchasedSessions,
+                        })
+                      }
+                    >
+                      Mua thêm buổi
+                    </Button>
+                  )}
                   {viewer && isManager(viewer) && r.paidAmount > 0 && (
                     <Button
                       size="small"
@@ -323,6 +349,15 @@ export function StudentFinanceTab({
         onSuccess={(p) => {
           loadPayments();
           setReceipt(p);
+        }}
+      />
+
+      <RenewModal
+        target={renewTarget}
+        onClose={() => setRenewTarget(null)}
+        onDone={() => {
+          setRenewTarget(null);
+          onChanged?.();
         }}
       />
 

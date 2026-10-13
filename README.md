@@ -1,6 +1,8 @@
 # Quản lý trung tâm tiếng Anh (ESL v2)
 
-Hệ thống gọn nhẹ để một quản lý điều hành 4 trung tâm tiếng Anh. Đợt 1: học sinh, phụ huynh, giáo viên/trợ giảng, lớp và lịch học.
+Hệ thống gọn nhẹ để một quản lý điều hành 4 trung tâm tiếng Anh: học sinh, phụ huynh, giáo viên/trợ giảng, khung chương trình, lớp và lịch học, điểm danh và lịch sử học tập, học phí, lương, chi phí, báo cáo.
+
+Trạng thái từng tính năng so với tài liệu yêu cầu và kế hoạch các đợt tiếp theo: [docs/KE_HOACH.md](docs/KE_HOACH.md).
 
 **Stack:** Next.js 15 (App Router) · React 19 · GitHub Primer (React + Primitives) · Prisma 6 · SQLite (chạy máy) → PostgreSQL khi đưa lên mạng · TypeScript · Vitest.
 
@@ -21,6 +23,8 @@ Tài khoản chạy thử (mật khẩu `matkhau123`, chỉ có trong dữ liệ
 Database mới, chưa có tài khoản nào: mở trang đăng nhập sẽ hiện ô tạo tài khoản quản lý đầu tiên. Sau đó quản lý tạo tài khoản cho giáo vụ, giáo viên ở **Cài đặt › Tài khoản**.
 
 Xóa sạch và tạo lại dữ liệu mẫu: `npm run db:reset`.
+
+Sau khi lấy code mới về: chạy `npm install` rồi `npm run db:push` để database có thêm bảng / cột mới (không mất dữ liệu). `run.bat` tự làm hai bước này.
 
 Kiểm tra trước khi đẩy code: `npm run lint && npm run typecheck && npm test && npm run build`. Test phân quyền API chạy trên dữ liệu mẫu, nên cần `db:push` và `db:seed` trước.
 
@@ -43,7 +47,14 @@ Kiểm tra trước khi đẩy code: `npm run lint && npm run typecheck && npm t
 | Giáo viên | Giáo viên, trợ giảng hoặc cả hai; trung tâm dạy được; giờ dạy theo lịch trong tháng; lịch tuần gộp 4 trung tâm |
 | Lớp học | Mở lớp từng bước, tự sinh buổi học bỏ ngày lễ, xem trước và chặn trùng; xếp học sinh, rời lớp; sửa trợ giảng; đổi trạng thái lớp |
 | Lịch học | Lưới phòng × giờ theo ngày, lịch tuần, lọc theo trung tâm / giáo viên; bấm buổi để dời, đổi phòng, dạy thay, hủy (có thể nối buổi vào cuối lịch) |
-| Cài đặt | Trung tâm & màu, phòng học, ngày nghỉ lễ (chung hoặc từng trung tâm), khóa học, tài khoản |
+| Khung chương trình | Cài đặt › Khóa học › Khung chương trình: từng buổi có chủ đề, mục tiêu, nội dung, bài tập về nhà, link tài liệu, đánh dấu buổi kiểm tra (nhỏ / giữa khóa / cuối khóa). Buổi số N của lớp tự lấy bài số N, hiện trên trang điểm danh và thẻ buổi của giáo viên |
+| Điểm kiểm tra | Trang điểm danh của buổi kiểm tra có bảng nhập điểm Nghe, Nói, Đọc, Viết (thang 10), tổng tự tính trung bình nếu để trống; buổi thường có nút "Nhập điểm kiểm tra cho buổi này". Điểm hiện trong lịch sử học tập, sổ học tập in và tin nhắn gửi phụ huynh |
+| Học phí & công nợ | Ghi danh có giá gói, giảm giá (anh chị em, học sinh cũ, đóng sớm, học bổng, khuyến mãi), hạn đóng; phiếu thu in được, thu nhiều đợt, hủy kèm lý do; hoàn tiền (quản lý); **mua thêm buổi** cho ghi danh đang học; danh sách công nợ, quá hạn |
+| Chi phí, lương | Chi phí theo trung tâm và loại; đơn giá giờ theo người và vai trò, có ngày hiệu lực; bảng lương tháng chi tiết từng buổi, 3 cách tính khi đứng nhiều lớp trùng giờ, thưởng / phạt / phụ cấp, chốt lương, đã trả; giáo viên xem lương của mình |
+| Báo cáo | Tổng quan hôm nay, doanh thu, lãi lỗ theo trung tâm, giáo viên & giờ dạy, chuyên cần, **học sinh** (trạng thái, ghi danh mới, bảo lưu, nghỉ theo lý do, tỷ lệ học tiếp), **sử dụng phòng & lớp** (lấp đầy lớp, dùng phòng theo sáng / chiều / tối); xuất CSV mở bằng Excel |
+| Liên lạc phụ huynh | Nhật ký liên lạc trong hồ sơ học sinh, việc cần gọi lại (menu Cần gọi lại) |
+| Nhập từ Excel | Học sinh › Nhập từ Excel: tải file mẫu, chọn file .xlsx / .csv, hệ thống kiểm tra từng dòng (thiếu cột, sai ngày, trung tâm / lớp không có, trùng hồ sơ) rồi mới nhập. Có mã lớp thì xếp lớp từ hôm nay với số buổi còn lại; có "Còn nợ" thì hiện trong Công nợ |
+| Cài đặt | Trung tâm & màu, phòng học, ngày nghỉ lễ (chung hoặc từng trung tâm), khóa học (kèm khóa tiếp theo gợi ý và khung chương trình), tài khoản |
 | Đăng nhập | Tên đăng nhập + mật khẩu, nhớ 30 ngày; đổi mật khẩu, đăng xuất ở góc phải; sai 5 lần thì khóa 15 phút |
 
 **Phân quyền** (mặc định theo đặc tả đợt 1, chặn ở cả API lẫn giao diện; mục không có quyền thì ẩn hẳn):
@@ -68,9 +79,9 @@ Quy tắc nằm ở `src/lib/permissions.ts`. Giáo vụ sửa được phụ hu
 - Học sinh, giáo viên, lớp không xóa; kết thúc bằng đổi trạng thái.
 - Thay đổi quan trọng được ghi nhật ký (ai, lúc nào, từ gì thành gì), ghi tên người đang đăng nhập.
 
-## Chưa có (đợt sau)
+## Chưa có
 
-Học phí, lương, báo cáo, nhật ký liên lạc.
+Xem mục 2 của [docs/KE_HOACH.md](docs/KE_HOACH.md): sửa giờ tính lương từng buổi, trợ giảng theo từng buổi, lương chia theo trung tâm nơi dạy, cảnh báo ghi danh khi còn nợ, ảnh học sinh và file đính kèm; giai đoạn 2 (cổng phụ huynh, tuyển sinh).
 
 ## Cấu trúc
 

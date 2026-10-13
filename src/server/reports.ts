@@ -1,4 +1,5 @@
-import { todayISO } from "@/lib/dates";
+import { addDays, todayISO } from "@/lib/dates";
+import { computeRetention, daysBetween, monthRange, percent, roomUsage } from "@/lib/reports";
 import { canSeeReports, type Viewer } from "@/lib/permissions";
 import { prisma } from "./db";
 import { allow } from "./http";
@@ -389,4 +390,164 @@ export async function getAttendanceReport(params: {
   });
 
   return { items };
+}
+
+/** Báo cáo học sinh trong tháng: theo trạng thái, ghi danh mới, bảo lưu, nghỉ theo lý do, tỷ lệ học tiếp. */
+export async function getStudentReport(params: { centerId?: number; month: string; viewer: Viewer }) {
+  const { centerId, month, viewer } = params;
+  allow(canSeeReports(viewer), "Không có quyền xem báo cáo");
+  const [from, to] = monthRange(month);
+  const studentWhere = centerId ? { centerId } : {};
+
+  const byStatus = await prisma.student.groupBy({ by: ["status"], where: studentWhere, _count: { _all: true } });
+
+  const newEnrollments = await prisma.classEnrollment.findMany({
+    where: { joinedAt: { gte: from, lte: to }, transferredFromId: null, ...(centerId ? { class: { centerId } } : {}) },
+    include: {
+      student: { select: { id: true, code: true, fullName: true } },
+      class: { select: { code: true, name: true, course: { select: { name: true } } } },
+    },
+    orderBy: { joinedAt: "asc" },
+  });
+
+  const reservations = await prisma.reservation.findMany({
+    where: { startDate: { gte: from, lte: to }, student: studentWhere },
+    include: { student: { select: { id: true, code: true, fullName: true } } },
+    orderBy: { startDate: "asc" },
+  });
+
+  // Đổi trạng thái sang "Đã nghỉ" trong tháng: lấy từ nhật ký thay đổi.
+  const logs = await prisma.auditLog.findMany({
+    where: {
+      entity: "Student",
+      action: "status",
+      createdAt: { gte: new Date(`${from}T00:00:00+07:00`), lt: new Date(`${addDays(to, 1)}T00:00:00+07:00`) },
+    },
+    select: { entityId: true, changes: true },
+  });
+  const quitIds = [
+    ...new Set(
+      logs
+        .filter((l) => {
+          try {
+            return (JSON.parse(l.changes) as { status?: [string, string] }).status?.[1] === "QUIT";
+          } catch {
+            return false;
+          }
+        })
+        .map((l) => l.entityId),
+    ),
+  ];
+  const quitStudents = quitIds.length
+    ? await prisma.student.findMany({ where: { id: { in: quitIds }, ...studentWhere }, select: { id: true, code: true, fullName: true, status: true, statusReason: true } })
+    : [];
+  const reasons = new Map<string, number>();
+  for (const s of quitStudents) {
+    const r = s.status === "QUIT" && s.statusReason ? s.statusReason : "Không ghi lý do";
+    reasons.set(r, (reasons.get(r) ?? 0) + 1);
+  }
+
+  // Tỷ lệ học tiếp: lớp kết thúc trong tháng (buổi cuối nằm trong tháng), học sinh học đến cuối khóa.
+  const finishedClasses = await prisma.classGroup.findMany({
+    where: { status: "FINISHED", ...(centerId ? { centerId } : {}) },
+    select: {
+      id: true,
+      sessions: { where: { status: { not: "CANCELLED" } }, select: { date: true }, orderBy: { date: "desc" }, take: 1 },
+      enrollments: { where: { transferredTo: { is: null } }, select: { id: true, studentId: true, joinedAt: true, transferredFromId: true, leftAt: true } },
+    },
+  });
+  const ended = finishedClasses
+    .filter((c) => c.sessions[0] && c.sessions[0].date >= from && c.sessions[0].date <= to)
+    .flatMap((c) => c.enrollments.filter((e) => !e.leftAt || e.leftAt >= c.sessions[0].date));
+  const others = ended.length
+    ? await prisma.classEnrollment.findMany({
+        where: { studentId: { in: [...new Set(ended.map((e) => e.studentId))] } },
+        select: { id: true, studentId: true, joinedAt: true, transferredFromId: true },
+      })
+    : [];
+
+  return {
+    month,
+    byStatus: Object.fromEntries(byStatus.map((s) => [s.status, s._count._all])),
+    newEnrollments: newEnrollments.map((e) => ({
+      id: e.id,
+      joinedAt: e.joinedAt,
+      student: e.student,
+      classCode: e.class.code,
+      courseName: e.class.course?.name ?? e.class.name,
+    })),
+    reservations: reservations.map((r) => ({ id: r.id, startDate: r.startDate, expectedReturn: r.expectedReturn, reason: r.reason, student: r.student })),
+    quits: quitStudents,
+    quitReasons: [...reasons.entries()].map(([reason, count]) => ({ reason, count })).sort((a, b) => b.count - a.count),
+    retention: computeRetention(ended, others),
+  };
+}
+
+/** Báo cáo sử dụng lớp (tỷ lệ lấp đầy) và phòng (tỷ lệ dùng theo khung giờ) trong tháng. */
+export async function getUtilizationReport(params: { centerId?: number; month: string; viewer: Viewer }) {
+  const { centerId, month, viewer } = params;
+  allow(canSeeReports(viewer), "Không có quyền xem báo cáo");
+  const [from, to] = monthRange(month);
+
+  const classes = await prisma.classGroup.findMany({
+    where: { status: { in: ["PLANNED", "ACTIVE"] }, ...(centerId ? { centerId } : {}) },
+    include: {
+      center: { select: { name: true, color: true } },
+      room: { select: { name: true, capacity: true } },
+      teacher: { select: { displayName: true } },
+      _count: { select: { enrollments: { where: { leftAt: null } } } },
+    },
+  });
+  const classRows = classes
+    .map((c) => {
+      const capacity = Math.min(c.maxStudents, c.room.capacity);
+      const enrolled = c._count.enrollments;
+      return {
+        id: c.id,
+        code: c.code,
+        name: c.name,
+        status: c.status,
+        center: c.center,
+        room: c.room.name,
+        teacher: c.teacher.displayName,
+        enrolled,
+        capacity,
+        free: Math.max(0, capacity - enrolled),
+        fillRate: percent(enrolled, capacity) ?? 0,
+      };
+    })
+    .sort((a, b) => a.fillRate - b.fillRate || a.code.localeCompare(b.code));
+
+  const [rooms, holidays] = await Promise.all([
+    prisma.room.findMany({
+      where: { active: true, ...(centerId ? { centerId } : {}) },
+      include: {
+        center: { select: { id: true, name: true, color: true } },
+        sessions: { where: { date: { gte: from, lte: to }, status: { not: "CANCELLED" } }, select: { roomId: true, startTime: true, endTime: true } },
+      },
+      orderBy: [{ centerId: "asc" }, { name: "asc" }],
+    }),
+    prisma.holiday.findMany({ where: { date: { gte: from, lte: to } }, select: { date: true, centerId: true } }),
+  ]);
+  const days = daysBetween(from, to);
+  const roomRows = rooms.map((r) => {
+    const closed = new Set(holidays.filter((h) => h.centerId == null || h.centerId === r.centerId).map((h) => h.date));
+    const openDays = days.filter((d) => !closed.has(d)).length;
+    return { id: r.id, name: r.name, center: r.center, capacity: r.capacity, sessions: r.sessions.length, openDays, ...roomUsage(r.sessions, openDays) };
+  });
+
+  const enrolled = classRows.reduce((s, c) => s + c.enrolled, 0);
+  const capacity = classRows.reduce((s, c) => s + c.capacity, 0);
+  return {
+    month,
+    summary: {
+      classes: classRows.length,
+      enrolled,
+      capacity,
+      fillRate: percent(enrolled, capacity),
+      roomRate: roomRows.length ? Math.round(roomRows.reduce((s, r) => s + r.rate, 0) / roomRows.length) : null,
+    },
+    classes: classRows,
+    rooms: roomRows,
+  };
 }

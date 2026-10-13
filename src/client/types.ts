@@ -74,6 +74,7 @@ export type Course = {
   sessionMinutes: number;
   tuition: number;
   maxStudents: number;
+  nextCourseId: number | null;
 };
 
 export type SessionRow = {
@@ -93,6 +94,8 @@ export type SessionRow = {
   room: { id?: number; name: string };
   teacher: { id: number; displayName: string };
   _count?: { attendances: number; makeups: number };
+  /** Bài theo khung chương trình (chỉ có ở API lịch). */
+  lesson?: { title: string; testKind: string | null } | null;
 };
 
 export type { Balance } from "@/lib/attendance";

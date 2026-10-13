@@ -1,6 +1,6 @@
 import { attendanceOption, isAttended } from "@/lib/attendance";
 import { todayISO } from "@/lib/dates";
-import { assertCanTakeAttendance, assertCanViewAttendance, canTakeAttendanceFor, loadSession, rosterFor, staffRoleIn } from "@/server/attendance";
+import { assertCanTakeAttendance, assertCanViewAttendance, canTakeAttendanceFor, lessonFor, loadSession, rosterFor, staffRoleIn } from "@/server/attendance";
 import { logChange } from "@/server/audit";
 import { currentActor } from "@/server/auth";
 import { prisma } from "@/server/db";
@@ -12,10 +12,16 @@ export const GET = route<IdCtx>(async (_req, { params }, viewer) => {
   const id = idParam((await params).id);
   const s = await loadSession(prisma, id);
   assertCanViewAttendance(viewer, s);
-  const roster = await rosterFor(prisma, s);
+  const [roster, lesson, scores] = await Promise.all([
+    rosterFor(prisma, s),
+    lessonFor(prisma, s),
+    prisma.testScore.findMany({ where: { sessionId: id } }),
+  ]);
   return {
     session: s,
     roster,
+    lesson,
+    scores,
     role: staffRoleIn(viewer, s),
     canEdit: canTakeAttendanceFor(viewer, s) && s.status !== "CANCELLED" && s.date <= todayISO(),
   };

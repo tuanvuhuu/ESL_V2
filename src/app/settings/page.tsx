@@ -9,6 +9,7 @@ import { useCenters } from "@/client/centers";
 import type { Center, Course, Room } from "@/client/types";
 import { SETTINGS_TABS } from "@/components/AppShell";
 import { UsersTab } from "@/components/settings/UsersTab";
+import { CurriculumModal } from "@/components/curriculum/CurriculumModal";
 import { CenterTag, Dash, PageHeader } from "@/components/ui";
 import { formatDateVN } from "@/lib/dates";
 import { formatMoney } from "@/lib/text";
@@ -200,10 +201,12 @@ function HolidaysTab() {
 
 function CoursesTab() {
   const { data, reload } = useApi<Course[]>("/api/courses");
+  const [curriculum, setCurriculum] = useState<Course | null>(null);
   const modal = useFormModal<Omit<Course, "id">>(async (v, editing) => {
     const c = editing as Course | null;
-    if (c?.id) await api(`/api/courses/${c.id}`, { method: "PUT", body: v });
-    else await api("/api/courses", { body: v });
+    const payload = { ...v, nextCourseId: v.nextCourseId ?? null };
+    if (c?.id) await api(`/api/courses/${c.id}`, { method: "PUT", body: payload });
+    else await api("/api/courses", { body: payload });
     await reload();
   });
   return (
@@ -230,7 +233,20 @@ function CoursesTab() {
           { title: "Phút/buổi", dataIndex: "sessionMinutes" },
           { title: "Học phí chuẩn", render: (_, c) => <span className="num">{formatMoney(c.tuition)}</span> },
           { title: "Sĩ số tối đa", dataIndex: "maxStudents" },
-          { title: "", render: (_, c) => <Button size="small" onClick={() => modal.open(c, { ...c })}>Sửa</Button> },
+          { title: "Khóa tiếp theo", render: (_, c) => data?.find((n) => n.id === c.nextCourseId)?.name ?? <Dash /> },
+          {
+            title: "",
+            render: (_, c) => (
+              <span style={{ display: "inline-flex", gap: 6 }}>
+                <Button size="small" onClick={() => setCurriculum(c)}>
+                  Khung chương trình
+                </Button>
+                <Button size="small" onClick={() => modal.open(c, { ...c })}>
+                  Sửa
+                </Button>
+              </span>
+            ),
+          },
         ]}
       />
       <Modal open={modal.isOpen} title="Khóa học" onCancel={modal.close} onOk={modal.submit} confirmLoading={modal.saving} okText="Lưu" cancelText="Hủy">
@@ -256,8 +272,16 @@ function CoursesTab() {
           <Form.Item name="maxStudents" label="Sĩ số tối đa" rules={[{ required: true }]}>
             <InputNumber min={1} max={100} />
           </Form.Item>
+          <Form.Item name="nextCourseId" label="Khóa tiếp theo gợi ý">
+            <Select
+              allowClear
+              placeholder="Không có"
+              options={(data ?? []).filter((c) => c.id !== (modal.editing as Course | null)?.id).map((c) => ({ value: c.id, label: c.name }))}
+            />
+          </Form.Item>
         </Form>
       </Modal>
+      <CurriculumModal course={curriculum} onClose={() => setCurriculum(null)} />
     </>
   );
 }

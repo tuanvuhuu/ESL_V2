@@ -36,7 +36,7 @@ export const GET = route<IdCtx>(async (_req, { params }, viewer) => {
             include: {
               center: { select: { name: true, color: true } },
               teacher: { select: { displayName: true } },
-              course: { select: { name: true, tuition: true } },
+              course: { select: { name: true, tuition: true, nextCourse: { select: { name: true } } } },
             },
           },
           attendances: {
@@ -45,6 +45,10 @@ export const GET = route<IdCtx>(async (_req, { params }, viewer) => {
               makeup: { select: { absence: { select: { status: true, session: { select: { date: true } } } } } },
               makeupFor: { select: { id: true, session: { select: { date: true, startTime: true, class: { select: { code: true } } } }, attendance: { select: { status: true } } } },
             },
+            orderBy: { session: { date: "asc" } },
+          },
+          scores: {
+            include: { session: { select: { index: true, date: true, class: { select: { code: true } } } } },
             orderBy: { session: { date: "asc" } },
           },
         },

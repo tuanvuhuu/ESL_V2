@@ -16,15 +16,15 @@ if not exist ".env" if exist ".env.example" copy /y ".env.example" ".env" >nul
 
 if exist ".next\prerender-manifest.json" rmdir /s /q ".next" >nul 2>nul
 
-if not exist "node_modules" goto do_install
-goto check_db
-
-:do_install
-echo [INFO] Dang cai dat thu vien npm...
-call npm install
+rem Luon cai them thu vien moi (neu co) sau khi lay code moi ve.
+echo [INFO] Dang kiem tra thu vien npm...
+call npm install --no-audit --no-fund
 
 :check_db
 if not exist "prisma\dev.db" goto do_seed
+rem Database da co: them bang / cot moi theo schema, khong xoa du lieu.
+echo [INFO] Dang cap nhat cau truc database...
+call npx prisma db push
 goto do_run
 
 :do_seed

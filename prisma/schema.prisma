@@ -12,25 +12,25 @@ datasource db {
 }
 
 model Center {
-  id           Int                   @id @default(autoincrement())
-  code         String                @unique
-  name         String
-  address      String?
-  openHours    String?
-  color        String                @default("#1F6FEB")
-  rooms        Room[]
-  students     Student[]
-  availability TeacherAvailability[]
-  classes      ClassGroup[]
-  teachers     TeacherCenter[]
-  holidays     Holiday[]
-  users        User[]
-  payments     Payment[]
-  refunds      Refund[]
+  id             Int                   @id @default(autoincrement())
+  code           String                @unique
+  name           String
+  address        String?
+  openHours      String?
+  color          String                @default("#1F6FEB")
+  rooms          Room[]
+  students       Student[]
+  availability   TeacherAvailability[]
+  classes        ClassGroup[]
+  teachers       TeacherCenter[]
+  holidays       Holiday[]
+  users          User[]
+  payments       Payment[]
+  refunds        Refund[]
   payrollPeriods PayrollPeriod[]
-  expenses     Expense[]
-  createdAt    DateTime              @default(now())
-  updatedAt    DateTime              @updatedAt
+  expenses       Expense[]
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
 }
 
 model Room {
@@ -90,6 +90,7 @@ model Student {
   contacts        ContactLog[]
   payments        Payment[]
   refunds         Refund[]
+  scores          TestScore[]
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 
@@ -151,16 +152,39 @@ model TeacherCenter {
 }
 
 model Course {
-  id             Int          @id @default(autoincrement())
-  name           String       @unique
+  id             Int            @id @default(autoincrement())
+  name           String         @unique
   program        String?
   level          String?
-  totalSessions  Int          @default(24)
-  sessionMinutes Int          @default(90)
-  tuition        Int          @default(0)
-  maxStudents    Int          @default(12)
+  totalSessions  Int            @default(24)
+  sessionMinutes Int            @default(90)
+  tuition        Int            @default(0)
+  maxStudents    Int            @default(12)
+  // Khóa tiếp theo gợi ý khi học xong khóa này (tư vấn học tiếp, báo cáo tỷ lệ học tiếp).
+  nextCourseId   Int?
+  nextCourse     Course?        @relation("NextCourse", fields: [nextCourseId], references: [id])
+  previous       Course[]       @relation("NextCourse")
   classes        ClassGroup[]
   waiting        Student[]
+  lessons        CourseLesson[]
+}
+
+// Khung chương trình: bài của buổi số `index` trong khóa. Buổi số N của lớp tự lấy bài số N của khóa.
+model CourseLesson {
+  id         Int     @id @default(autoincrement())
+  courseId   Int
+  course     Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  index      Int
+  title      String
+  objectives String?
+  content    String?
+  homework   String?
+  // JSON: [{ "name": "Slide Unit 1", "url": "https://…" }]
+  materials  String  @default("[]")
+  // Loại kiểm tra (src/lib/curriculum.ts): trống = buổi thường, QUIZ, MIDTERM, FINAL.
+  testKind   String?
+
+  @@unique([courseId, index])
 }
 
 model ClassGroup {
@@ -222,6 +246,7 @@ model ClassSession {
   attendanceBy      String?
   attendances       Attendance[]
   makeups           Makeup[]
+  scores            TestScore[]
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 
@@ -259,6 +284,7 @@ model ClassEnrollment {
   attendances       Attendance[]
   payments          Payment[]
   refunds           Refund[]
+  scores            TestScore[]
 
   @@index([studentId])
   @@index([classId])
@@ -555,3 +581,27 @@ model Expense {
   @@index([category])
 }
 
+// Điểm kiểm tra theo kỹ năng của một học sinh ở một buổi (Tổng quan yêu cầu mục 3.6).
+// Thang 10; trống = không kiểm tra kỹ năng đó. `total` trống thì lấy trung bình các kỹ năng đã nhập.
+model TestScore {
+  id           Int             @id @default(autoincrement())
+  sessionId    Int
+  session      ClassSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  studentId    Int
+  student      Student         @relation(fields: [studentId], references: [id])
+  enrollmentId Int
+  enrollment   ClassEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  // QUIZ, MIDTERM, FINAL (src/lib/curriculum.ts)
+  kind         String          @default("QUIZ")
+  listening    Float?
+  speaking     Float?
+  reading      Float?
+  writing      Float?
+  total        Float?
+  note         String?
+  enteredBy    String
+  updatedAt    DateTime        @updatedAt
+
+  @@unique([sessionId, studentId])
+  @@index([enrollmentId])
+}

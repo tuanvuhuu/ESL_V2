@@ -37,6 +37,8 @@ import {
   SearchIcon,
   SignOutIcon,
   TrashIcon,
+  LinkIcon,
+  UploadIcon,
 } from "@primer/octicons-react";
 
 type IconProps = {
@@ -115,3 +117,5 @@ export const ExclamationCircleOutlined = wrap(AlertIcon);
 export const AlertOutlined = wrap(AlertIcon);
 export const InfoCircleOutlined = wrap(AlertIcon);
 export const QuestionCircleOutlined = wrap(AlertIcon);
+export const LinkOutlined = wrap(LinkIcon);
+export const UploadOutlined = wrap(UploadIcon);

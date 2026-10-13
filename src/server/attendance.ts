@@ -1,6 +1,7 @@
 // Danh sách điểm danh của một buổi, số buổi còn lại theo ghi danh, quyền điểm danh.
 import type { Prisma } from "@prisma/client";
 import { computeBalance, type Balance } from "@/lib/attendance";
+import { parseMaterials } from "@/lib/curriculum";
 import { reservationCovers, type ReservationLite } from "@/lib/availability";
 import { canEditCenter, isManager, isStaff, type Viewer } from "@/lib/permissions";
 import { prisma } from "./db";
@@ -42,6 +43,7 @@ const sessionInclude = {
       code: true,
       name: true,
       centerId: true,
+      courseId: true,
       teacherId: true,
       center: { select: { id: true, name: true, color: true } },
       assistants: { select: { teacherId: true, teacher: { select: { displayName: true } } } },
@@ -165,4 +167,11 @@ export async function rosterFor(tx: Tx, s: SessionWithClass): Promise<RosterRow[
   return [...rows.values()]
     .map((r) => ({ ...r, balance: balances.get(r.enrollmentId) ?? null }))
     .sort((a, b) => Number(!!a.makeup) - Number(!!b.makeup) || a.fullName.localeCompare(b.fullName, "vi"));
+}
+
+/** Bài của buổi theo khung chương trình: buổi số N của lớp lấy bài số N của khóa. */
+export async function lessonFor(tx: Tx, s: { index: number; class: { courseId: number | null } }) {
+  if (!s.class.courseId) return null;
+  const l = await tx.courseLesson.findUnique({ where: { courseId_index: { courseId: s.class.courseId, index: s.index } } });
+  return l ? { ...l, materials: parseMaterials(l.materials) } : null;
 }

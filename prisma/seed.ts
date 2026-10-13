@@ -44,6 +44,8 @@ const EN_F = ["Anna", "Lily", "Emma", "Mia", "Sophie", "Zoe"];
 
 async function main() {
   await prisma.$transaction([
+    prisma.testScore.deleteMany(),
+    prisma.courseLesson.deleteMany(),
     prisma.userSession.deleteMany(),
     prisma.user.deleteMany(),
     prisma.auditLog.deleteMany(),
@@ -90,6 +92,31 @@ async function main() {
 
   const courses = [];
   for (const c of COURSES) courses.push(await prisma.course.create({ data: c }));
+  // Khóa tiếp theo gợi ý: Kids 1 → Kids 2 → Teens 1 → IELTS Foundation.
+  for (const [from, to] of [[0, 1], [1, 2], [2, 3]]) {
+    await prisma.course.update({ where: { id: courses[from].id }, data: { nextCourseId: courses[to].id } });
+  }
+  // Khung chương trình: 3 buổi một unit, kiểm tra nhỏ mỗi 6 buổi, giữa khóa ở giữa, cuối khóa ở buổi cuối.
+  for (const c of courses) {
+    const mid = Math.round(c.totalSessions / 2);
+    await prisma.courseLesson.createMany({
+      data: Array.from({ length: c.totalSessions }, (_, k) => {
+        const index = k + 1;
+        const unit = Math.ceil(index / 3);
+        const testKind = index === c.totalSessions ? "FINAL" : index === mid ? "MIDTERM" : index % 6 === 0 ? "QUIZ" : null;
+        return {
+          courseId: c.id,
+          index,
+          title: testKind === "FINAL" ? "Kiểm tra cuối khóa" : testKind === "MIDTERM" ? "Kiểm tra giữa khóa" : `Unit ${unit} – bài ${((index - 1) % 3) + 1}${testKind ? " + kiểm tra nhỏ" : ""}`,
+          objectives: `Nắm từ vựng và mẫu câu của Unit ${unit}`,
+          content: "Khởi động 10 phút, từ vựng mới, luyện mẫu câu theo cặp, trò chơi củng cố",
+          homework: `Workbook Unit ${unit}, trang ${unit * 4}–${unit * 4 + 1}`,
+          materials: JSON.stringify(index % 3 === 1 ? [{ name: `Slide Unit ${unit}`, url: `https://example.com/${c.program?.toLowerCase() ?? "course"}/unit-${unit}` }] : []),
+          testKind,
+        };
+      }),
+    });
+  }
 
   const year = Number(todayISO().slice(0, 4));
   const holidays = [
@@ -270,6 +297,37 @@ async function main() {
         where: { id: s.id },
         data: { attendanceTakenAt: new Date(`${s.date}T${s.endTime}:00+07:00`), attendanceBy: c.teacher, lessonContent: `Unit ${Math.ceil(s.index / 3)} – bài ${((s.index - 1) % 3) + 1}` },
       });
+    }
+  }
+
+  // Điểm kiểm tra nhỏ ở các buổi kiểm tra đã qua (theo khung chương trình).
+  for (const c of created) {
+    const course = courses[c.course];
+    const tests = await prisma.courseLesson.findMany({ where: { courseId: course.id, testKind: { not: null } } });
+    const sessions = await prisma.classSession.findMany({
+      where: { classId: c.id, date: { lt: today }, index: { in: tests.map((t) => t.index) } },
+      include: { attendances: { where: { status: { in: ["PRESENT", "LATE"] } } } },
+    });
+    for (const s of sessions) {
+      const kind = tests.find((t) => t.index === s.index)!.testKind!;
+      for (const [k, a] of s.attendances.entries()) {
+        const base = 6 + ((k * 7 + s.index) % 7) * 0.5;
+        const [listening, speaking, reading, writing] = [base, base + 0.5, base - 0.5, base].map((x) => Math.min(10, Math.max(0, x)));
+        await prisma.testScore.create({
+          data: {
+            sessionId: s.id,
+            studentId: a.studentId,
+            enrollmentId: a.enrollmentId,
+            kind,
+            listening,
+            speaking,
+            reading,
+            writing,
+            total: Math.round(((listening + speaking + reading + writing) / 4) * 10) / 10,
+            enteredBy: c.teacher,
+          },
+        });
+      }
     }
   }
 
