@@ -7,6 +7,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useMemo } from "react";
 import { useApi } from "@/client/api";
 import { attendanceOption } from "@/lib/attendance";
+import { ScoreTable } from "@/components/history/CourseHistory";
 import { COURSE_OUTCOMES, optionOf } from "@/lib/constants";
 import { ageFrom, formatDateVN, todayISO } from "@/lib/dates";
 import { attendanceLine, buildCourseHistory, parentMessage, type HistoryEnrollment } from "@/lib/history";
@@ -98,6 +99,8 @@ function Report() {
                   Kết quả: <b>{outcome}</b>
                 </div>
               )}
+              {r.scores.length > 0 && <ScoreTable scores={r.scores} className="report-table" />}
+              {!r.ongoing && r.nextCourseName && <div>Khóa tiếp theo gợi ý: {r.nextCourseName}</div>}
               {r.last.finalComment && (
                 <div className="final-comment">
                   <div className="sub">Nhận xét của giáo viên</div>

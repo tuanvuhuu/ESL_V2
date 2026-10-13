@@ -404,6 +404,7 @@ export default function StudentProfilePage() {
                         studentName={s.fullName}
                         studentCode={s.code}
                         enrollments={s.enrollments}
+                        onChanged={() => void reload()}
                       />
                     ),
                   },

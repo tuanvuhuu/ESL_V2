@@ -32,11 +32,20 @@ const ACTIONS: Record<string, string> = {
   waiting: "Ghi danh chờ xếp lớp",
   contact: "Ghi liên lạc",
   bulk: "Thao tác hàng loạt",
+  score: "Nhập điểm kiểm tra",
+  curriculum: "Sửa khung chương trình",
+  renew: "Mua thêm buổi",
+  import: "Nhập từ Excel",
 };
 
 /** Tên trường hiển thị trong lịch sử. */
 const FIELDS: Record<string, string> = {
   class: "Lớp",
+  lessons: "Số bài",
+  tuitionFee: "Học phí",
+  dueDate: "Hạn đóng",
+  addedSessions: "Số buổi mua thêm",
+  addedAmount: "Tiền mua thêm",
   purchasedSessions: "Số buổi đã mua",
   adjustment: "Điều chỉnh",
   adjustmentNote: "Lý do điều chỉnh",

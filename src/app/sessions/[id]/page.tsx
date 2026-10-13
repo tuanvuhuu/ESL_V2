@@ -10,6 +10,8 @@ import { api, useApi } from "@/client/api";
 import { useViewer } from "@/client/session";
 import type { Balance } from "@/client/types";
 import { BalanceCell, MakeupTag } from "@/components/attendance/parts";
+import { LessonCard, type Lesson } from "@/components/curriculum/LessonCard";
+import { ScoresPanel, type ScoreRow } from "@/components/curriculum/ScoresPanel";
 import { CenterTag, PersonAvatar } from "@/components/ui";
 import { ATTENDANCE_STATUSES, attendanceOption, nextAttendanceStatus, type AttendanceStatus } from "@/lib/attendance";
 import { formatDateVN } from "@/lib/dates";
@@ -46,6 +48,8 @@ type Data = {
     class: { id: number; code: string; name: string; teacherId: number; center: { id: number; name: string; color: string } };
   };
   roster: Row[];
+  lesson: Lesson | null;
+  scores: ScoreRow[];
   role: "teacher" | "assistant" | null;
   canEdit: boolean;
 };
@@ -65,6 +69,7 @@ export default function AttendancePage() {
   const [lesson, setLesson] = useState("");
   const [openComment, setOpenComment] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showScores, setShowScores] = useState(false);
 
   useEffect(() => {
     if (!data) return;
@@ -149,6 +154,8 @@ export default function AttendancePage() {
           )}
         </Space>
       </div>
+
+      <LessonCard lesson={data.lesson} defaultOpen={isStaff(viewer)} />
 
       {s.status === "CANCELLED" && <Alert type="error" showIcon message="Buổi này đã hủy, không điểm danh." style={{ marginBottom: 12 }} />}
       {s.status !== "CANCELLED" && !canEdit && s.date > dayjs().format("YYYY-MM-DD") && (
@@ -251,6 +258,22 @@ export default function AttendancePage() {
               size="large"
             />
           </div>
+          {(data.lesson?.testKind || data.scores.length > 0 || showScores) ? (
+            <ScoresPanel
+              sessionId={s.id}
+              students={roster.map((r) => ({ studentId: r.studentId, fullName: r.fullName }))}
+              scores={data.scores}
+              defaultKind={data.lesson?.testKind ?? "QUIZ"}
+              canEdit={canEdit}
+              onSaved={() => void reload()}
+            />
+          ) : (
+            canEdit && (
+              <Button type="link" style={{ padding: 0, marginTop: 12 }} onClick={() => setShowScores(true)}>
+                Nhập điểm kiểm tra cho buổi này
+              </Button>
+            )
+          )}
           {canEdit && (
             <div className="save-bar">
               <span className="sub" style={{ flex: 1 }}>

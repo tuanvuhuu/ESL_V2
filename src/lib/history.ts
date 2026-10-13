@@ -1,6 +1,7 @@
 // Lịch sử học tập theo khóa: gộp các ghi danh nối nhau qua chuyển lớp thành một khóa,
 // tính chuyên cần, gom nhận xét của giáo viên. Dùng chung cho hồ sơ học sinh và trang in gửi phụ huynh.
 import { isAttended, type Balance } from "./attendance";
+import { SKILLS, testKindOption } from "./curriculum";
 import { formatDateVN } from "./dates";
 
 export type HistoryAttendance = {
@@ -10,6 +11,19 @@ export type HistoryAttendance = {
   /** Có giá trị khi đây là lượt học bù (học ở lớp khác). */
   makeupId: number | null;
   session: { index: number; date: string; startTime: string; lessonContent: string | null; class: { code: string } };
+};
+
+/** Điểm kiểm tra theo kỹ năng (src/lib/curriculum.ts). */
+export type HistoryScore = {
+  id: number;
+  kind: string;
+  listening: number | null;
+  speaking: number | null;
+  reading: number | null;
+  writing: number | null;
+  total: number | null;
+  note: string | null;
+  session: { index: number; date: string; class: { code: string } };
 };
 
 export type HistoryEnrollment = {
@@ -22,6 +36,7 @@ export type HistoryEnrollment = {
   outcomeBy: string | null;
   balance: Balance | null;
   attendances: HistoryAttendance[];
+  scores?: HistoryScore[];
   class: {
     id: number;
     code: string;
@@ -29,7 +44,7 @@ export type HistoryEnrollment = {
     status: string;
     centerId?: number;
     teacher: { displayName: string };
-    course: { name: string } | null;
+    course: { name: string; nextCourse?: { name: string } | null } | null;
     center: { name: string; color: string };
   };
 };
@@ -60,6 +75,10 @@ export type CourseRun<E extends HistoryEnrollment = HistoryEnrollment> = {
   teachers: string[];
   summary: AttendanceSummary;
   comments: { date: string; classCode: string; comment: string }[];
+  /** Điểm kiểm tra của cả khóa, theo ngày. */
+  scores: HistoryScore[];
+  /** Khóa tiếp theo gợi ý của khóa này. */
+  nextCourseName: string | null;
 };
 
 export function summarize(attendances: Pick<HistoryAttendance, "status" | "makeupId">[]): AttendanceSummary {
@@ -108,6 +127,8 @@ export function buildCourseHistory<E extends HistoryEnrollment>(enrollments: E[]
         .filter((a) => a.comment)
         .map((a) => ({ date: a.session.date, classCode: a.session.class.code, comment: a.comment! }))
         .reverse(),
+      scores: chain.flatMap((e) => e.scores ?? []).sort((a, b) => a.session.date.localeCompare(b.session.date)),
+      nextCourseName: last.class.course?.nextCourse?.name ?? null,
     };
   });
   return runs.sort((a, b) => b.from.localeCompare(a.from) || b.key - a.key);
@@ -121,6 +142,13 @@ export function attendanceLine(s: AttendanceSummary): string {
   if (absent) parts.push(`vắng ${absent} buổi${s.excused ? ` (${s.excused} có phép)` : ""}`);
   if (s.madeUp) parts.push(`đã học bù ${s.madeUp} buổi`);
   return `${parts.join(", ")} · chuyên cần ${s.rate}%`;
+}
+
+/** "Giữa khóa 12/10: Nghe 7, Nói 8, Đọc 6.5, Viết 7 – tổng 7.1". */
+export function scoreLine(s: HistoryScore): string {
+  const skills = SKILLS.filter((k) => s[k.key] != null).map((k) => `${k.label} ${s[k.key]}`);
+  const head = `${testKindOption(s.kind)?.label ?? "Kiểm tra"} ${formatDateVN(s.session.date).slice(0, 5)}`;
+  return `${head}: ${skills.length ? `${skills.join(", ")} – ` : ""}tổng ${s.total ?? "—"}`;
 }
 
 /** Tin nhắn ngắn gửi phụ huynh qua Zalo / SMS cho một khóa. */
@@ -137,6 +165,7 @@ export function parentMessage(
     `${centerName ?? "Trung tâm"} gửi kết quả khóa ${run.courseName} (lớp ${run.enrollments.map((e) => e.class.code).join(" → ")}, ${period}):`,
     `- Chuyên cần: ${attendanceLine(run.summary)}.`,
   ];
+  if (run.scores.length) lines.push(`- Điểm kiểm tra: ${run.scores.map(scoreLine).join("; ")}.`);
   if (outcomeLabel) lines.push(`- Kết quả: ${outcomeLabel}.`);
   if (run.last.finalComment) lines.push(`- Nhận xét của giáo viên: ${run.last.finalComment}`);
   else if (run.comments.length) lines.push(`- Nhận xét gần đây: ${run.comments.slice(0, 3).map((c) => c.comment).join("; ")}.`);

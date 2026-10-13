@@ -101,6 +101,7 @@ export const canSeeReports = (v: Viewer) => isManager(v) || isOffice(v);
 /** Trang đầu tiên sau khi đăng nhập và các mục menu được thấy. */
 export function canOpenPage(v: Viewer, path: string): boolean {
   if (path.startsWith("/settings")) return canManageSettings(v);
+  if (path.startsWith("/students/import")) return canCreateRecords(v);
   if (path.startsWith("/my/payroll")) return isStaff(v) && v.teacherId != null;
   if (path.startsWith("/my")) return isStaff(v) && v.teacherId != null;
   if (path.startsWith("/finance")) return canSeeFinance(v);

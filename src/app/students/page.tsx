@@ -1,6 +1,6 @@
 "use client";
 
-import { DownloadOutlined, PlusOutlined, SearchOutlined } from "@/client/primer-icons";
+import { DownloadOutlined, UploadOutlined, PlusOutlined, SearchOutlined } from "@/client/primer-icons";
 import { App, Button, Empty, Input, Select } from "@/client/primer-compat";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -245,6 +245,9 @@ export default function StudentsPage() {
                   <Button icon={<DownloadOutlined />} onClick={exportCsv}>
                     Xuất Excel
                   </Button>
+                  <Link href="/students/import">
+                    <Button icon={<UploadOutlined />}>Nhập từ Excel</Button>
+                  </Link>
                   <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing(null)}>
                     Thêm học sinh
                   </Button>

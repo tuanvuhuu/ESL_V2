@@ -10,6 +10,8 @@ import { downloadCsv } from "@/client/csv";
 import { formatCurrency } from "@/lib/finance";
 import { formatHours } from "@/lib/payroll";
 import { todayISO } from "@/lib/dates";
+import { StudentsReport } from "@/components/reports/StudentsReport";
+import { UtilizationReport } from "@/components/reports/UtilizationReport";
 
 export default function ReportsPage() {
   const { centers, centerId } = useCenters();
@@ -137,7 +139,7 @@ export default function ReportsPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px 0" }}>Báo cáo & Thống kê hệ thống</h1>
-          <div style={{ color: "var(--fgColor-muted)" }}>Số liệu tổng hợp 4 trung tâm: hôm nay, doanh thu, lãi lỗ, giáo viên và chuyên cần</div>
+          <div style={{ color: "var(--fgColor-muted)" }}>Số liệu tổng hợp 4 trung tâm: hôm nay, doanh thu, lãi lỗ, giáo viên, chuyên cần, học sinh, sử dụng phòng và lớp</div>
         </div>
       </div>
 
@@ -150,6 +152,8 @@ export default function ReportsPage() {
           { key: "profit-loss", label: "Lãi / Lỗ theo trung tâm" },
           { key: "teachers", label: "Giáo viên & Giờ dạy" },
           { key: "attendance", label: "Chuyên cần học sinh" },
+          { key: "students", label: "Học sinh" },
+          { key: "utilization", label: "Sử dụng phòng & lớp" },
         ]}
       />
 
@@ -168,6 +172,9 @@ export default function ReportsPage() {
           </Space>
         </Card>
       )}
+
+      {activeTab === "students" && <StudentsReport centerId={centerId} month={month} />}
+      {activeTab === "utilization" && <UtilizationReport centerId={centerId} month={month} />}
 
       {/* TAB 1: DASHBOARD HÔM NAY */}
       {activeTab === "dashboard" && (

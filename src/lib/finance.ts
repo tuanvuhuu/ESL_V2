@@ -131,3 +131,22 @@ export function computeRefundReference({ finalFee, purchasedSessions, unusedSess
 export function formatCurrency(amount: number): string {
   return `${Math.round(amount).toLocaleString("vi-VN")} ₫`;
 }
+/** Đơn giá một buổi của gói đang học, làm tròn nghìn đồng; dùng gợi ý khi mua thêm buổi. */
+export function sessionPriceOf(finalFee: number, purchasedSessions: number): number {
+  if (purchasedSessions <= 0) return 0;
+  return Math.round(finalFee / purchasedSessions / 1000) * 1000;
+}
+
+/**
+ * Mua thêm buổi (gia hạn) cho ghi danh đang học: cộng số buổi đã mua và học phí phải đóng.
+ * Phần chưa đóng tự thành công nợ vì công nợ = học phí − đã đóng.
+ */
+export function applyRenewal(
+  current: { tuitionFee: number; purchasedSessions: number },
+  add: { sessions: number; amount: number },
+): { tuitionFee: number; purchasedSessions: number } {
+  return {
+    tuitionFee: current.tuitionFee + Math.max(0, add.amount),
+    purchasedSessions: current.purchasedSessions + Math.max(0, add.sessions),
+  };
+}

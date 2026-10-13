@@ -2042,7 +2042,8 @@ export function Tooltip({ title, children }: any) {
   if (typeof title !== "string" || !title) return <>{children}</>;
   return (
     <PrimerTooltip text={title} direction="n">
-      <span tabIndex={0} style={{ display: "inline-flex" }}>
+      {/* Tooltip của Primer bắt buộc phần tử kích hoạt là phần tử tương tác, không thì cả trang báo lỗi. */}
+      <span tabIndex={0} role="button" style={{ display: "inline-flex" }}>
         {children}
       </span>
     </PrimerTooltip>

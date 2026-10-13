@@ -5,6 +5,7 @@ import { Button, Tag } from "@/client/primer-compat";
 import Link from "next/link";
 import type { ScheduleSession } from "@/client/types";
 import { todayISO } from "@/lib/dates";
+import { TestKindTag } from "@/components/curriculum/LessonCard";
 
 /** Thẻ một buổi cho giáo viên, trợ giảng (G1, G3): giờ, lớp, phòng, trung tâm, vai trò, nút Điểm danh. */
 export function MySessionCard({ s, teacherId }: { s: ScheduleSession; teacherId: number }) {
@@ -28,6 +29,11 @@ export function MySessionCard({ s, teacherId }: { s: ScheduleSession; teacherId:
         Phòng {s.room.name} · <span style={{ color: s.class.center.color }}>{s.class.center.name}</span> · {students} HS
         {s._count?.makeups ? ` (${s._count.makeups} học bù)` : ""}
       </div>
+      {s.lesson && (
+        <div style={{ marginTop: 2 }}>
+          <span className="sub">Bài {s.index}:</span> {s.lesson.title} <TestKindTag value={s.lesson.testKind} />
+        </div>
+      )}
       {s.lessonContent && <div className="sub">Đã dạy: {s.lessonContent}</div>}
       <div style={{ marginTop: 6 }}>
         <Tag color={role === "Trợ giảng" ? "purple" : role === "Dạy thay" ? "magenta" : "blue"}>{role}</Tag>

@@ -8,7 +8,8 @@ import { BalanceCell } from "@/components/attendance/parts";
 import { CenterTag, StatusTag } from "@/components/ui";
 import { CLASS_STATUSES, COURSE_OUTCOMES, optionOf } from "@/lib/constants";
 import { formatDateVN } from "@/lib/dates";
-import { buildCourseHistory, parentMessage, type CourseRun, type HistoryEnrollment } from "@/lib/history";
+import { SKILLS, testKindOption } from "@/lib/curriculum";
+import { buildCourseHistory, parentMessage, type CourseRun, type HistoryEnrollment, type HistoryScore } from "@/lib/history";
 
 type Props<E extends HistoryEnrollment> = {
   student: { id: number; fullName: string; englishName: string | null };
@@ -143,6 +144,12 @@ function RunCard<E extends HistoryEnrollment>({
           </Row>
         </Col>
       </Row>
+      {run.scores.length > 0 && <ScoreTable scores={run.scores} />}
+      {!run.ongoing && run.nextCourseName && (
+        <div className="sub" style={{ marginTop: 8 }}>
+          Khóa tiếp theo gợi ý: <b>{run.nextCourseName}</b>
+        </div>
+      )}
       {(run.last.finalComment || run.last.outcome) && (
         <div className="final-comment">
           <div className="sub">
@@ -188,5 +195,46 @@ function RunCard<E extends HistoryEnrollment>({
         }))}
       />
     </Card>
+  );
+}
+
+/** Bảng điểm kiểm tra theo kỹ năng của một khóa (dùng cả ở trang in). */
+export function ScoreTable({ scores, className = "score-table" }: { scores: HistoryScore[]; className?: string }) {
+  return (
+    <div style={{ marginTop: 12, overflowX: "auto" }}>
+      <div className="sub" style={{ marginBottom: 4 }}>
+        Điểm kiểm tra
+      </div>
+      <table className={className}>
+        <thead>
+          <tr>
+            <th>Ngày</th>
+            <th>Bài kiểm tra</th>
+            {SKILLS.map((k) => (
+              <th key={k.key}>{k.label}</th>
+            ))}
+            <th>Tổng</th>
+            <th>Ghi chú</th>
+          </tr>
+        </thead>
+        <tbody>
+          {scores.map((x) => (
+            <tr key={x.id}>
+              <td>{formatDateVN(x.session.date)}</td>
+              <td>
+                {testKindOption(x.kind)?.label ?? x.kind} · {x.session.class.code}
+              </td>
+              {SKILLS.map((k) => (
+                <td key={k.key}>{x[k.key] ?? ""}</td>
+              ))}
+              <td>
+                <b>{x.total ?? ""}</b>
+              </td>
+              <td>{x.note ?? ""}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
