@@ -115,6 +115,7 @@ export async function getRevenueReport(params: {
       date: { gte: fromDate, lte: toDate },
       ...(centerId ? { centerId } : {}),
     },
+    include: { enrollment: { select: { class: { select: { centerId: true } } } } },
   });
 
   // Các phiếu hoàn tiền
@@ -124,6 +125,7 @@ export async function getRevenueReport(params: {
       date: { gte: fromDate, lte: toDate },
       ...(centerId ? { centerId } : {}),
     },
+    include: { enrollment: { select: { class: { select: { centerId: true } } } } },
   });
 
   // Gom theo trung tâm
@@ -150,6 +152,33 @@ export async function getRevenueReport(params: {
     };
   });
 
+  // B7: doanh thu theo ngày thu (gộp các trung tâm đang xem).
+  const dayMap = new Map<string, { date: string; paid: number; refund: number; paymentCount: number }>();
+  const dayRow = (date: string) => {
+    let r = dayMap.get(date);
+    if (!r) dayMap.set(date, (r = { date, paid: 0, refund: 0, paymentCount: 0 }));
+    return r;
+  };
+  for (const p of payments) {
+    const r = dayRow(p.date);
+    r.paid += p.amount;
+    r.paymentCount += 1;
+  }
+  for (const r of refunds) dayRow(r.date).refund += r.amount;
+  const byDay = [...dayMap.values()].sort((a, b) => a.date.localeCompare(b.date)).map((r) => ({ ...r, net: r.paid - r.refund }));
+
+  // B7: doanh thu theo trung tâm HỌC (trung tâm của lớp học sinh đang học), khác với trung tâm THU tiền ở `byCenter`.
+  const allCenters = await prisma.center.findMany({ select: { id: true, name: true, code: true, color: true } });
+  const byLearningCenter = allCenters
+    .map((c) => {
+      const ps = payments.filter((p) => p.enrollment.class.centerId === c.id);
+      const rs = refunds.filter((r) => r.enrollment.class.centerId === c.id);
+      const paid = ps.reduce((s, p) => s + p.amount, 0);
+      const refund = rs.reduce((s, r) => s + r.amount, 0);
+      return { center: c, paidTotal: paid, refundTotal: refund, netRevenue: paid - refund, paymentCount: ps.length };
+    })
+    .filter((c) => c.paymentCount > 0 || c.refundTotal > 0);
+
   const totalPaid = byCenter.reduce((s, c) => s + c.paidTotal, 0);
   const totalRefund = byCenter.reduce((s, c) => s + c.refundTotal, 0);
   const totalNet = totalPaid - totalRefund;
@@ -159,6 +188,8 @@ export async function getRevenueReport(params: {
     toMonth,
     summary: { totalPaid, totalRefund, totalNet },
     byCenter,
+    byDay,
+    byLearningCenter,
   };
 }
 

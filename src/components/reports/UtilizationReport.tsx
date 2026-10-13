@@ -4,7 +4,7 @@ import { DownloadOutlined } from "@/client/primer-icons";
 import { Button, Card, Col, Empty, Row, Skeleton, Table } from "@/client/primer-compat";
 import Link from "next/link";
 import { qs, useApi } from "@/client/api";
-import { downloadCsv } from "@/client/csv";
+import { downloadXlsx } from "@/client/xlsx";
 import { CenterTag } from "@/components/ui";
 import { DAY_PARTS, type DayPartKey } from "@/lib/reports";
 
@@ -38,13 +38,13 @@ export function UtilizationReport({ centerId, month }: { centerId?: number | nul
   if (!data) return <Empty />;
 
   const exportCsv = () => {
-    downloadCsv(
-      `Bao_cao_lop_${data.month}.csv`,
+    downloadXlsx(
+      `Bao_cao_lop_${data.month}.xlsx`,
       ["Lớp", "Tên", "Trung tâm", "Phòng", "Giáo viên", "Sĩ số", "Tối đa", "Còn trống", "Lấp đầy (%)"],
       data.classes.map((c) => [c.code, c.name, c.center.name, c.room, c.teacher, c.enrolled, c.capacity, c.free, c.fillRate]),
     );
-    downloadCsv(
-      `Bao_cao_phong_${data.month}.csv`,
+    downloadXlsx(
+      `Bao_cao_phong_${data.month}.xlsx`,
       ["Phòng", "Trung tâm", "Sức chứa", "Số buổi", "Số giờ", ...DAY_PARTS.map((p) => `${p.label} (%)`), "Cả ngày (%)"],
       data.rooms.map((r) => [r.name, r.center.name, r.capacity, r.sessions, r.hours, ...DAY_PARTS.map((p) => r.parts[p.key]), r.rate]),
     );
@@ -55,7 +55,7 @@ export function UtilizationReport({ centerId, month }: { centerId?: number | nul
     <div>
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
         <Button icon={<DownloadOutlined />} onClick={exportCsv}>
-          Xuất Excel (CSV)
+          Xuất Excel (.xlsx)
         </Button>
       </div>
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>

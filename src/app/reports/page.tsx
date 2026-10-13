@@ -6,10 +6,10 @@ import { Button, Card, Col, DatePicker, Row, Select, Space, Table, Tabs, Tag, me
 import dayjs from "dayjs";
 import { api, qs } from "@/client/api";
 import { useCenters } from "@/client/centers";
-import { downloadCsv } from "@/client/csv";
+import { downloadXlsx } from "@/client/xlsx";
 import { formatCurrency } from "@/lib/finance";
 import { formatHours } from "@/lib/payroll";
-import { todayISO } from "@/lib/dates";
+import { formatDateVN, todayISO } from "@/lib/dates";
 import { StudentsReport } from "@/components/reports/StudentsReport";
 import { UtilizationReport } from "@/components/reports/UtilizationReport";
 
@@ -70,18 +70,24 @@ export default function ReportsPage() {
   // Export functions
   const exportRevenue = () => {
     if (!revenueData?.byCenter) return;
-    const header = ["Trung tâm", "Thực thu", "Hoàn tiền", "Doanh thu thuần", "Tiền mặt", "Chuyển khoản"];
-    const rows = revenueData.byCenter.map((c: any) => [
-      c.center.name,
-      c.paidTotal,
-      c.refundTotal,
-      c.netRevenue,
-      c.cashPaid,
-      c.transferPaid,
+    downloadXlsx(`Bao_cao_doanh_thu_${month}.xlsx`, [
+      {
+        name: "Theo trung tâm thu",
+        header: ["Trung tâm thu", "Số phiếu thu", "Thực thu", "Hoàn tiền", "Doanh thu thuần", "Tiền mặt", "Chuyển khoản"],
+        rows: revenueData.byCenter.map((c: any) => [c.center.name, c.paymentCount, c.paidTotal, c.refundTotal, c.netRevenue, c.cashPaid, c.transferPaid]),
+      },
+      {
+        name: "Theo trung tâm học",
+        header: ["Trung tâm học", "Số phiếu thu", "Thực thu", "Hoàn tiền", "Doanh thu thuần"],
+        rows: (revenueData.byLearningCenter ?? []).map((c: any) => [c.center.name, c.paymentCount, c.paidTotal, c.refundTotal, c.netRevenue]),
+      },
+      {
+        name: "Theo ngày",
+        header: ["Ngày", "Số phiếu thu", "Thực thu", "Hoàn tiền", "Doanh thu thuần"],
+        rows: (revenueData.byDay ?? []).map((d: any) => [formatDateVN(d.date), d.paymentCount, d.paid, d.refund, d.net]),
+      },
     ]);
-    downloadCsv(`Bao_cao_doanh_thu_${month}.csv`, header, rows);
   };
-
   const exportProfitLoss = () => {
     if (!profitLossData?.byCenter) return;
     const header = ["Trung tâm", "Thực thu", "Hoàn tiền", "Doanh thu thuần", "Lương GV/TG", "Chi phí", "Lãi / Lỗ", "Tỷ suất (%)"];
@@ -95,7 +101,7 @@ export default function ReportsPage() {
       c.profit,
       `${c.margin}%`,
     ]);
-    downloadCsv(`Bao_cao_lai_lo_${month}.csv`, header, rows);
+    downloadXlsx(`Bao_cao_lai_lo_${month}.xlsx`, header, rows);
   };
 
   const exportTeachers = () => {
@@ -113,7 +119,7 @@ export default function ReportsPage() {
       t.totalHours,
       t.totalSalary,
     ]);
-    downloadCsv(`Bao_cao_giao_vien_${month}.csv`, header, rows);
+    downloadXlsx(`Bao_cao_giao_vien_${month}.xlsx`, header, rows);
   };
 
   const exportAttendance = () => {
@@ -131,7 +137,7 @@ export default function ReportsPage() {
       c.unexcused,
       `${c.attendanceRate}%`,
     ]);
-    downloadCsv(`Bao_cao_chuyen_can.csv`, header, rows);
+    downloadXlsx(`Bao_cao_chuyen_can.xlsx`, header, rows);
   };
 
   return (
@@ -267,7 +273,7 @@ export default function ReportsPage() {
         <div>
           <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
             <Button icon={<DownloadOutlined />} onClick={exportRevenue}>
-              Xuất Excel (CSV)
+              Xuất Excel (.xlsx)
             </Button>
           </div>
 
@@ -359,6 +365,48 @@ export default function ReportsPage() {
               ]}
             />
           </Card>
+
+          <Card size="small" title="Doanh thu theo trung tâm học (trung tâm của lớp học sinh đang học)" style={{ borderRadius: 8, marginTop: 16 }}>
+            <Table
+              dataSource={revenueData?.byLearningCenter ?? []}
+              rowKey={(r) => r.center.id}
+              loading={loading}
+              pagination={false}
+              columns={[
+                { title: "Trung tâm học", render: (_: any, r: any) => <Tag color={r.center.color}>{r.center.name}</Tag> },
+                { title: "Số phiếu thu", dataIndex: "paymentCount", align: "center" as const },
+                { title: "Thực thu", dataIndex: "paidTotal", align: "right" as const, render: (v: number) => formatCurrency(v) },
+                { title: "Hoàn tiền", dataIndex: "refundTotal", align: "right" as const, render: (v: number) => formatCurrency(v) },
+                {
+                  title: "Doanh thu thuần",
+                  dataIndex: "netRevenue",
+                  align: "right" as const,
+                  render: (v: number) => <span style={{ fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "var(--fgColor-accent)" }}>{formatCurrency(v)}</span>,
+                },
+              ]}
+            />
+          </Card>
+
+          <Card size="small" title="Doanh thu theo ngày" style={{ borderRadius: 8, marginTop: 16 }}>
+            <Table
+              dataSource={revenueData?.byDay ?? []}
+              rowKey={(r) => r.date}
+              loading={loading}
+              pagination={{ pageSize: 31 }}
+              columns={[
+                { title: "Ngày", dataIndex: "date", render: (d: string) => formatDateVN(d, true) },
+                { title: "Số phiếu thu", dataIndex: "paymentCount", align: "center" as const },
+                { title: "Thực thu", dataIndex: "paid", align: "right" as const, render: (v: number) => formatCurrency(v) },
+                { title: "Hoàn tiền", dataIndex: "refund", align: "right" as const, render: (v: number) => formatCurrency(v) },
+                {
+                  title: "Doanh thu thuần",
+                  dataIndex: "net",
+                  align: "right" as const,
+                  render: (v: number) => <span style={{ fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "var(--fgColor-accent)" }}>{formatCurrency(v)}</span>,
+                },
+              ]}
+            />
+          </Card>
         </div>
       )}
 
@@ -367,7 +415,7 @@ export default function ReportsPage() {
         <div>
           <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
             <Button icon={<DownloadOutlined />} onClick={exportProfitLoss}>
-              Xuất Excel (CSV)
+              Xuất Excel (.xlsx)
             </Button>
           </div>
 
@@ -498,7 +546,7 @@ export default function ReportsPage() {
         <div>
           <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
             <Button icon={<DownloadOutlined />} onClick={exportTeachers}>
-              Xuất Excel (CSV)
+              Xuất Excel (.xlsx)
             </Button>
           </div>
 
@@ -578,7 +626,7 @@ export default function ReportsPage() {
         <div>
           <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
             <Button icon={<DownloadOutlined />} onClick={exportAttendance}>
-              Xuất Excel (CSV)
+              Xuất Excel (.xlsx)
             </Button>
           </div>
 

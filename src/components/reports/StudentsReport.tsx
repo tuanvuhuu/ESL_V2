@@ -4,7 +4,7 @@ import { DownloadOutlined } from "@/client/primer-icons";
 import { Button, Card, Col, Empty, Row, Skeleton, Table } from "@/client/primer-compat";
 import Link from "next/link";
 import { qs, useApi } from "@/client/api";
-import { downloadCsv } from "@/client/csv";
+import { downloadXlsx } from "@/client/xlsx";
 import { STUDENT_STATUSES } from "@/lib/constants";
 import { formatDateVN } from "@/lib/dates";
 
@@ -50,14 +50,14 @@ export function StudentsReport({ centerId, month }: { centerId?: number | null; 
       ...data.quitReasons.map((q) => ["Lý do nghỉ", q.reason, q.count]),
       ["Học tiếp", `${r.continued}/${r.ended} học sinh học hết khóa`, r.rate == null ? "" : `${r.rate}%`],
     ];
-    downloadCsv(`Bao_cao_hoc_sinh_${data.month}.csv`, ["Nhóm", "Chỉ số", "Giá trị"], rows);
+    downloadXlsx(`Bao_cao_hoc_sinh_${data.month}.xlsx`, ["Nhóm", "Chỉ số", "Giá trị"], rows);
   };
 
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
         <Button icon={<DownloadOutlined />} onClick={exportCsv}>
-          Xuất Excel (CSV)
+          Xuất Excel (.xlsx)
         </Button>
       </div>
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
