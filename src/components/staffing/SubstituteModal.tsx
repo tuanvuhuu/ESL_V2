@@ -16,6 +16,7 @@ export type Candidate = {
   blocked: boolean;
   teachesCenter: boolean;
   taughtCourse: boolean;
+  levelMatch: "MATCH" | "MISMATCH" | "UNKNOWN";
 };
 
 export type SubstituteTarget = { id: number; date: string; startTime: string; endTime: string; classCode: string };
@@ -31,6 +32,8 @@ export function CandidateTags({ c }: { c: Candidate }) {
       {c.availability === "UNKNOWN" && <Tag>Chưa khai lịch rảnh</Tag>}
       {!c.teachesCenter && <Tag>Chưa dạy ở trung tâm này</Tag>}
       {!c.taughtCourse && <Tag>Chưa dạy khóa này</Tag>}
+      {c.levelMatch === "MATCH" && <Tag color="green">Đúng cấp độ</Tag>}
+      {c.levelMatch === "MISMATCH" && <Tag color="orange">Khác cấp độ dạy được</Tag>}
     </Space>
   );
 }

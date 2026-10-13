@@ -140,6 +140,11 @@ export function TeacherFormModal({
               <Input placeholder="IELTS 8.0, TESOL…" />
             </Form.Item>
           </Col>
+          <Col span={24}>
+            <Form.Item name="teachableLevels" label="Cấp độ dạy được" extra="Cách nhau bởi dấu phẩy, đúng tên cấp độ của khóa, ví dụ: Starters, Movers. Dùng khi gợi ý người dạy thay.">
+              <Input placeholder="Starters, Movers, KET…" />
+            </Form.Item>
+          </Col>
           <Col xs={24} md={12}>
             <Form.Item name="certExpiry" label="Chứng chỉ hết hạn ngày" extra="Hệ thống cảnh báo trước 60 ngày.">
               <DatePicker format="DD/MM/YYYY" style={{ width: "100%" }} />

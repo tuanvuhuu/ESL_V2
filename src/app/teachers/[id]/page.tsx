@@ -87,6 +87,7 @@ export default function TeacherProfilePage() {
               ))}
             </Descriptions.Item>
             <Descriptions.Item label="Bằng cấp">{t.qualifications ?? <Dash />}</Descriptions.Item>
+          <Descriptions.Item label="Cấp độ dạy được">{t.teachableLevels ?? <Dash />}</Descriptions.Item>
             <Descriptions.Item label="Chứng chỉ">
               <CertTag expiry={t.certExpiry} always />
             </Descriptions.Item>

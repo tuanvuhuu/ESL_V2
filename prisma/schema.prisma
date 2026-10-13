@@ -122,6 +122,8 @@ model Teacher {
   employment     String                @default("PART_TIME")
   status         String                @default("ACTIVE")
   qualifications String?
+  // B5: cấp độ dạy được, cách nhau bởi dấu phẩy, ví dụ "Starters, Movers". Trống = chưa khai (gợi ý dạy thay không cộng, không trừ điểm).
+  teachableLevels String?
   // Ngày hết hạn chứng chỉ giảng dạy (M8: cảnh báo trước 60 ngày).
   certExpiry     String?
   startDate      String?

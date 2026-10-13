@@ -2,6 +2,7 @@
 import type { Prisma } from "@prisma/client";
 import { availabilityFor, inRange } from "@/lib/availability";
 import { formatDateVN } from "@/lib/dates";
+import { levelMatch, type LevelMatch } from "@/lib/levels";
 import { canManageTeacherTime, canSeeTeachers, type Viewer } from "@/lib/permissions";
 import { overlaps } from "@/lib/schedule";
 import { prisma } from "./db";
@@ -81,6 +82,8 @@ export type Candidate = {
   blocked: boolean;
   teachesCenter: boolean;
   taughtCourse: boolean;
+  /** B5: cấp độ dạy được của người này so với cấp độ của khóa. */
+  levelMatch: LevelMatch;
   score: number;
 };
 
@@ -88,7 +91,7 @@ export type Candidate = {
 export async function substituteCandidates(tx: Tx, sessionId: number): Promise<Candidate[]> {
   const s = await tx.classSession.findUnique({
     where: { id: sessionId },
-    include: { class: { select: { id: true, centerId: true, courseId: true, assistants: true } } },
+    include: { class: { select: { id: true, centerId: true, courseId: true, assistants: true, course: { select: { level: true } } } } },
   });
   if (!s) throw notFound("Không tìm thấy buổi học");
   const [teachers, sameDay] = await Promise.all([
@@ -119,11 +122,13 @@ export async function substituteCandidates(tx: Tx, sessionId: number): Promise<C
       );
       const teachesCenter = t.centers.some((c) => c.centerId === s.class.centerId);
       const taughtCourse = s.class.courseId != null && (t.mainClasses.some((c) => c.courseId === s.class.courseId) || t.sessions.length > 0);
+      const level = levelMatch(t.teachableLevels, s.class.course?.level);
       const blocked = !!clash && clash.class.centerId !== s.class.centerId;
       const score =
         (availability === "FREE" ? 4 : availability === "UNKNOWN" ? 2 : 0) +
         (teachesCenter ? 2 : 0) +
-        (taughtCourse ? 1 : 0) -
+        (taughtCourse ? 1 : 0) +
+        (level === "MATCH" ? 3 : level === "MISMATCH" ? -3 : 0) -
         (clash ? 10 : 0) -
         (leave ? 20 : 0);
       return {
@@ -137,6 +142,7 @@ export async function substituteCandidates(tx: Tx, sessionId: number): Promise<C
         blocked,
         teachesCenter,
         taughtCourse,
+        levelMatch: level,
         score,
       };
     })

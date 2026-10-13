@@ -16,7 +16,7 @@ Mô tả từ `docs/KE_HOACH.md` mục 2. Mỗi việc một commit.
 - [x] B2. Trợ giảng gắn theo từng buổi (hiện chỉ gắn cả lớp), có thời lượng có mặt riêng, dùng khi tính lương
 - [x] B3. Lương tự đưa vào chi phí của trung tâm nơi buổi dạy diễn ra (lãi lỗ hiện chia theo bảng lương)
 - [x] B4. Đổi cách tính trùng giờ có ngày hiệu lực; tháng lương đã chốt giữ nguyên cách cũ
-- [ ] B5. Cấp độ dạy được của giáo viên, dùng khi gợi ý người dạy thay
+- [x] B5. Cấp độ dạy được của giáo viên, dùng khi gợi ý người dạy thay
 - [ ] B6. Cảnh báo khi ghi danh học sinh còn nợ khóa trước; cảnh báo giáo viên dạy 2 trung tâm sát giờ
 - [ ] B7. Báo cáo doanh thu theo ngày và theo trung tâm học (hiện theo trung tâm thu); xuất .xlsx thật thay CSV
 - [ ] B8. Hoàn tất đợt B: `npm run build` xanh, cập nhật `README.md` và bảng mục 2 của `docs/KE_HOACH.md`
@@ -35,7 +35,9 @@ B3 không cần SQL.
 
 B4 cũng cần SQL: `docs/sql/2026-10-13-B4-cach-tinh-trung-gio-theo-ngay.sql` (thêm bảng `TeacherOverlapPolicy`), chạy sau B2.
 
-Tiếp theo: B5.
+B5 cũng cần SQL: `docs/sql/2026-10-13-B5-cap-do-day-duoc.sql` (thêm cột `Teacher.teachableLevels`), chạy sau B4.
+
+Tiếp theo: B6.
 
 ## Nhật ký
 
@@ -45,3 +47,4 @@ Tiếp theo: B5.
 | 13/10/2026 | B2 | Antigravity | Trợ giảng theo từng buổi, có số phút riêng dùng khi tính lương (buổi có trợ giảng riêng thì bỏ trợ giảng cả lớp): bảng `SessionAssistant`, `src/server/payroll.ts`, route `api/sessions/[id]/assistants`, `tests/api-assistants.test.ts`, SQL `docs/sql/2026-10-13-B2-tro-giang-theo-buoi.sql`. Lint/typecheck/test xanh (171/171) trên bản sao dev.db đã áp SQL. |
 | 13/10/2026 | B3 | Antigravity | Lương tự tính vào chi phí trung tâm nơi buổi dạy diễn ra (tiền dạy chia theo tiền từng buổi ở từng trung tâm, thưởng/phạt vào trung tâm của bảng lương), tổng luôn khớp thực nhận: `payrollCostByCenter` trong `src/server/payroll.ts`, dùng ở `getProfitLossReport`, `tests/payroll-by-center.test.ts`. Không đổi schema. Lint/typecheck/test xanh (173/173). |
 | 13/10/2026 | B4 | Antigravity | Cách tính trùng giờ có ngày hiệu lực: bảng `TeacherOverlapPolicy`, buổi dạy tính theo cách có hiệu lực tại ngày của buổi, không cho đặt ngày hiệu lực vào tháng đã chốt/đã trả (nên tháng đã chốt giữ cách cũ). `src/server/payroll.ts`, `src/lib/payroll.ts`, route `api/payroll/overlap`, `OverlapModal.tsx` (nút ở trang đơn giá), `tests/api-overlap-policy.test.ts`, SQL `docs/sql/2026-10-13-B4-cach-tinh-trung-gio-theo-ngay.sql`. Lint/typecheck/test xanh (177/177) trên bản sao dev.db đã áp SQL. |
+| 13/10/2026 | B5 | Antigravity | Cấp độ dạy được của giáo viên (`Teacher.teachableLevels`, nhập ở form giáo viên, hiện ở trang chi tiết), gợi ý dạy thay: đúng cấp độ +3 điểm, khác cấp độ -3, chưa khai thì không đổi; thẻ `Đúng cấp độ` / `Khác cấp độ dạy được`. `src/lib/levels.ts`, `src/server/staffing.ts`, `SubstituteModal.tsx`, `tests/levels.test.ts`, `tests/api-levels.test.ts`, SQL `docs/sql/2026-10-13-B5-cap-do-day-duoc.sql`. Lint/typecheck/test xanh (183/183) trên bản sao dev.db đã áp SQL. |

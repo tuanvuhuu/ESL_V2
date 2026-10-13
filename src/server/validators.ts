@@ -114,6 +114,7 @@ export const teacherSchema = z.object({
   employment: z.enum(values(EMPLOYMENTS)),
   status: z.enum(values(TEACHER_STATUSES)).default("ACTIVE"),
   qualifications: optText,
+  teachableLevels: optText,
   certExpiry: isoDate().optional().nullable(),
   startDate: isoDate().optional().nullable(),
   note: optText,
