@@ -36,7 +36,7 @@ Ký hiệu: ✅ đã có · 🟡 có một phần · ❌ chưa có.
 | A8 | Báo cáo sử dụng phòng và lớp: tỷ lệ lấp đầy lớp, tỷ lệ dùng phòng theo khung giờ | 3.8 | ✅ | A |
 | A9 | Nhập học sinh, phụ huynh, số buổi còn lại, công nợ từ Excel (M15) | 6 | ✅ | A |
 | B1 | Sửa giờ tính lương từng buổi bằng tay kèm lý do | 3.7 | ✅ | B |
-| B2 | Trợ giảng gắn theo từng buổi, có thời lượng có mặt riêng | 3.5, 3.7 | ✅ | B |
+| B2 | Trợ giảng gắn theo từng buổi, có thời lượng có mặt riêng | 3.5, 3.7 | 🟡 có API và tính lương, thiếu màn hình và quyền (D1) | B |
 | B3 | Lương tự đưa vào chi phí của trung tâm nơi buổi dạy diễn ra | 3.7 | ✅ | B |
 | B4 | Đổi cách tính trùng giờ có ngày hiệu lực (tháng đã chốt giữ nguyên) | 3.7, 5 | ✅ | B |
 | B5 | Cấp độ dạy được của giáo viên, dùng khi gợi ý dạy thay | 3.3 | ✅ | B |
@@ -44,6 +44,7 @@ Ký hiệu: ✅ đã có · 🟡 có một phần · ❌ chưa có.
 | B7 | Báo cáo doanh thu theo ngày và theo trung tâm học; xuất .xlsx thật thay CSV | 3.8 | ✅ | B |
 | C1 | Ảnh học sinh, file đính kèm tài liệu (cần chỗ lưu file khi đưa lên mạng) | 3.2, 3.4 | ❌ | C |
 | C2 | Quản lý được bỏ qua lệnh chặn trong trường hợp đặc biệt | 7 | chờ trả lời | C |
+| D1–D13 | Đợt D: phần còn lại của B2, hoàn tiền hiện buổi chưa học, báo cáo theo khoảng ngày, chuyên cần theo học sinh, xuất Excel công nợ, lịch tháng, lịch sử phiếu thu, danh mục sửa được, sửa giao diện theo rà soát. Chi tiết ở `docs/TIEN_DO.md` | 3.1–3.9 | ❌ | D |
 | — | Giai đoạn 2: cổng phụ huynh, Zalo / SMS, tuyển sinh, bài tập online | 6 | ngoài phạm vi | — |
 
 ## 3. Đợt A: chi tiết đã làm
