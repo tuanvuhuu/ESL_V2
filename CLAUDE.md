@@ -1,5 +1,7 @@
 # Quy tắc cho AI agent làm việc trong repo này
 
+> **Đọc `docs/RULES.md` trước tiên.** Đó là luật chung (nhánh `common`, commit, dữ liệu). Chỗ nào trong file này khác với `docs/RULES.md` thì làm theo `docs/RULES.md`.
+
 File này dùng chung cho **Claude Code (NOVA)** và **Antigravity** (`AGENTS.md` trỏ về đây). Hai công cụ thay nhau làm cùng một danh sách việc, nên mọi trạng thái phải nằm trong repo, không nằm trong trí nhớ của công cụ.
 
 ## Dự án
@@ -12,20 +14,21 @@ Phần mềm quản lý 4 trung tâm tiếng Anh. Một app Next.js 15 (App Rout
 
 ## Quy trình mỗi lần bắt đầu
 
-1. Đọc `docs/TIEN_DO.md`, phần "Bàn giao" và danh sách việc.
-2. `git status`. Nếu có thay đổi chưa commit của lần trước: đọc ghi chú bàn giao, kiểm tra rồi làm tiếp, không xóa.
-3. Chọn việc đầu tiên có trạng thái `[ ]` hoặc `[~]` (đang dở), theo đúng thứ tự trong file.
+1. `git fetch origin && git checkout common && git pull origin common`.
+2. Đọc `docs/TIEN_DO.md`, phần "Bàn giao" và danh sách việc.
+3. `git status`. Nếu có thay đổi chưa commit của lần trước: đọc ghi chú bàn giao, kiểm tra rồi làm tiếp, không xóa.
+4. Chọn việc đầu tiên có trạng thái `[ ]` hoặc `[~]` (đang dở), theo đúng thứ tự trong file.
 
 ## Quy trình mỗi việc
 
 1. Đổi trạng thái việc sang `[~]` trong `docs/TIEN_DO.md`.
 2. Đọc mô tả của việc trong `docs/TIEN_DO.md` và `docs/KE_HOACH.md`, đọc code liên quan trước khi sửa. Mô tả chỉ có một dòng thì chọn cách đơn giản nhất khớp với code hiện có, ghi quyết định vào Nhật ký.
-3. Làm. Đổi schema Prisma thì chạy `npx prisma db push` và cập nhật `prisma/seed.ts` nếu cần dữ liệu mẫu.
+3. Làm. Đổi schema Prisma thì **không** chạy `prisma db push`: sửa `prisma/schema.prisma`, chạy `npx prisma generate`, viết SQL vào `docs/sql/` và ghi vào Bàn giao để Tuấn tự chạy (xem `docs/RULES.md`).
 4. Kiểm tra: `npm run lint && npm run typecheck && npm test`. Phải xanh. Thêm test Vitest cho logic mới.
-5. Đổi trạng thái sang `[x]`, ghi một dòng vào "Nhật ký" (ngày, việc, công cụ, file chính).
-6. Commit ngay, mỗi việc một commit: `git add -A && git commit -m "feat(A1): ..."`.
+5. Đổi trạng thái sang `[x]`, ghi một dòng vào "Nhật ký" (ngày, việc, công cụ, file chính), xóa mục Bàn giao của việc này nếu có.
+6. Commit và push ngay, mỗi việc một commit: `git add -A && git commit -m "done(B1): ..." && git push origin common`.
 
-Việc lớn chưa xong mà phải dừng: commit phần đã chạy được với tiền tố `wip(Ax):`, giữ `[~]`, và ghi vào phần "Bàn giao" đã làm gì, còn gì, đang vướng gì. Công cụ sau sẽ đọc đúng chỗ này.
+Việc lớn chưa xong mà phải dừng: commit phần đã chạy được với tiền tố `wip(Bx):`, giữ `[~]`, ghi vào phần "Bàn giao" đã làm gì, còn gì, đang vướng gì, push lên `common` rồi dừng. Công cụ sau sẽ đọc đúng chỗ này.
 
 ## Luật code
 
@@ -35,4 +38,5 @@ Việc lớn chưa xong mà phải dừng: commit phần đã chạy được v�
 - Chữ hiển thị bằng tiếng Việt có dấu, ngắn gọn.
 - Không thêm thư viện mới nếu chưa thật cần; nếu thêm, ghi lý do vào Nhật ký.
 - Không sửa `.env`, không commit bí mật hay API key.
+- Không chạy lệnh xóa dữ liệu (`npm run db:reset`, `--force-reset`, `migrate reset`).
 - Không `git push --force`, không xóa nhánh, không sửa lịch sử commit.

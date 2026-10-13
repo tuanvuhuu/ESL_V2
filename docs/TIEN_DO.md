@@ -1,8 +1,8 @@
 # Tiến độ và bàn giao
 
-Claude Code (NOVA) và Antigravity làm chung file này. Quy tắc: `CLAUDE.md`.
+Claude Code (NOVA) và Antigravity làm chung file này. Luật chung: `docs/RULES.md` (đọc trước). Quy trình: `CLAUDE.md`. Mọi commit vào nhánh `common`.
 
-Trạng thái: `[ ]` chưa làm · `[~]` đang làm dở · `[x]` xong (lint, typecheck, test xanh, đã commit)
+Trạng thái: `[ ]` chưa làm · `[~]` đang làm dở · `[x]` xong (lint, typecheck, test xanh, đã commit và push lên `common`)
 
 ## Đã xong trước khi chuyển sang NOVA / Antigravity
 
