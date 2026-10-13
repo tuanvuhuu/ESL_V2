@@ -4,20 +4,24 @@ Claude Code (NOVA) và Antigravity làm chung file này. Quy tắc: `CLAUDE.md`.
 
 Trạng thái: `[ ]` chưa làm · `[~]` đang làm dở · `[x]` xong (lint, typecheck, test xanh, đã commit)
 
+## Đã xong trước khi chuyển sang NOVA / Antigravity
+
+- [x] Đợt A (A1–A9): khung chương trình, tài liệu, buổi kiểm tra, điểm kỹ năng, mua thêm buổi, khóa tiếp theo, báo cáo học sinh, báo cáo phòng và lớp, nhập Excel. Ở PR #9. Chi tiết: `docs/KE_HOACH.md` mục 3. **Không làm lại.**
+
 ## Danh sách việc (làm theo thứ tự)
 
-Đặc tả từng việc: `docs/KE_HOACH.md` mục 3.
+Mô tả từ `docs/KE_HOACH.md` mục 2. Mỗi việc một commit.
 
-- [ ] A1–A3. Khung chương trình theo buổi, tài liệu dạng link, đánh dấu buổi kiểm tra
-- [ ] A4. Điểm kiểm tra Nghe, Nói, Đọc, Viết, tổng
-- [ ] A5. Gia hạn (mua thêm buổi) *(Tuấn đã làm một phần ở nhánh riêng: kiểm tra `git log --all` và gộp vào trước khi làm lại)*
-- [ ] A6. Khóa tiếp theo gợi ý
-- [ ] A7. Báo cáo học sinh *(như A5, có thể đã làm một phần)*
-- [ ] A8. Báo cáo sử dụng phòng và lớp *(như A5, có thể đã làm một phần)*
-- [ ] A9. Nhập học sinh, phụ huynh, số buổi còn lại, công nợ từ Excel
-- [ ] A10. Hoàn tất đợt A: `npm run build` xanh, cập nhật `README.md` và `docs/KE_HOACH.md`
+- [ ] B1. Sửa giờ tính lương từng buổi bằng tay, bắt buộc ghi lý do, ghi nhật ký thay đổi
+- [ ] B2. Trợ giảng gắn theo từng buổi (hiện chỉ gắn cả lớp), có thời lượng có mặt riêng, dùng khi tính lương
+- [ ] B3. Lương tự đưa vào chi phí của trung tâm nơi buổi dạy diễn ra (lãi lỗ hiện chia theo bảng lương)
+- [ ] B4. Đổi cách tính trùng giờ có ngày hiệu lực; tháng lương đã chốt giữ nguyên cách cũ
+- [ ] B5. Cấp độ dạy được của giáo viên, dùng khi gợi ý người dạy thay
+- [ ] B6. Cảnh báo khi ghi danh học sinh còn nợ khóa trước; cảnh báo giáo viên dạy 2 trung tâm sát giờ
+- [ ] B7. Báo cáo doanh thu theo ngày và theo trung tâm học (hiện theo trung tâm thu); xuất .xlsx thật thay CSV
+- [ ] B8. Hoàn tất đợt B: `npm run build` xanh, cập nhật `README.md` và bảng mục 2 của `docs/KE_HOACH.md`
 
-Đợt B (B1 → B7) chỉ làm khi Tuấn đã duyệt đợt A.
+Đợt C chưa làm: C1 cần Tuấn chốt nơi lưu file khi đưa lên mạng, C2 cần Tuấn trả lời câu hỏi ở mục 7 tài liệu yêu cầu.
 
 ## Bàn giao
 

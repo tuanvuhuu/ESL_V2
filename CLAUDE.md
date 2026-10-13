@@ -6,7 +6,7 @@ File này dùng chung cho **Claude Code (NOVA)** và **Antigravity** (`AGENTS.md
 
 Phần mềm quản lý 4 trung tâm tiếng Anh. Một app Next.js 15 (App Router, React 19) + Prisma 6 + TypeScript. SQLite khi chạy máy, PostgreSQL khi đưa lên mạng. Giao diện GitHub Primer React. Người dùng là nhân sự trung tâm, giao diện và nội dung bằng tiếng Việt.
 
-- Kế hoạch và đặc tả từng việc: `docs/KE_HOACH.md` (mục 3 là đặc tả chi tiết đợt A)
+- Kế hoạch: `docs/KE_HOACH.md` (mục 2 là bảng việc còn thiếu, mục 3 là cách đợt A đã làm, dùng làm mẫu)
 - Quy tắc giao diện: `docs/DESIGN.md`
 - **Danh sách việc và nhật ký bàn giao: `docs/TIEN_DO.md`** (đọc đầu tiên, cập nhật sau mỗi việc)
 
@@ -19,7 +19,7 @@ Phần mềm quản lý 4 trung tâm tiếng Anh. Một app Next.js 15 (App Rout
 ## Quy trình mỗi việc
 
 1. Đổi trạng thái việc sang `[~]` trong `docs/TIEN_DO.md`.
-2. Đọc đặc tả của việc trong `docs/KE_HOACH.md`, đọc code liên quan trước khi sửa.
+2. Đọc mô tả của việc trong `docs/TIEN_DO.md` và `docs/KE_HOACH.md`, đọc code liên quan trước khi sửa. Mô tả chỉ có một dòng thì chọn cách đơn giản nhất khớp với code hiện có, ghi quyết định vào Nhật ký.
 3. Làm. Đổi schema Prisma thì chạy `npx prisma db push` và cập nhật `prisma/seed.ts` nếu cần dữ liệu mẫu.
 4. Kiểm tra: `npm run lint && npm run typecheck && npm test`. Phải xanh. Thêm test Vitest cho logic mới.
 5. Đổi trạng thái sang `[x]`, ghi một dòng vào "Nhật ký" (ngày, việc, công cụ, file chính).
