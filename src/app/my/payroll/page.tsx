@@ -45,7 +45,7 @@ export default function MyPayrollPage() {
     <div style={{ padding: "0 0 32px 0" }}>
       <div style={{ marginBottom: 16 }}>
         <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px 0" }}>Bảng giờ dạy & Lương cá nhân</h1>
-        <div style={{ color: "#59636E" }}>
+        <div style={{ color: "var(--fgColor-muted)" }}>
           Xem chi tiết số giờ dạy thực tế, các buổi dạy và mức lương tạm tính trong tháng
         </div>
       </div>
@@ -70,32 +70,32 @@ export default function MyPayrollPage() {
       <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
         <Col xs={12} sm={6}>
           <Card size="small" style={{ borderRadius: 8 }}>
-            <div style={{ color: "#59636E", fontSize: 13 }}>Tổng số giờ</div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: "#1F2328", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Tổng số giờ</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "var(--fgColor-default)", fontVariantNumeric: "tabular-nums" }}>
               {formatHours(data?.totalHours ?? 0)}
             </div>
           </Card>
         </Col>
         <Col xs={12} sm={6}>
           <Card size="small" style={{ borderRadius: 8 }}>
-            <div style={{ color: "#59636E", fontSize: 13 }}>Tiền dạy các buổi</div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Tiền dạy các buổi</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "var(--fgColor-success)", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(data?.totalTeachingPay ?? 0)}
             </div>
           </Card>
         </Col>
         <Col xs={12} sm={6}>
           <Card size="small" style={{ borderRadius: 8 }}>
-            <div style={{ color: "#59636E", fontSize: 13 }}>Thưởng / Phạt</div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: "#D29922", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Thưởng / Phạt</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "var(--fgColor-attention)", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency((period?.bonusPay ?? 0) + (period?.allowancePay ?? 0) - (period?.penaltyPay ?? 0))}
             </div>
           </Card>
         </Col>
         <Col xs={12} sm={6}>
-          <Card size="small" style={{ borderRadius: 8, background: "#F0F7FF", borderColor: "#1F6FEB" }}>
-            <div style={{ color: "#1F6FEB", fontSize: 13, fontWeight: 600 }}>Thực nhận</div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: "#1F6FEB", fontVariantNumeric: "tabular-nums" }}>
+          <Card size="small" style={{ borderRadius: 8, background: "var(--bgColor-accent-muted)", borderColor: "var(--fgColor-accent)" }}>
+            <div style={{ color: "var(--fgColor-accent)", fontSize: 13, fontWeight: 600 }}>Thực nhận</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "var(--fgColor-accent)", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(period?.finalPay ?? data?.totalTeachingPay ?? 0)}
             </div>
           </Card>
@@ -119,10 +119,10 @@ export default function MyPayrollPage() {
             <Card key={s.id} size="small" style={{ borderRadius: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                 <strong>{formatDateVN(s.date)}</strong>
-                <span style={{ color: "#1F6FEB", fontWeight: 600 }}>{s.startTime}–{s.endTime}</span>
+                <span style={{ color: "var(--fgColor-accent)", fontWeight: 600 }}>{s.startTime}–{s.endTime}</span>
               </div>
-              <div style={{ fontWeight: 600, color: "#1F2328" }}>{s.className}</div>
-              <div style={{ color: "#59636E", fontSize: 12, marginBottom: 8 }}>
+              <div style={{ fontWeight: 600, color: "var(--fgColor-default)" }}>{s.className}</div>
+              <div style={{ color: "var(--fgColor-muted)", fontSize: 12, marginBottom: 8 }}>
                 {s.classCode} · {s.roomName} ({s.centerName})
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -133,10 +133,10 @@ export default function MyPayrollPage() {
                   {s.isOverlapping && <Tag color="orange">Trùng giờ</Tag>}
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: 12, color: "#8C959F" }}>
+                  <div style={{ fontSize: 12, color: "var(--fgColor-muted)" }}>
                     {formatHours(s.hours)} × {formatCurrency(s.hourlyRate)}
                   </div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "var(--fgColor-success)", fontVariantNumeric: "tabular-nums" }}>
                     {formatCurrency(s.pay)}
                   </div>
                 </div>
@@ -167,7 +167,7 @@ export default function MyPayrollPage() {
                 render: (_: any, r: any) => (
                   <div>
                     <div style={{ fontWeight: 600 }}>{r.className}</div>
-                    <div style={{ fontSize: 12, color: "#8C959F" }}>
+                    <div style={{ fontSize: 12, color: "var(--fgColor-muted)" }}>
                       {r.classCode} · {r.roomName} ({r.centerName})
                     </div>
                   </div>
@@ -212,7 +212,7 @@ export default function MyPayrollPage() {
                 dataIndex: "pay",
                 align: "right" as const,
                 render: (pay: number) => (
-                  <span style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700, color: "#2DA44E" }}>
+                  <span style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700, color: "var(--fgColor-success)" }}>
                     {formatCurrency(pay)}
                   </span>
                 ),
@@ -251,7 +251,7 @@ export default function MyPayrollPage() {
                     style={{
                       fontWeight: 700,
                       fontVariantNumeric: "tabular-nums",
-                      color: r.type === "PENALTY" ? "#CF222E" : "#2DA44E",
+                      color: r.type === "PENALTY" ? "var(--fgColor-danger)" : "var(--fgColor-success)",
                     }}
                   >
                     {r.type === "PENALTY" ? "-" : "+"}

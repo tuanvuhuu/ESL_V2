@@ -77,7 +77,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 16, background: "radial-gradient(1200px 600px at 10% -10%, #EAF2FF 0%, transparent 60%), radial-gradient(900px 500px at 110% 110%, #F3EDFF 0%, transparent 55%), #F6F8FA" }}>
+    <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 16, background: "radial-gradient(1200px 600px at 10% -10%, var(--bgColor-accent-muted) 0%, transparent 60%), radial-gradient(900px 500px at 110% 110%, var(--bgColor-done-muted) 0%, transparent 55%), var(--bgColor-muted)" }}>
       <Suspense fallback={<Spin />}>
         <LoginForm />
       </Suspense>

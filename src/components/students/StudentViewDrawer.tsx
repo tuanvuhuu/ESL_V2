@@ -1,6 +1,5 @@
 "use client";
 
-import { Button as PrimerButton } from "@primer/react";
 import {
   CopyIcon,
   DeviceMobileIcon,
@@ -15,7 +14,7 @@ import { Dash, DotLabel, StatusTag } from "@/components/ui";
 import { GENDERS, STUDENT_STATUSES, optionOf } from "@/lib/constants";
 import { ageFrom, formatDateVN, todayISO } from "@/lib/dates";
 import { formatPhone } from "@/lib/text";
-import { message } from "@/client/toast";
+import { Button, message } from "@/client/primer-compat";
 
 type Props = {
   open: boolean;
@@ -58,8 +57,8 @@ export function StudentViewDrawer({
               fontWeight: 600,
               padding: "2px 8px",
               borderRadius: 6,
-              background: "#EAEFF2",
-              color: "#313D44",
+              background: "var(--bgColor-neutral-muted)",
+              color: "var(--fgColor-default)",
             }}
           >
             {student.code}
@@ -82,28 +81,27 @@ export function StudentViewDrawer({
               gap: 6,
               fontSize: 13,
               fontWeight: 500,
-              color: "var(--color-accent-fg, #0969da)",
+              color: "var(--fgColor-accent)",
               textDecoration: "none",
             }}
           >
             Mở trang đầy đủ <LinkExternalIcon size={14} />
           </Link>
           <div style={{ display: "flex", gap: 8 }}>
-            <PrimerButton size="medium" onClick={onClose}>
+            <Button onClick={onClose}>
               Đóng
-            </PrimerButton>
+            </Button>
             {canEdit && onEdit && (
-              <PrimerButton
-                variant="primary"
-                size="medium"
-                leadingVisual={PencilIcon}
+              <Button
+                type="primary"
+                icon={<PencilIcon />}
                 onClick={() => {
                   onClose();
                   onEdit(student);
                 }}
               >
                 Sửa hồ sơ
-              </PrimerButton>
+              </Button>
             )}
           </div>
         </div>
@@ -117,9 +115,9 @@ export function StudentViewDrawer({
             alignItems: "center",
             justifyContent: "space-between",
             padding: "12px 16px",
-            background: "#F6F8FA",
+            background: "var(--bgColor-muted)",
             borderRadius: 8,
-            border: "1px solid #D8DEE4",
+            border: "1px solid var(--borderColor-muted)",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -127,7 +125,7 @@ export function StudentViewDrawer({
             <StatusTag options={STUDENT_STATUSES} value={student.status} sub={student.statusReason} />
           </div>
           {canEdit && onStatus && (
-            <PrimerButton
+            <Button
               size="small"
               onClick={() => {
                 onClose();
@@ -135,17 +133,17 @@ export function StudentViewDrawer({
               }}
             >
               Đổi trạng thái
-            </PrimerButton>
+            </Button>
           )}
         </div>
 
         {/* Section 1: Thông tin cá nhân */}
         <div
           style={{
-            border: "1px solid #D8DEE4",
+            border: "1px solid var(--borderColor-muted)",
             borderRadius: 8,
             padding: "14px 16px",
-            background: "#FFFFFF",
+            background: "var(--bgColor-default)",
           }}
         >
           <h3
@@ -153,7 +151,7 @@ export function StudentViewDrawer({
               margin: "0 0 12px 0",
               fontSize: 13,
               fontWeight: 600,
-              color: "#59636E",
+              color: "var(--fgColor-muted)",
               textTransform: "uppercase",
               letterSpacing: "0.5px",
             }}
@@ -170,30 +168,30 @@ export function StudentViewDrawer({
             }}
           >
             <div>
-              <span style={{ color: "#656D76" }}>Ngày sinh:</span>{" "}
+              <span style={{ color: "var(--fgColor-muted)" }}>Ngày sinh:</span>{" "}
               <b>{formatDateVN(student.dob)}</b>{" "}
-              <span style={{ color: "#656D76", fontSize: 12 }}>
+              <span style={{ color: "var(--fgColor-muted)", fontSize: 12 }}>
                 ({ageFrom(student.dob, today)} tuổi)
               </span>
             </div>
             <div>
-              <span style={{ color: "#656D76" }}>Giới tính:</span>{" "}
+              <span style={{ color: "var(--fgColor-muted)" }}>Giới tính:</span>{" "}
               <b>{optionOf(GENDERS, student.gender)?.label ?? <Dash />}</b>
             </div>
             <div>
-              <span style={{ color: "#656D76" }}>Trường học:</span>{" "}
+              <span style={{ color: "var(--fgColor-muted)" }}>Trường học:</span>{" "}
               <b>{student.school ?? <Dash />}</b>
             </div>
             <div>
-              <span style={{ color: "#656D76" }}>Khối lớp trường:</span>{" "}
+              <span style={{ color: "var(--fgColor-muted)" }}>Khối lớp trường:</span>{" "}
               <b>{student.schoolGrade ?? <Dash />}</b>
             </div>
             <div>
-              <span style={{ color: "#656D76" }}>Trình độ:</span>{" "}
+              <span style={{ color: "var(--fgColor-muted)" }}>Trình độ:</span>{" "}
               <b>{student.level ?? <Dash />}</b>
             </div>
             <div>
-              <span style={{ color: "#656D76" }}>Ngày tạo hồ sơ:</span>{" "}
+              <span style={{ color: "var(--fgColor-muted)" }}>Ngày tạo hồ sơ:</span>{" "}
               <span>{formatDateVN(student.createdAt)}</span>
             </div>
           </div>
@@ -202,10 +200,10 @@ export function StudentViewDrawer({
               style={{
                 marginTop: 12,
                 padding: "8px 12px",
-                background: "#F6F8FA",
+                background: "var(--bgColor-muted)",
                 borderRadius: 6,
                 fontSize: 12,
-                color: "#59636E",
+                color: "var(--fgColor-muted)",
               }}
             >
               <b>Ghi chú:</b> {student.note}
@@ -216,10 +214,10 @@ export function StudentViewDrawer({
         {/* Section 2: Lớp học */}
         <div
           style={{
-            border: "1px solid #D8DEE4",
+            border: "1px solid var(--borderColor-muted)",
             borderRadius: 8,
             padding: "14px 16px",
-            background: "#FFFFFF",
+            background: "var(--bgColor-default)",
           }}
         >
           <div
@@ -235,7 +233,7 @@ export function StudentViewDrawer({
                 margin: 0,
                 fontSize: 13,
                 fontWeight: 600,
-                color: "#59636E",
+                color: "var(--fgColor-muted)",
                 textTransform: "uppercase",
                 letterSpacing: "0.5px",
               }}
@@ -244,7 +242,7 @@ export function StudentViewDrawer({
             </h3>
           </div>
           {student.enrollments.length === 0 ? (
-            <div style={{ color: "#656D76", fontSize: 13, fontStyle: "italic" }}>
+            <div style={{ color: "var(--fgColor-muted)", fontSize: 13, fontStyle: "italic" }}>
               Chưa ghi danh vào lớp nào
             </div>
           ) : (
@@ -257,9 +255,9 @@ export function StudentViewDrawer({
                     alignItems: "center",
                     justifyContent: "space-between",
                     padding: "8px 12px",
-                    background: "#F6F8FA",
+                    background: "var(--bgColor-muted)",
                     borderRadius: 6,
-                    border: "1px solid #EAEFF2",
+                    border: "1px solid var(--borderColor-muted)",
                   }}
                 >
                   <div>
@@ -267,17 +265,17 @@ export function StudentViewDrawer({
                       href={`/classes/${e.class.id}`}
                       style={{
                         fontWeight: 600,
-                        color: "var(--color-accent-fg, #0969da)",
+                        color: "var(--fgColor-accent)",
                         textDecoration: "none",
                       }}
                     >
                       {e.class.code}
                     </Link>{" "}
-                    <span style={{ color: "#59636E", fontSize: 13 }}>— {e.class.name}</span>
+                    <span style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>— {e.class.name}</span>
                   </div>
                   <Link
                     href={`/classes/${e.class.id}`}
-                    style={{ fontSize: 12, color: "#656D76", textDecoration: "none" }}
+                    style={{ fontSize: 12, color: "var(--fgColor-muted)", textDecoration: "none" }}
                   >
                     Xem lớp ↗
                   </Link>
@@ -290,10 +288,10 @@ export function StudentViewDrawer({
         {/* Section 3: Phụ huynh & Liên hệ */}
         <div
           style={{
-            border: "1px solid #D8DEE4",
+            border: "1px solid var(--borderColor-muted)",
             borderRadius: 8,
             padding: "14px 16px",
-            background: "#FFFFFF",
+            background: "var(--bgColor-default)",
           }}
         >
           <h3
@@ -301,7 +299,7 @@ export function StudentViewDrawer({
               margin: "0 0 12px 0",
               fontSize: 13,
               fontWeight: 600,
-              color: "#59636E",
+              color: "var(--fgColor-muted)",
               textTransform: "uppercase",
               letterSpacing: "0.5px",
             }}
@@ -309,7 +307,7 @@ export function StudentViewDrawer({
             Thông tin phụ huynh & Liên hệ
           </h3>
           {student.guardians.length === 0 ? (
-            <div style={{ color: "#656D76", fontSize: 13, fontStyle: "italic" }}>
+            <div style={{ color: "var(--fgColor-muted)", fontSize: 13, fontStyle: "italic" }}>
               Chưa có thông tin phụ huynh
             </div>
           ) : (
@@ -322,14 +320,14 @@ export function StudentViewDrawer({
                     alignItems: "center",
                     justifyContent: "space-between",
                     padding: "10px 12px",
-                    background: g.isPrimary ? "#F0F7FF" : "#F6F8FA",
+                    background: g.isPrimary ? "var(--bgColor-accent-muted)" : "var(--bgColor-muted)",
                     borderRadius: 6,
-                    border: g.isPrimary ? "1px solid #B6D7FD" : "1px solid #EAEFF2",
+                    border: g.isPrimary ? "1px solid var(--borderColor-accent-muted)" : "1px solid var(--borderColor-muted)",
                   }}
                 >
                   <div>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <PersonIcon size={14} fill="#59636E" />
+                      <span style={{ display: "inline-flex", color: "var(--fgColor-muted)" }}><PersonIcon size={14} /></span>
                       <span style={{ fontWeight: 600, fontSize: 13 }}>
                         {g.parent.fullName}
                       </span>
@@ -338,8 +336,8 @@ export function StudentViewDrawer({
                           fontSize: 11,
                           padding: "1px 6px",
                           borderRadius: 4,
-                          background: g.isPrimary ? "#0969DA" : "#EAEFF2",
-                          color: g.isPrimary ? "#FFFFFF" : "#59636E",
+                          background: g.isPrimary ? "var(--bgColor-accent-emphasis)" : "var(--bgColor-neutral-muted)",
+                          color: g.isPrimary ? "var(--fgColor-onEmphasis)" : "var(--fgColor-muted)",
                           fontWeight: 500,
                         }}
                       >
@@ -353,14 +351,14 @@ export function StudentViewDrawer({
                         gap: 8,
                         marginTop: 4,
                         fontSize: 12,
-                        color: "#59636E",
+                        color: "var(--fgColor-muted)",
                       }}
                     >
                       <DeviceMobileIcon size={13} />
                       <a
                         href={`tel:${g.parent.phone}`}
                         style={{
-                          color: "var(--color-accent-fg, #0969da)",
+                          color: "var(--fgColor-accent)",
                           textDecoration: "none",
                           fontFamily: "var(--font-mono, monospace)",
                           fontWeight: 500,
@@ -371,13 +369,13 @@ export function StudentViewDrawer({
                       {g.parent.zalo && <span>· Zalo: {g.parent.zalo}</span>}
                     </div>
                   </div>
-                  <PrimerButton
+                  <Button
                     size="small"
-                    leadingVisual={CopyIcon}
+                    icon={<CopyIcon />}
                     onClick={() => copyPhone(g.parent.phone)}
                   >
                     Sao chép SĐT
-                  </PrimerButton>
+                  </Button>
                 </div>
               ))}
             </div>

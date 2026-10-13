@@ -33,11 +33,6 @@ export const message = {
 
 export const toast = message;
 
-/** Tương thích với `const { message } = App.useApp()` từ Ant Design */
-export const App = {
-  useApp: () => ({ message }),
-};
-
 function addToast(type: ToastType, content: ReactNode, duration: number) {
   const id = nextId++;
   const item: ToastItem = { id, type, content, duration };
@@ -85,15 +80,15 @@ export function ToastContainer() {
       {items.map((it) => {
         const icon =
           it.type === "success" ? (
-            <CheckCircleFillIcon size={16} fill="#1A7F37" />
+            <span style={{ display: "inline-flex", color: "var(--fgColor-success)" }}><CheckCircleFillIcon size={16} /></span>
           ) : it.type === "error" ? (
-            <AlertFillIcon size={16} fill="#CF222E" />
+            <span style={{ display: "inline-flex", color: "var(--fgColor-danger)" }}><AlertFillIcon size={16} /></span>
           ) : (
-            <InfoIcon size={16} fill="#0969DA" />
+            <span style={{ display: "inline-flex", color: "var(--fgColor-accent)" }}><InfoIcon size={16} /></span>
           );
 
         const borderColor =
-          it.type === "success" ? "#4AC26B" : it.type === "error" ? "#FF8182" : "#54AEFF";
+          it.type === "success" ? "var(--borderColor-success-emphasis)" : it.type === "error" ? "var(--borderColor-danger-muted)" : "var(--borderColor-accent-emphasis)";
 
         return (
           <div
@@ -104,8 +99,8 @@ export function ToastContainer() {
               alignItems: "center",
               gap: 8,
               padding: "8px 16px",
-              background: "#FFFFFF",
-              color: "#1F2328",
+              background: "var(--bgColor-default)",
+              color: "var(--fgColor-default)",
               borderRadius: 6,
               boxShadow: "0 8px 24px rgba(140, 149, 159, 0.2), 0 1px 3px rgba(31, 35, 40, 0.12)",
               border: `1px solid ${borderColor}`,

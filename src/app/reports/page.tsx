@@ -137,7 +137,7 @@ export default function ReportsPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px 0" }}>Báo cáo & Thống kê hệ thống</h1>
-          <div style={{ color: "#59636E" }}>Số liệu tổng hợp 4 trung tâm: hôm nay, doanh thu, lãi lỗ, giáo viên và chuyên cần</div>
+          <div style={{ color: "var(--fgColor-muted)" }}>Số liệu tổng hợp 4 trung tâm: hôm nay, doanh thu, lãi lỗ, giáo viên và chuyên cần</div>
         </div>
       </div>
 
@@ -175,32 +175,32 @@ export default function ReportsPage() {
           <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
             <Col xs={24} sm={6}>
               <Card size="small" style={{ borderRadius: 8 }}>
-                <div style={{ color: "#59636E", fontSize: 13 }}>Số buổi học hôm nay</div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: "#1F6FEB", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Số buổi học hôm nay</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "var(--fgColor-accent)", fontVariantNumeric: "tabular-nums" }}>
                   {dashboardData?.sessionsCount ?? 0} buổi
                 </div>
               </Card>
             </Col>
             <Col xs={24} sm={6}>
               <Card size="small" style={{ borderRadius: 8 }}>
-                <div style={{ color: "#59636E", fontSize: 13 }}>Đã điểm danh</div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Đã điểm danh</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "var(--fgColor-success)", fontVariantNumeric: "tabular-nums" }}>
                   {dashboardData?.takenSessions ?? 0} / {dashboardData?.sessionsCount ?? 0} buổi
                 </div>
               </Card>
             </Col>
             <Col xs={24} sm={6}>
               <Card size="small" style={{ borderRadius: 8 }}>
-                <div style={{ color: "#59636E", fontSize: 13 }}>Lượt học sinh có mặt</div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Lượt học sinh có mặt</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "var(--fgColor-success)", fontVariantNumeric: "tabular-nums" }}>
                   {dashboardData?.attendance?.present ?? 0} ({dashboardData?.attendance?.late ?? 0} muộn)
                 </div>
               </Card>
             </Col>
             <Col xs={24} sm={6}>
               <Card size="small" style={{ borderRadius: 8 }}>
-                <div style={{ color: "#59636E", fontSize: 13 }}>Tiền thu trong ngày</div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Tiền thu trong ngày</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "var(--fgColor-success)", fontVariantNumeric: "tabular-nums" }}>
                   {formatCurrency(dashboardData?.revenueToday ?? 0)}
                 </div>
               </Card>
@@ -223,7 +223,7 @@ export default function ReportsPage() {
                   render: (_: any, r: any) => (
                     <div>
                       <div style={{ fontWeight: 600 }}>{r.className}</div>
-                      <div style={{ fontSize: 12, color: "#8C959F" }}>{r.classCode}</div>
+                      <div style={{ fontSize: 12, color: "var(--fgColor-muted)" }}>{r.classCode}</div>
                     </div>
                   ),
                 },
@@ -267,24 +267,24 @@ export default function ReportsPage() {
           <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
             <Col xs={24} sm={8}>
               <Card size="small" style={{ borderRadius: 8 }}>
-                <div style={{ color: "#59636E", fontSize: 13 }}>Tổng thực thu</div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Tổng thực thu</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "var(--fgColor-success)", fontVariantNumeric: "tabular-nums" }}>
                   {formatCurrency(revenueData?.summary?.totalPaid ?? 0)}
                 </div>
               </Card>
             </Col>
             <Col xs={24} sm={8}>
               <Card size="small" style={{ borderRadius: 8 }}>
-                <div style={{ color: "#59636E", fontSize: 13 }}>Tổng hoàn tiền</div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: "#CF222E", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Tổng hoàn tiền</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "var(--fgColor-danger)", fontVariantNumeric: "tabular-nums" }}>
                   {formatCurrency(revenueData?.summary?.totalRefund ?? 0)}
                 </div>
               </Card>
             </Col>
             <Col xs={24} sm={8}>
               <Card size="small" style={{ borderRadius: 8 }}>
-                <div style={{ color: "#59636E", fontSize: 13 }}>Doanh thu thuần (Net)</div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: "#1F6FEB", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Doanh thu thuần (Net)</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "var(--fgColor-accent)", fontVariantNumeric: "tabular-nums" }}>
                   {formatCurrency(revenueData?.summary?.totalNet ?? 0)}
                 </div>
               </Card>
@@ -312,7 +312,7 @@ export default function ReportsPage() {
                   dataIndex: "paidTotal",
                   align: "right" as const,
                   render: (v: number) => (
-                    <span style={{ fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "#2DA44E" }}>
+                    <span style={{ fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "var(--fgColor-success)" }}>
                       {formatCurrency(v)}
                     </span>
                   ),
@@ -322,7 +322,7 @@ export default function ReportsPage() {
                   dataIndex: "refundTotal",
                   align: "right" as const,
                   render: (v: number) => (
-                    <span style={{ fontVariantNumeric: "tabular-nums", color: "#CF222E" }}>
+                    <span style={{ fontVariantNumeric: "tabular-nums", color: "var(--fgColor-danger)" }}>
                       {formatCurrency(v)}
                     </span>
                   ),
@@ -332,7 +332,7 @@ export default function ReportsPage() {
                   dataIndex: "netRevenue",
                   align: "right" as const,
                   render: (v: number) => (
-                    <span style={{ fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "#1F6FEB" }}>
+                    <span style={{ fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "var(--fgColor-accent)" }}>
                       {formatCurrency(v)}
                     </span>
                   ),
@@ -367,36 +367,36 @@ export default function ReportsPage() {
           <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
             <Col xs={24} sm={6}>
               <Card size="small" style={{ borderRadius: 8 }}>
-                <div style={{ color: "#59636E", fontSize: 13 }}>Doanh thu thuần</div>
-                <div style={{ fontSize: 17, fontWeight: 700, color: "#1F6FEB", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Doanh thu thuần</div>
+                <div style={{ fontSize: 17, fontWeight: 700, color: "var(--fgColor-accent)", fontVariantNumeric: "tabular-nums" }}>
                   {formatCurrency(profitLossData?.summary?.netRevenue ?? 0)}
                 </div>
               </Card>
             </Col>
             <Col xs={24} sm={6}>
               <Card size="small" style={{ borderRadius: 8 }}>
-                <div style={{ color: "#59636E", fontSize: 13 }}>Chi lương GV/TG</div>
-                <div style={{ fontSize: 17, fontWeight: 700, color: "#D29922", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Chi lương GV/TG</div>
+                <div style={{ fontSize: 17, fontWeight: 700, color: "var(--fgColor-attention)", fontVariantNumeric: "tabular-nums" }}>
                   {formatCurrency(profitLossData?.summary?.teacherPayroll ?? 0)}
                 </div>
               </Card>
             </Col>
             <Col xs={24} sm={6}>
               <Card size="small" style={{ borderRadius: 8 }}>
-                <div style={{ color: "#59636E", fontSize: 13 }}>Chi phí hoạt động</div>
-                <div style={{ fontSize: 17, fontWeight: 700, color: "#CF222E", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Chi phí hoạt động</div>
+                <div style={{ fontSize: 17, fontWeight: 700, color: "var(--fgColor-danger)", fontVariantNumeric: "tabular-nums" }}>
                   {formatCurrency(profitLossData?.summary?.expenses ?? 0)}
                 </div>
               </Card>
             </Col>
             <Col xs={24} sm={6}>
               <Card size="small" style={{ borderRadius: 8 }}>
-                <div style={{ color: "#59636E", fontSize: 13 }}>Lợi nhuận ròng</div>
+                <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Lợi nhuận ròng</div>
                 <div
                   style={{
                     fontSize: 22,
                     fontWeight: 800,
-                    color: (profitLossData?.summary?.profit ?? 0) >= 0 ? "#2DA44E" : "#CF222E",
+                    color: (profitLossData?.summary?.profit ?? 0) >= 0 ? "var(--fgColor-success)" : "var(--fgColor-danger)",
                     fontVariantNumeric: "tabular-nums",
                   }}
                 >
@@ -442,7 +442,7 @@ export default function ReportsPage() {
                   dataIndex: "teacherPayroll",
                   align: "right" as const,
                   render: (v: number) => (
-                    <span style={{ color: "#D29922" }}>{formatCurrency(v)}</span>
+                    <span style={{ color: "var(--fgColor-attention)" }}>{formatCurrency(v)}</span>
                   ),
                 },
                 {
@@ -450,7 +450,7 @@ export default function ReportsPage() {
                   dataIndex: "expenses",
                   align: "right" as const,
                   render: (v: number) => (
-                    <span style={{ color: "#CF222E" }}>{formatCurrency(v)}</span>
+                    <span style={{ color: "var(--fgColor-danger)" }}>{formatCurrency(v)}</span>
                   ),
                 },
                 {
@@ -463,7 +463,7 @@ export default function ReportsPage() {
                         fontWeight: 700,
                         fontSize: 15,
                         fontVariantNumeric: "tabular-nums",
-                        color: v >= 0 ? "#2DA44E" : "#CF222E",
+                        color: v >= 0 ? "var(--fgColor-success)" : "var(--fgColor-danger)",
                       }}
                     >
                       {formatCurrency(v)}
@@ -508,7 +508,7 @@ export default function ReportsPage() {
                   render: (_: any, r: any) => (
                     <div>
                       <div style={{ fontWeight: 600 }}>{r.teacher.fullName}</div>
-                      <div style={{ fontSize: 12, color: "#8C959F" }}>
+                      <div style={{ fontSize: 12, color: "var(--fgColor-muted)" }}>
                         {r.teacher.displayName} ({r.teacher.code})
                       </div>
                     </div>
@@ -555,7 +555,7 @@ export default function ReportsPage() {
                   dataIndex: "totalSalary",
                   align: "right" as const,
                   render: (s: number) => (
-                    <span style={{ fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "#1F6FEB" }}>
+                    <span style={{ fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "var(--fgColor-accent)" }}>
                       {formatCurrency(s)}
                     </span>
                   ),
@@ -587,7 +587,7 @@ export default function ReportsPage() {
                   render: (_: any, r: any) => (
                     <div>
                       <div style={{ fontWeight: 600 }}>{r.class.name}</div>
-                      <div style={{ fontSize: 12, color: "#8C959F" }}>
+                      <div style={{ fontSize: 12, color: "var(--fgColor-muted)" }}>
                         {r.class.code} ({r.class.centerName})
                       </div>
                     </div>
@@ -607,25 +607,25 @@ export default function ReportsPage() {
                   title: "Có mặt",
                   dataIndex: "present",
                   align: "center" as const,
-                  render: (v: number) => <span style={{ color: "#2DA44E", fontWeight: 600 }}>{v}</span>,
+                  render: (v: number) => <span style={{ color: "var(--fgColor-success)", fontWeight: 600 }}>{v}</span>,
                 },
                 {
                   title: "Đi muộn",
                   dataIndex: "late",
                   align: "center" as const,
-                  render: (v: number) => (v > 0 ? <span style={{ color: "#D29922" }}>{v}</span> : "0"),
+                  render: (v: number) => (v > 0 ? <span style={{ color: "var(--fgColor-attention)" }}>{v}</span> : "0"),
                 },
                 {
                   title: "Vắng có phép",
                   dataIndex: "excused",
                   align: "center" as const,
-                  render: (v: number) => (v > 0 ? <span style={{ color: "#1F6FEB" }}>{v}</span> : "0"),
+                  render: (v: number) => (v > 0 ? <span style={{ color: "var(--fgColor-accent)" }}>{v}</span> : "0"),
                 },
                 {
                   title: "Vắng không phép",
                   dataIndex: "unexcused",
                   align: "center" as const,
-                  render: (v: number) => (v > 0 ? <span style={{ color: "#CF222E", fontWeight: 600 }}>{v}</span> : "0"),
+                  render: (v: number) => (v > 0 ? <span style={{ color: "var(--fgColor-danger)", fontWeight: 600 }}>{v}</span> : "0"),
                 },
                 {
                   title: "Tỷ lệ đi học",

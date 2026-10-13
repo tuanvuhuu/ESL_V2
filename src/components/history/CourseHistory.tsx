@@ -123,7 +123,7 @@ function RunCard<E extends HistoryEnrollment>({
         <Col xs={24} lg={12}>
           <Row gutter={[8, 8]}>
             <Col span={8}>
-              <Statistic title="Chuyên cần" value={s.rate ?? "—"} suffix={s.rate != null ? "%" : undefined} valueStyle={{ color: s.rate != null && s.rate < 80 ? "#CF222E" : "#2DA44E" }} />
+              <Statistic title="Chuyên cần" value={s.rate ?? "—"} suffix={s.rate != null ? "%" : undefined} valueStyle={{ color: s.rate != null && s.rate < 80 ? "var(--fgColor-danger)" : "var(--fgColor-success)" }} />
             </Col>
             <Col span={8}>
               <Statistic title="Đi học" value={s.present + s.late} suffix={`/ ${s.held}`} />
@@ -135,7 +135,7 @@ function RunCard<E extends HistoryEnrollment>({
               <Statistic title="Vắng có phép" value={s.excused} />
             </Col>
             <Col span={8}>
-              <Statistic title="Vắng không phép" value={s.unexcused} valueStyle={s.unexcused ? { color: "#CF222E" } : undefined} />
+              <Statistic title="Vắng không phép" value={s.unexcused} valueStyle={s.unexcused ? { color: "var(--fgColor-danger)" } : undefined} />
             </Col>
             <Col span={8}>
               <Statistic title="Đã học bù" value={s.madeUp} />

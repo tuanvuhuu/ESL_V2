@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { PlusIcon, TrashIcon } from "@primer/octicons-react";
-import { Button as PrimerButton, IconButton } from "@primer/react";
-import { Popconfirm, Select, message } from "@/client/primer-compat";
+import { Button, IconButton, Popconfirm, Select, message } from "@/client/primer-compat";
 import { api, qs } from "@/client/api";
 import { PrimerGrid } from "@/components/PrimerGrid";
 import { useCenters } from "@/client/centers";
@@ -57,7 +56,7 @@ export default function ExpensesPage() {
       title: "Mã chi",
       dataIndex: "code",
       key: "code",
-      render: (code: string) => <span style={{ fontFamily: "monospace", fontWeight: 600, color: "#1F6FEB" }}>{code}</span>,
+      render: (code: string) => <span style={{ fontFamily: "monospace", fontWeight: 600, color: "var(--fgColor-accent)" }}>{code}</span>,
     },
     {
       title: "Ngày chi",
@@ -84,9 +83,9 @@ export default function ExpensesPage() {
               borderRadius: 12,
               fontSize: 12,
               fontWeight: 500,
-              background: "#F6F8FA",
-              border: "1px solid #D0D7DE",
-              color: "#24292F",
+              background: "var(--bgColor-muted)",
+              border: "1px solid var(--borderColor-default)",
+              color: "var(--fgColor-default)",
             }}
           >
             {item?.label ?? cat}
@@ -100,7 +99,7 @@ export default function ExpensesPage() {
       key: "amount",
       align: "right" as const,
       render: (val: number) => (
-        <span style={{ fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "#CF222E" }}>
+        <span style={{ fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "var(--fgColor-danger)" }}>
           {formatCurrency(val)}
         </span>
       ),
@@ -151,17 +150,17 @@ export default function ExpensesPage() {
         title="Quản lý chi phí trung tâm"
         description="Theo dõi các khoản chi phí hoạt động, mặt bằng, điện nước, marketing theo trung tâm"
         actions={
-          <PrimerButton variant="primary" leadingVisual={PlusIcon} onClick={() => setModalOpen(true)}>
+          <Button type="primary" icon={<PlusIcon />} onClick={() => setModalOpen(true)}>
             Thêm khoản chi
-          </PrimerButton>
+          </Button>
         }
       />
 
       <div style={{ display: "flex", gap: 16, alignItems: "center", marginBottom: 16 }}>
         <div
           style={{
-            background: "#fff",
-            border: "1px solid #d0d7de",
+            background: "var(--bgColor-default)",
+            border: "1px solid var(--borderColor-default)",
             borderRadius: 6,
             padding: "8px 16px",
             display: "inline-flex",
@@ -169,14 +168,14 @@ export default function ExpensesPage() {
             gap: 12,
           }}
         >
-          <span style={{ color: "#59636E", fontSize: 13 }}>Tổng chi phí ({expenses.length} khoản):</span>
-          <span style={{ fontSize: 16, fontWeight: 700, color: "#CF222E", fontVariantNumeric: "tabular-nums" }}>
+          <span style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Tổng chi phí ({expenses.length} khoản):</span>
+          <span style={{ fontSize: 16, fontWeight: 700, color: "var(--fgColor-danger)", fontVariantNumeric: "tabular-nums" }}>
             {formatCurrency(totalExpense)}
           </span>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 13, color: "#59636E" }}>Khoản mục:</span>
+          <span style={{ fontSize: 13, color: "var(--fgColor-muted)" }}>Khoản mục:</span>
           <Select
             value={categoryFilter}
             onChange={setCategoryFilter}

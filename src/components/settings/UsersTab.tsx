@@ -8,6 +8,7 @@ import { useCenters } from "@/client/centers";
 import { useViewer } from "@/client/session";
 import { CenterTag, Dash } from "@/components/ui";
 import { USER_ROLES } from "@/lib/permissions";
+import { tint } from "@/lib/colors";
 
 type UserRow = {
   id: number;
@@ -89,7 +90,7 @@ export function UsersTab() {
             title: "Vai trò",
             render: (_, u) => {
               const r = USER_ROLES.find((x) => x.value === u.role);
-              return <Tag style={{ color: r?.color, borderColor: r?.color, background: `${r?.color}12` }}>{r?.label ?? u.role}</Tag>;
+              return <Tag style={{ color: r?.color, borderColor: r?.color, background: r ? tint(r.color, 7) : undefined }}>{r?.label ?? u.role}</Tag>;
             },
           },
           {

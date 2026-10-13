@@ -2,7 +2,7 @@
 
 Hệ thống gọn nhẹ để một quản lý điều hành 4 trung tâm tiếng Anh. Đợt 1: học sinh, phụ huynh, giáo viên/trợ giảng, lớp và lịch học.
 
-**Stack:** Next.js 15 (App Router) · React 19 · Ant Design 5 · Prisma 6 · SQLite (chạy máy) → PostgreSQL khi đưa lên mạng · TypeScript · Vitest.
+**Stack:** Next.js 15 (App Router) · React 19 · GitHub Primer (React + Primitives) · Prisma 6 · SQLite (chạy máy) → PostgreSQL khi đưa lên mạng · TypeScript · Vitest.
 
 ## Chạy trên máy
 

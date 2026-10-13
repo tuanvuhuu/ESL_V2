@@ -22,31 +22,31 @@ export default function GlobalError({
           placeItems: "center",
           minHeight: "100vh",
           margin: 0,
-          background: "#F6F8FA",
+          background: "var(--bgColor-muted)",
         }}
       >
         <div
           style={{
-            background: "#FFFFFF",
+            background: "var(--bgColor-default)",
             padding: 32,
             borderRadius: 8,
-            border: "1px solid #D0D7DE",
+            border: "1px solid var(--borderColor-default)",
             boxShadow: "0 8px 24px rgba(31, 35, 40, 0.08)",
             textAlign: "center",
             maxWidth: 480,
           }}
         >
           <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
-          <h2 style={{ color: "#CF222E", margin: "0 0 8px" }}>Lỗi hệ thống toàn cục</h2>
-          <p style={{ color: "#59636E", fontSize: 14, marginBottom: 20 }}>
+          <h2 style={{ color: "var(--fgColor-danger)", margin: "0 0 8px" }}>Lỗi hệ thống toàn cục</h2>
+          <p style={{ color: "var(--fgColor-muted)", fontSize: 14, marginBottom: 20 }}>
             {error?.message || "Không thể khởi tạo giao diện chính của ứng dụng."}
           </p>
           <button
             onClick={() => reset()}
             style={{
               padding: "8px 20px",
-              background: "#1F6FEB",
-              color: "#FFFFFF",
+              background: "var(--bgColor-accent-emphasis)",
+              color: "var(--fgColor-onEmphasis)",
               border: "none",
               borderRadius: 6,
               cursor: "pointer",

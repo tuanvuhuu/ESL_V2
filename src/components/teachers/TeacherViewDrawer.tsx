@@ -1,6 +1,5 @@
 "use client";
 
-import { Button as PrimerButton } from "@primer/react";
 import {
   CopyIcon,
   DeviceMobileIcon,
@@ -14,7 +13,7 @@ import type { Teacher } from "@/client/types";
 import { CertTag, Dash, StatusTag } from "@/components/ui";
 import { EMPLOYMENTS, TEACHER_ORIGINS, TEACHER_ROLES, TEACHER_STATUSES, optionOf } from "@/lib/constants";
 import { formatPhone } from "@/lib/text";
-import { message } from "@/client/toast";
+import { Button, message } from "@/client/primer-compat";
 
 type TeacherRow = Teacher & { activeClassCount: number; monthHours: number };
 
@@ -54,8 +53,8 @@ export function TeacherViewDrawer({
               fontWeight: 600,
               padding: "2px 8px",
               borderRadius: 6,
-              background: "#EAEFF2",
-              color: "#313D44",
+              background: "var(--bgColor-neutral-muted)",
+              color: "var(--fgColor-default)",
             }}
           >
             {teacher.code}
@@ -74,28 +73,27 @@ export function TeacherViewDrawer({
               gap: 6,
               fontSize: 13,
               fontWeight: 500,
-              color: "var(--color-accent-fg, #0969da)",
+              color: "var(--fgColor-accent)",
               textDecoration: "none",
             }}
           >
             Mở trang đầy đủ <LinkExternalIcon size={14} />
           </Link>
           <div style={{ display: "flex", gap: 8 }}>
-            <PrimerButton size="medium" onClick={onClose}>
+            <Button onClick={onClose}>
               Đóng
-            </PrimerButton>
+            </Button>
             {canEdit && onEdit && (
-              <PrimerButton
-                variant="primary"
-                size="medium"
-                leadingVisual={PencilIcon}
+              <Button
+                type="primary"
+                icon={<PencilIcon />}
                 onClick={() => {
                   onClose();
                   onEdit(teacher);
                 }}
               >
                 Sửa thông tin
-              </PrimerButton>
+              </Button>
             )}
           </div>
         </div>
@@ -109,16 +107,16 @@ export function TeacherViewDrawer({
             alignItems: "center",
             justifyContent: "space-between",
             padding: "12px 16px",
-            background: "#F6F8FA",
+            background: "var(--bgColor-muted)",
             borderRadius: 8,
-            border: "1px solid #D8DEE4",
+            border: "1px solid var(--borderColor-muted)",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <StatusTag options={TEACHER_STATUSES} value={teacher.status} />
             <CertTag expiry={teacher.certExpiry} always />
           </div>
-          <span style={{ fontSize: 12, color: "#59636E" }}>
+          <span style={{ fontSize: 12, color: "var(--fgColor-muted)" }}>
             {optionOf(EMPLOYMENTS, teacher.employment)?.label} · {optionOf(TEACHER_ORIGINS, teacher.origin)?.label}
           </span>
         </div>
@@ -126,10 +124,10 @@ export function TeacherViewDrawer({
         {/* Section 1: Thông tin công tác */}
         <div
           style={{
-            border: "1px solid #D8DEE4",
+            border: "1px solid var(--borderColor-muted)",
             borderRadius: 8,
             padding: "14px 16px",
-            background: "#FFFFFF",
+            background: "var(--bgColor-default)",
           }}
         >
           <h3
@@ -137,7 +135,7 @@ export function TeacherViewDrawer({
               margin: "0 0 12px 0",
               fontSize: 13,
               fontWeight: 600,
-              color: "#59636E",
+              color: "var(--fgColor-muted)",
               textTransform: "uppercase",
               letterSpacing: "0.5px",
             }}
@@ -154,25 +152,25 @@ export function TeacherViewDrawer({
             }}
           >
             <div>
-              <span style={{ color: "#656D76" }}>Vai trò:</span>{" "}
+              <span style={{ color: "var(--fgColor-muted)" }}>Vai trò:</span>{" "}
               <b>{optionOf(TEACHER_ROLES, teacher.role)?.label ?? <Dash />}</b>
             </div>
             <div>
-              <span style={{ color: "#656D76" }}>Hình thức:</span>{" "}
+              <span style={{ color: "var(--fgColor-muted)" }}>Hình thức:</span>{" "}
               <b>{optionOf(EMPLOYMENTS, teacher.employment)?.label ?? <Dash />}</b>
             </div>
             <div>
-              <span style={{ color: "#656D76" }}>Nguồn gốc:</span>{" "}
+              <span style={{ color: "var(--fgColor-muted)" }}>Nguồn gốc:</span>{" "}
               <b>{optionOf(TEACHER_ORIGINS, teacher.origin)?.label ?? <Dash />}</b>
             </div>
             <div>
-              <span style={{ color: "#656D76" }}>Lớp đang phụ trách:</span>{" "}
-              <b className="num" style={{ color: "var(--color-accent-fg, #0969da)" }}>
+              <span style={{ color: "var(--fgColor-muted)" }}>Lớp đang phụ trách:</span>{" "}
+              <b className="num" style={{ color: "var(--fgColor-accent)" }}>
                 {teacher.activeClassCount} lớp
               </b>
             </div>
             <div>
-              <span style={{ color: "#656D76" }}>Giờ dạy trong tháng:</span>{" "}
+              <span style={{ color: "var(--fgColor-muted)" }}>Giờ dạy trong tháng:</span>{" "}
               <b className="num">
                 {teacher.monthHours.toLocaleString("vi-VN", { maximumFractionDigits: 1 })} giờ
               </b>
@@ -183,10 +181,10 @@ export function TeacherViewDrawer({
         {/* Section 2: Thông tin liên hệ */}
         <div
           style={{
-            border: "1px solid #D8DEE4",
+            border: "1px solid var(--borderColor-muted)",
             borderRadius: 8,
             padding: "14px 16px",
-            background: "#FFFFFF",
+            background: "var(--bgColor-default)",
           }}
         >
           <h3
@@ -194,7 +192,7 @@ export function TeacherViewDrawer({
               margin: "0 0 12px 0",
               fontSize: 13,
               fontWeight: 600,
-              color: "#59636E",
+              color: "var(--fgColor-muted)",
               textTransform: "uppercase",
               letterSpacing: "0.5px",
             }}
@@ -208,19 +206,19 @@ export function TeacherViewDrawer({
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "10px 12px",
-                background: "#F6F8FA",
+                background: "var(--bgColor-muted)",
                 borderRadius: 6,
-                border: "1px solid #EAEFF2",
+                border: "1px solid var(--borderColor-muted)",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
-                <DeviceMobileIcon size={14} fill="#59636E" />
-                <span style={{ color: "#656D76" }}>Số điện thoại:</span>{" "}
+                <span style={{ display: "inline-flex", color: "var(--fgColor-muted)" }}><DeviceMobileIcon size={14} /></span>
+                <span style={{ color: "var(--fgColor-muted)" }}>Số điện thoại:</span>{" "}
                 {teacher.phone ? (
                   <a
                     href={`tel:${teacher.phone}`}
                     style={{
-                      color: "var(--color-accent-fg, #0969da)",
+                      color: "var(--fgColor-accent)",
                       textDecoration: "none",
                       fontFamily: "var(--font-mono, monospace)",
                       fontWeight: 600,
@@ -233,13 +231,13 @@ export function TeacherViewDrawer({
                 )}
               </div>
               {teacher.phone && (
-                <PrimerButton
+                <Button
                   size="small"
-                  leadingVisual={CopyIcon}
+                  icon={<CopyIcon />}
                   onClick={() => copy(teacher.phone, "số điện thoại")}
                 >
                   Sao chép
-                </PrimerButton>
+                </Button>
               )}
             </div>
 
@@ -249,19 +247,19 @@ export function TeacherViewDrawer({
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "10px 12px",
-                background: "#F6F8FA",
+                background: "var(--bgColor-muted)",
                 borderRadius: 6,
-                border: "1px solid #EAEFF2",
+                border: "1px solid var(--borderColor-muted)",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
-                <MailIcon size={14} fill="#59636E" />
-                <span style={{ color: "#656D76" }}>Email:</span>{" "}
+                <span style={{ display: "inline-flex", color: "var(--fgColor-muted)" }}><MailIcon size={14} /></span>
+                <span style={{ color: "var(--fgColor-muted)" }}>Email:</span>{" "}
                 {teacher.email ? (
                   <a
                     href={`mailto:${teacher.email}`}
                     style={{
-                      color: "var(--color-accent-fg, #0969da)",
+                      color: "var(--fgColor-accent)",
                       textDecoration: "none",
                     }}
                   >
@@ -272,13 +270,13 @@ export function TeacherViewDrawer({
                 )}
               </div>
               {teacher.email && (
-                <PrimerButton
+                <Button
                   size="small"
-                  leadingVisual={CopyIcon}
+                  icon={<CopyIcon />}
                   onClick={() => copy(teacher.email, "email")}
                 >
                   Sao chép
-                </PrimerButton>
+                </Button>
               )}
             </div>
           </div>

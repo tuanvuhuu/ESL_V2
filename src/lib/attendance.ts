@@ -3,11 +3,13 @@
 // - Vắng không phép: trừ 1 buổi. Vắng có phép: không trừ.
 // - Học bù: trừ vào ghi danh của buổi vắng gốc, nhưng không trừ lần nữa nếu buổi gốc đã bị trừ.
 
+import { COLORS } from "./colors";
+
 export const ATTENDANCE_STATUSES = [
-  { value: "PRESENT", label: "Có mặt", short: "Có mặt", color: "#2DA44E" },
-  { value: "LATE", label: "Đi muộn", short: "Muộn", color: "#D29922" },
-  { value: "EXCUSED", label: "Vắng có phép", short: "Vắng CP", color: "#1F6FEB" },
-  { value: "UNEXCUSED", label: "Vắng không phép", short: "Vắng KP", color: "#CF222E" },
+  { value: "PRESENT", label: "Có mặt", short: "Có mặt", color: COLORS.success },
+  { value: "LATE", label: "Đi muộn", short: "Muộn", color: COLORS.attention },
+  { value: "EXCUSED", label: "Vắng có phép", short: "Vắng CP", color: COLORS.accent },
+  { value: "UNEXCUSED", label: "Vắng không phép", short: "Vắng KP", color: COLORS.danger },
 ] as const;
 
 export type AttendanceStatus = (typeof ATTENDANCE_STATUSES)[number]["value"];

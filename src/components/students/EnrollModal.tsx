@@ -272,13 +272,13 @@ export function EnrollModal({ student, open, onClose, onSaved }: { student: Enro
                   <span>
                     Học phí gốc: <strong>{formatCurrency(feeCalc.original)}</strong>
                     {feeCalc.discount > 0 && (
-                      <span style={{ color: "#cf222e", marginLeft: 8 }}>
+                      <span style={{ color: "var(--fgColor-danger)", marginLeft: 8 }}>
                         (Giảm: -{formatCurrency(feeCalc.discount)})
                       </span>
                     )}
                   </span>
                   <span style={{ fontSize: 16 }}>
-                    Phải đóng: <strong style={{ color: "#1a7f37" }}>{formatCurrency(feeCalc.final)}</strong>
+                    Phải đóng: <strong style={{ color: "var(--fgColor-success)" }}>{formatCurrency(feeCalc.final)}</strong>
                   </span>
                 </div>
               }

@@ -18,7 +18,7 @@ const HOURS = [8, 10, 12, 14, 16, 18, 20];
 
 /** Lưới tuần: mỗi thứ một dải 07:00–22:00, tô các khung rảnh theo màu trung tâm (xám = mọi trung tâm). */
 function WeekBars({ slots, centers }: { slots: Slot[]; centers: CenterLite[] }) {
-  const color = (id: number | null) => centers.find((c) => c.id === id)?.color ?? "#2DA44E";
+  const color = (id: number | null) => centers.find((c) => c.id === id)?.color ?? "var(--fgColor-success)";
   return (
     <div className="avail-grid">
       <div className="avail-row avail-head">

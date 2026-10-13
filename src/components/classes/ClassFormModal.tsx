@@ -1,7 +1,6 @@
 "use client";
 
 import { Alert, App, Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, List, Row, Select, Steps, TimePicker } from "@/client/primer-compat";
-import { Button as PrimerButton } from "@primer/react";
 import dayjs, { type Dayjs } from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { ApiError, api, useApi } from "@/client/api";
@@ -130,20 +129,20 @@ export function ClassFormModal({ open, onClose, onSaved }: { open: boolean; onCl
       onClose={onClose}
       footer={
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", width: "100%" }}>
-          <PrimerButton onClick={onClose}>Hủy</PrimerButton>
+          <Button onClick={onClose}>Hủy</Button>
           {step > 0 && (
-            <PrimerButton onClick={() => setStep(step - 1)}>
+            <Button onClick={() => setStep(step - 1)}>
               Quay lại
-            </PrimerButton>
+            </Button>
           )}
           {step < 3 ? (
-            <PrimerButton variant="primary" onClick={next}>
+            <Button type="primary" onClick={next}>
               {step === 2 ? "Xem trước lịch" : "Tiếp theo"}
-            </PrimerButton>
+            </Button>
           ) : (
-            <PrimerButton variant="primary" loading={saving} disabled={!preview || preview.conflicts.length > 0} onClick={submit}>
+            <Button type="primary" loading={saving} disabled={!preview || preview.conflicts.length > 0} onClick={submit}>
               Xác nhận mở lớp
-            </PrimerButton>
+            </Button>
           )}
         </div>
       }
@@ -290,7 +289,7 @@ export function ClassFormModal({ open, onClose, onSaved }: { open: boolean; onCl
               renderItem={(d, i) => {
                 const bad = preview.conflicts.some((c) => c.date === d);
                 return (
-                  <List.Item style={{ color: bad ? "#CF222E" : undefined }}>
+                  <List.Item style={{ color: bad ? "var(--fgColor-danger)" : undefined }}>
                     Buổi {i + 1} · {formatDateVN(d, true)}
                     {bad ? " · bị trùng" : ""}
                   </List.Item>

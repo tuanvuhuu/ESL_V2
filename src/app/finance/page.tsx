@@ -101,7 +101,7 @@ export default function FinancePage() {
       render: (_: any, row: any) => (
         <div>
           <div style={{ fontWeight: 600 }}>{row.student.fullName}</div>
-          <div style={{ fontSize: 12, color: "#8C959F" }}>
+          <div style={{ fontSize: 12, color: "var(--fgColor-muted)" }}>
             {row.student.code} {row.student.englishName ? `· ${row.student.englishName}` : ""}
           </div>
         </div>
@@ -130,7 +130,7 @@ export default function FinancePage() {
           style={{
             fontWeight: 700,
             fontVariantNumeric: "tabular-nums",
-            color: row.status === "VALID" ? "#2DA44E" : "#8C959F",
+            color: row.status === "VALID" ? "var(--fgColor-success)" : "var(--fgColor-muted)",
             textDecoration: row.status === "CANCELLED" ? "line-through" : "none",
           }}
         >
@@ -218,24 +218,24 @@ export default function FinancePage() {
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col xs={24} sm={8}>
           <Card size="small" style={{ borderRadius: 8 }}>
-            <div style={{ color: "#59636E", fontSize: 13 }}>Tổng thực thu ({payments.filter(p => p.status === "VALID").length} phiếu)</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Tổng thực thu ({payments.filter(p => p.status === "VALID").length} phiếu)</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--fgColor-success)", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(totalAmount)}
             </div>
           </Card>
         </Col>
         <Col xs={24} sm={8}>
           <Card size="small" style={{ borderRadius: 8 }}>
-            <div style={{ color: "#59636E", fontSize: 13 }}>Thu tiền mặt</div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: "#D29922", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Thu tiền mặt</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "var(--fgColor-attention)", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(cashAmount)}
             </div>
           </Card>
         </Col>
         <Col xs={24} sm={8}>
           <Card size="small" style={{ borderRadius: 8 }}>
-            <div style={{ color: "#59636E", fontSize: 13 }}>Thu chuyển khoản</div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: "#1F6FEB", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Thu chuyển khoản</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "var(--fgColor-accent)", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(transferAmount)}
             </div>
           </Card>
@@ -270,7 +270,7 @@ export default function FinancePage() {
         okText="Xác nhận hủy"
         okButtonProps={{ danger: true }}
       >
-        <p style={{ color: "#CF222E" }}>
+        <p style={{ color: "var(--fgColor-danger)" }}>
           Lưu ý: Phiếu thu đã hủy sẽ không được xóa khỏi hệ thống để đảm bảo tính minh bạch kiểm toán.
         </p>
         <div style={{ marginBottom: 8 }}>Vui lòng nhập lý do hủy phiếu thu:</div>

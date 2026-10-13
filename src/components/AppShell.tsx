@@ -171,8 +171,8 @@ function UserMenu({ viewer, compact }: { viewer: Viewer; compact: boolean }) {
               width: 32,
               height: 32,
               borderRadius: "50%",
-              background: "#1F6FEB",
-              color: "#fff",
+              background: "var(--bgColor-accent-emphasis)",
+              color: "var(--fgColor-onEmphasis)",
               display: "grid",
               placeItems: "center",
               fontWeight: 700,
@@ -264,10 +264,10 @@ function GlobalSearch({ placeholder }: { placeholder: string }) {
             top: "calc(100% + 4px)",
             left: 0,
             right: 0,
-            background: "#fff",
+            background: "var(--bgColor-default)",
             borderRadius: 6,
             boxShadow: "0 8px 24px rgba(140,149,159,0.2)",
-            border: "1px solid #d0d7de",
+            border: "1px solid var(--borderColor-default)",
             zIndex: 100,
             maxHeight: 360,
             overflowY: "auto",
@@ -275,14 +275,14 @@ function GlobalSearch({ placeholder }: { placeholder: string }) {
           }}
         >
           {!hasResults ? (
-            <div style={{ padding: "8px 12px", color: "#8c959f", fontSize: 13 }}>
+            <div style={{ padding: "8px 12px", color: "var(--fgColor-muted)", fontSize: 13 }}>
               {dq.trim().length >= 2 ? "Không tìm thấy kết quả" : "Nhập ít nhất 2 ký tự..."}
             </div>
           ) : (
             <>
               {res.students.length > 0 && (
                 <div>
-                  <div style={{ padding: "6px 12px", fontSize: 11, fontWeight: 600, color: "#59636e", textTransform: "uppercase" }}>Học sinh</div>
+                  <div style={{ padding: "6px 12px", fontSize: 11, fontWeight: 600, color: "var(--fgColor-muted)", textTransform: "uppercase" }}>Học sinh</div>
                   {res.students.map((s) => (
                     <div
                       key={s.id}
@@ -293,14 +293,14 @@ function GlobalSearch({ placeholder }: { placeholder: string }) {
                         router.push(`/students/${s.id}`);
                       }}
                     >
-                      <b style={{ color: "#0969da" }}>{s.fullName}</b> {s.englishName ? `(${s.englishName})` : ""} · {s.code} · {s.center.name}
+                      <b style={{ color: "var(--fgColor-accent)" }}>{s.fullName}</b> {s.englishName ? `(${s.englishName})` : ""} · {s.code} · {s.center.name}
                     </div>
                   ))}
                 </div>
               )}
               {res.parents.length > 0 && (
                 <div>
-                  <div style={{ padding: "6px 12px", fontSize: 11, fontWeight: 600, color: "#59636e", textTransform: "uppercase" }}>Phụ huynh</div>
+                  <div style={{ padding: "6px 12px", fontSize: 11, fontWeight: 600, color: "var(--fgColor-muted)", textTransform: "uppercase" }}>Phụ huynh</div>
                   {res.parents.map((p) => (
                     <div
                       key={p.id}
@@ -311,14 +311,14 @@ function GlobalSearch({ placeholder }: { placeholder: string }) {
                         router.push(`/parents/${p.id}`);
                       }}
                     >
-                      <b style={{ color: "#0969da" }}>{p.fullName}</b> · {formatPhone(p.phone)}
+                      <b style={{ color: "var(--fgColor-accent)" }}>{p.fullName}</b> · {formatPhone(p.phone)}
                     </div>
                   ))}
                 </div>
               )}
               {res.teachers.length > 0 && (
                 <div>
-                  <div style={{ padding: "6px 12px", fontSize: 11, fontWeight: 600, color: "#59636e", textTransform: "uppercase" }}>Giáo viên</div>
+                  <div style={{ padding: "6px 12px", fontSize: 11, fontWeight: 600, color: "var(--fgColor-muted)", textTransform: "uppercase" }}>Giáo viên</div>
                   {res.teachers.map((t) => (
                     <div
                       key={t.id}
@@ -329,7 +329,7 @@ function GlobalSearch({ placeholder }: { placeholder: string }) {
                         router.push(`/teachers/${t.id}`);
                       }}
                     >
-                      <b style={{ color: "#0969da" }}>{t.displayName}</b> · {t.code}
+                      <b style={{ color: "var(--fgColor-accent)" }}>{t.displayName}</b> · {t.code}
                     </div>
                   ))}
                 </div>
@@ -419,7 +419,7 @@ function SignedInShell({ children }: { children: ReactNode }) {
         display: "flex",
         height: isMobile ? "auto" : "100vh",
         minHeight: "100vh",
-        background: "#f6f8fa",
+        background: "var(--bgColor-muted)",
         overflow: isMobile ? "visible" : "hidden",
       }}
     >
@@ -428,8 +428,8 @@ function SignedInShell({ children }: { children: ReactNode }) {
           className={`sider${collapsed ? " collapsed" : ""}`}
           style={{
             width: collapsed ? 72 : 232,
-            borderRight: "1px solid #eef1f4",
-            background: "#fff",
+            borderRight: "1px solid var(--borderColor-muted)",
+            background: "var(--bgColor-default)",
             display: "flex",
             flexDirection: "column",
             position: "sticky",
@@ -601,10 +601,10 @@ function SignedInShell({ children }: { children: ReactNode }) {
             children
           ) : (
             <div style={{ textAlign: "center", padding: "64px 20px" }}>
-              <AlertIcon size={48} fill="#CF222E" />
+              <span style={{ display: "inline-flex", color: "var(--fgColor-danger)" }}><AlertIcon size={48} /></span>
               <h2 style={{ fontSize: 20, fontWeight: 700, margin: "16px 0 8px 0" }}>Không có quyền</h2>
-              <p style={{ color: "#59636E", marginBottom: 20 }}>Tài khoản của bạn không mở được trang này.</p>
-              <Link href="/" style={{ color: "#0969DA", fontWeight: 600 }}>Về trang Hôm nay</Link>
+              <p style={{ color: "var(--fgColor-muted)", marginBottom: 20 }}>Tài khoản của bạn không mở được trang này.</p>
+              <Link href="/" style={{ color: "var(--fgColor-accent)", fontWeight: 600 }}>Về trang Hôm nay</Link>
             </div>
           )}
         </main>
@@ -639,7 +639,7 @@ function SignedInShell({ children }: { children: ReactNode }) {
           >
             <div
               style={{
-                background: "#fff",
+                background: "var(--bgColor-default)",
                 borderTopLeftRadius: 16,
                 borderTopRightRadius: 16,
                 padding: 16,
@@ -660,7 +660,7 @@ function SignedInShell({ children }: { children: ReactNode }) {
               </div>
               {groups.map((g) => (
                 <div key={g.key} className="more-group" style={{ marginBottom: 16 }}>
-                  <div className="more-group-label" style={{ fontWeight: 600, fontSize: 12, color: "#59636E", marginBottom: 8 }}>{g.label}</div>
+                  <div className="more-group-label" style={{ fontWeight: 600, fontSize: 12, color: "var(--fgColor-muted)", marginBottom: 8 }}>{g.label}</div>
                   <div className="more-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
                     {g.items.map((n) => (
                       <Link
@@ -675,8 +675,8 @@ function SignedInShell({ children }: { children: ReactNode }) {
                           padding: "12px 8px",
                           borderRadius: 8,
                           textDecoration: "none",
-                          color: "#1F2328",
-                          background: selected.includes(n.key) ? "#DDF4FF" : "#F6F8FA",
+                          color: "var(--fgColor-default)",
+                          background: selected.includes(n.key) ? "var(--bgColor-accent-muted)" : "var(--bgColor-muted)",
                           fontSize: 12,
                           gap: 6,
                           textAlign: "center",

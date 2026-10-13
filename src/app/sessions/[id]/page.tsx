@@ -14,6 +14,7 @@ import { CenterTag, PersonAvatar } from "@/components/ui";
 import { ATTENDANCE_STATUSES, attendanceOption, nextAttendanceStatus, type AttendanceStatus } from "@/lib/attendance";
 import { formatDateVN } from "@/lib/dates";
 import { isStaff } from "@/lib/permissions";
+import { tint } from "@/lib/colors";
 
 type Row = {
   studentId: number;
@@ -197,7 +198,7 @@ export default function AttendancePage() {
                         {out && <Tag color="red">Hết buổi</Tag>}
                       </div>
                     </div>
-                    <span className="att-status" style={{ color: o.color, background: `${o.color}12` }}>
+                    <span className="att-status" style={{ color: o.color, background: tint(o.color, 7) }}>
                       {o.short}
                     </span>
                   </div>

@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { PlusIcon } from "@primer/octicons-react";
-import { Button as PrimerButton } from "@primer/react";
-import { message } from "@/client/primer-compat";
+import { Button, message } from "@/client/primer-compat";
 import { api } from "@/client/api";
 import { RateModal } from "@/components/payroll/RateModal";
 import { PrimerGrid } from "@/components/PrimerGrid";
@@ -43,7 +42,7 @@ export default function PayrollRatesPage() {
       render: (_: any, row: any) => (
         <div>
           <div style={{ fontWeight: 600 }}>{row.teacher.fullName}</div>
-          <div style={{ fontSize: 12, color: "#8C959F" }}>
+          <div style={{ fontSize: 12, color: "var(--fgColor-muted)" }}>
             {row.teacher.displayName} ({row.teacher.code})
           </div>
         </div>
@@ -54,7 +53,7 @@ export default function PayrollRatesPage() {
       dataIndex: "role",
       key: "role",
       render: (role: string) => (
-        <DotLabel color={role === "TEACHER" ? "#0969DA" : "#8250DF"}>
+        <DotLabel color={role === "TEACHER" ? "var(--fgColor-accent)" : "var(--fgColor-done)"}>
           {role === "TEACHER" ? "Giáo viên chính" : "Trợ giảng"}
         </DotLabel>
       ),
@@ -65,7 +64,7 @@ export default function PayrollRatesPage() {
       key: "hourlyRate",
       align: "right" as const,
       render: (rate: number) => (
-        <span style={{ fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "#1F6FEB" }}>
+        <span style={{ fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "var(--fgColor-accent)" }}>
           {formatCurrency(rate)} / giờ
         </span>
       ),
@@ -87,9 +86,9 @@ export default function PayrollRatesPage() {
       key: "action",
       align: "center" as const,
       render: (_: any, row: any) => (
-        <PrimerButton
+        <Button
           size="small"
-          leadingVisual={PlusIcon}
+          icon={<PlusIcon />}
           onClick={() =>
             setModalState({
               open: true,
@@ -99,7 +98,7 @@ export default function PayrollRatesPage() {
           }
         >
           Đổi mức giá
-        </PrimerButton>
+        </Button>
       ),
     },
   ];

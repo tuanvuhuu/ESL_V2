@@ -2,6 +2,7 @@
 
 import type { Center, ScheduleSession } from "@/client/types";
 import { toMinutes } from "@/lib/dates";
+import { tint } from "@/lib/colors";
 
 const START_HOUR = 7;
 const END_HOUR = 22;
@@ -38,7 +39,7 @@ export function RoomDayGrid({
         {centers.map((center) => (
           <div key={center.id}>
             {centers.length > 1 && (
-              <div style={{ padding: "6px 8px", fontWeight: 600, color: center.color, background: `${center.color}10` }}>{center.name}</div>
+              <div style={{ padding: "6px 8px", fontWeight: 600, color: center.color, background: tint(center.color, 6) }}>{center.name}</div>
             )}
             {center.rooms
               .filter((r) => r.active)
