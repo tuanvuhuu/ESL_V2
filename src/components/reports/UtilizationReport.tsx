@@ -20,10 +20,10 @@ type Data = {
 
 /** Thanh phần trăm nhỏ: dưới 50% vàng (còn trống nhiều), từ 90% xanh đậm. */
 function Bar({ value }: { value: number }) {
-  const color = value >= 90 ? "#1A7F37" : value >= 50 ? "#2DA44E" : "#D29922";
+  const color = value >= 90 ? "var(--fgColor-success)" : value >= 50 ? "var(--fgColor-success)" : "var(--fgColor-attention)";
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 110 }}>
-      <span style={{ flex: 1, height: 6, borderRadius: 3, background: "#EFF2F5", overflow: "hidden" }}>
+      <span style={{ flex: 1, height: 6, borderRadius: 3, background: "var(--bgColor-muted)", overflow: "hidden" }}>
         <span style={{ display: "block", width: `${value}%`, height: "100%", background: color }} />
       </span>
       <span style={{ fontVariantNumeric: "tabular-nums", width: 36, textAlign: "right" }}>{value}%</span>
@@ -76,13 +76,13 @@ export function UtilizationReport({ centerId, month }: { centerId?: number | nul
         <Col xs={12} sm={6}>
           <Card size="small" style={{ borderRadius: 8 }}>
             <div className="sub">Tỷ lệ lấp đầy lớp</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "#2DA44E" }}>{s.fillRate == null ? "—" : `${s.fillRate}%`}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--fgColor-success)" }}>{s.fillRate == null ? "—" : `${s.fillRate}%`}</div>
           </Card>
         </Col>
         <Col xs={12} sm={6}>
           <Card size="small" style={{ borderRadius: 8 }}>
             <div className="sub">Dùng phòng trung bình (8h–21h)</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "#1F6FEB" }}>{s.roomRate == null ? "—" : `${s.roomRate}%`}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--fgColor-accent)" }}>{s.roomRate == null ? "—" : `${s.roomRate}%`}</div>
           </Card>
         </Col>
       </Row>

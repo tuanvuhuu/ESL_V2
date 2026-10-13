@@ -1,11 +1,12 @@
 // Khung chương trình theo buổi, tài liệu và điểm kiểm tra theo kỹ năng (Tổng quan yêu cầu mục 3.4, 3.6).
 // Logic thuần, không đụng database: dùng chung cho màn hình, API và test.
+import { COLORS } from "./colors";
 
 /** Loại buổi kiểm tra. Buổi thường không có loại. */
 export const TEST_KINDS = [
-  { value: "QUIZ", label: "Kiểm tra nhỏ", color: "#0E7490" },
-  { value: "MIDTERM", label: "Giữa khóa", color: "#D29922" },
-  { value: "FINAL", label: "Cuối khóa", color: "#CF222E" },
+  { value: "QUIZ", label: "Kiểm tra nhỏ", color: COLORS.teal },
+  { value: "MIDTERM", label: "Giữa khóa", color: COLORS.attention },
+  { value: "FINAL", label: "Cuối khóa", color: COLORS.danger },
 ] as const;
 
 export type TestKind = (typeof TEST_KINDS)[number]["value"];

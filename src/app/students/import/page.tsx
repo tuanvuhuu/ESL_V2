@@ -152,7 +152,7 @@ export default function ImportStudentsPage() {
                 title: "Kết quả",
                 render: (_, c) =>
                   c.errors.length ? (
-                    <span style={{ color: "#CF222E" }}>{c.errors.join("; ")}</span>
+                    <span style={{ color: "var(--fgColor-danger)" }}>{c.errors.join("; ")}</span>
                   ) : (
                     <span>
                       <Tag color="green">Hợp lệ</Tag>

@@ -89,7 +89,7 @@ export function CurriculumModal({ course, onClose }: { course: Course | null; on
             <Empty description="Khóa này chưa có khung chương trình." />
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "minmax(220px, 300px) 1fr", gap: 16, minHeight: 360 }}>
-              <div style={{ maxHeight: 480, overflowY: "auto", borderRight: "1px solid #D1D9E0", paddingRight: 8 }}>
+              <div style={{ maxHeight: 480, overflowY: "auto", borderRight: "1px solid var(--borderColor-default)", paddingRight: 8 }}>
                 {[...lessons]
                   .sort((a, b) => a.index - b.index)
                   .map((l) => (
@@ -103,7 +103,7 @@ export function CurriculumModal({ course, onClose }: { course: Course | null; on
                         padding: "6px 8px",
                         borderRadius: 6,
                         cursor: "pointer",
-                        background: l.index === selected ? "#DDF4FF" : undefined,
+                        background: l.index === selected ? "var(--bgColor-accent-muted)" : undefined,
                       }}
                     >
                       <span className="sub">{l.index}.</span> {l.title || <i className="sub">chưa có chủ đề</i>} <TestKindTag value={l.testKind} />

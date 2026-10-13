@@ -22,8 +22,8 @@ type Data = {
 function Stat({ label, value, color }: { label: string; value: string | number; color?: string }) {
   return (
     <Card size="small" style={{ borderRadius: 8 }}>
-      <div style={{ color: "#59636E", fontSize: 13 }}>{label}</div>
-      <div style={{ fontSize: 18, fontWeight: 700, color: color ?? "#1F2328", fontVariantNumeric: "tabular-nums" }}>{value}</div>
+      <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>{label}</div>
+      <div style={{ fontSize: 18, fontWeight: 700, color: color ?? "var(--fgColor-default)", fontVariantNumeric: "tabular-nums" }}>{value}</div>
     </Card>
   );
 }
@@ -62,16 +62,16 @@ export function StudentsReport({ centerId, month }: { centerId?: number | null; 
       </div>
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col xs={12} sm={6}>
-          <Stat label="Đang học (hiện tại)" value={data.byStatus.STUDYING ?? 0} color="#2DA44E" />
+          <Stat label="Đang học (hiện tại)" value={data.byStatus.STUDYING ?? 0} color="var(--fgColor-success)" />
         </Col>
         <Col xs={12} sm={6}>
-          <Stat label="Ghi danh mới trong tháng" value={data.newEnrollments.length} color="#1F6FEB" />
+          <Stat label="Ghi danh mới trong tháng" value={data.newEnrollments.length} color="var(--fgColor-accent)" />
         </Col>
         <Col xs={12} sm={6}>
-          <Stat label="Nghỉ học trong tháng" value={data.quits.length} color={data.quits.length ? "#CF222E" : undefined} />
+          <Stat label="Nghỉ học trong tháng" value={data.quits.length} color={data.quits.length ? "var(--fgColor-danger)" : undefined} />
         </Col>
         <Col xs={12} sm={6}>
-          <Stat label={`Tỷ lệ học tiếp (${r.continued}/${r.ended})`} value={r.rate == null ? "—" : `${r.rate}%`} color="#8250DF" />
+          <Stat label={`Tỷ lệ học tiếp (${r.continued}/${r.ended})`} value={r.rate == null ? "—" : `${r.rate}%`} color="var(--fgColor-done)" />
         </Col>
       </Row>
       <Row gutter={[16, 16]}>
