@@ -101,4 +101,13 @@ Ký hiệu: ✅ đã có · 🟡 có một phần · ❌ chưa có.
 
 ## 4. Đợt B và C
 
+**Trạng thái (13/10/2026): chưa bắt đầu mục nào.** Không có mục nào đang làm dở. Công cụ khác (Claude Code trên máy, Antigravity) tiếp tục từ nhánh `claude/project-thread-80d4qj` (PR #9), làm lần lượt B1 → B7, mỗi mục chạy `npm run lint && npm run typecheck && npm test && npm run build` trước khi đẩy. Lưu ý: code chưa commit trên máy Tuấn (mua thêm buổi, báo cáo học sinh, báo cáo sử dụng lớp) trùng với A5, A7, A8 của PR #9; Tuấn đang chọn giữ bản nào.
+
+| Mục | Trạng thái |
+|---|---|
+| A1–A9 | ✅ Xong (PR #9) |
+| B1–B7 | ○ Chưa bắt đầu |
+| C1–C2 | ○ Chưa bắt đầu, chờ chốt (nơi lưu file; câu hỏi mục 7 tài liệu yêu cầu) |
+
+
 Làm sau khi Tuấn duyệt đợt A, theo thứ tự B1 → B7, mỗi mục một PR nhỏ. C1 cần chốt nơi lưu file khi đưa lên mạng; C2 cần trả lời câu hỏi ở mục 7 tài liệu yêu cầu.
