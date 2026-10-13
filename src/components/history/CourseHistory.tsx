@@ -1,6 +1,6 @@
 "use client";
 
-import { CopyOutlined, EditOutlined, PrinterOutlined } from "@/client/primer-icons";
+import { CopyOutlined, EditOutlined, HistoryOutlined, PrinterOutlined } from "@/client/primer-icons";
 import { App, Button, Card, Col, Collapse, Descriptions, Empty, List, Row, Space, Statistic, Tag } from "@/client/primer-compat";
 import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
@@ -83,6 +83,11 @@ function RunCard<E extends HistoryEnrollment>({
               {run.last.outcome || run.last.finalComment ? "Sửa kết quả" : "Ghi kết quả"}
             </Button>
           )}
+          <Link href={`/students/${student.id}/history?run=${run.key}`}>
+            <Button size="small" type="primary" icon={<HistoryOutlined />}>
+              Xem lịch sử học tập
+            </Button>
+          </Link>
           <Button size="small" icon={<CopyOutlined />} onClick={copy}>
             Chép tin nhắn
           </Button>

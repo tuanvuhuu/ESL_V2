@@ -1,13 +1,15 @@
 // Lịch sử học tập theo khóa: gộp các ghi danh nối nhau qua chuyển lớp thành một khóa,
 // tính chuyên cần, gom nhận xét của giáo viên. Dùng chung cho hồ sơ học sinh và trang in gửi phụ huynh.
 import { isAttended, type Balance } from "./attendance";
-import { SKILLS, testKindOption } from "./curriculum";
+import { homeworkStats, SKILLS, testKindOption, type HomeworkStats, type SkillKey } from "./curriculum";
 import { formatDateVN } from "./dates";
 
 export type HistoryAttendance = {
   id: number;
   status: string;
   comment: string | null;
+  /** E1: kết quả chấm bài tập buổi trước (DONE, PARTIAL, MISSING). */
+  homework?: string | null;
   /** Có giá trị khi đây là lượt học bù (học ở lớp khác). */
   makeupId: number | null;
   session: { index: number; date: string; startTime: string; lessonContent: string | null; class: { code: string } };
@@ -23,7 +25,7 @@ export type HistoryScore = {
   writing: number | null;
   total: number | null;
   note: string | null;
-  session: { index: number; date: string; class: { code: string } };
+  session: { id?: number; index: number; date: string; class: { code: string } };
 };
 
 export type HistoryEnrollment = {
@@ -79,6 +81,8 @@ export type CourseRun<E extends HistoryEnrollment = HistoryEnrollment> = {
   scores: HistoryScore[];
   /** Khóa tiếp theo gợi ý của khóa này. */
   nextCourseName: string | null;
+  /** E2: kết quả chấm bài tập cả khóa. */
+  homework: HomeworkStats;
 };
 
 export function summarize(attendances: Pick<HistoryAttendance, "status" | "makeupId">[]): AttendanceSummary {
@@ -129,6 +133,7 @@ export function buildCourseHistory<E extends HistoryEnrollment>(enrollments: E[]
         .reverse(),
       scores: chain.flatMap((e) => e.scores ?? []).sort((a, b) => a.session.date.localeCompare(b.session.date)),
       nextCourseName: last.class.course?.nextCourse?.name ?? null,
+      homework: homeworkStats(attendances.map((a) => a.homework)),
     };
   });
   return runs.sort((a, b) => b.from.localeCompare(a.from) || b.key - a.key);
@@ -171,4 +176,18 @@ export function parentMessage(
   else if (run.comments.length) lines.push(`- Nhận xét gần đây: ${run.comments.slice(0, 3).map((c) => c.comment).join("; ")}.`);
   lines.push("Trân trọng.");
   return lines.join("\n");
+}
+
+export type SkillAverage = { key: SkillKey | "total"; label: string; value: number | null; count: number };
+
+/** E2: điểm trung bình từng kỹ năng và điểm tổng qua các bài kiểm tra của khóa (bỏ qua ô trống). */
+export function skillAverages(scores: HistoryScore[]): SkillAverage[] {
+  const avg = (vals: (number | null)[]) => {
+    const v = vals.filter((x): x is number => x != null);
+    return { value: v.length ? Math.round((v.reduce((a, b) => a + b, 0) / v.length) * 10) / 10 : null, count: v.length };
+  };
+  return [
+    ...SKILLS.map((k) => ({ key: k.key, label: k.label, ...avg(scores.map((s) => s[k.key])) })),
+    { key: "total" as const, label: "Tổng", ...avg(scores.map((s) => s.total)) },
+  ];
 }

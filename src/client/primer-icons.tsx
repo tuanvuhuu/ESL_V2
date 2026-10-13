@@ -26,6 +26,7 @@ import {
   FileIcon,
   GearIcon,
   GraphIcon,
+  HistoryIcon,
   HomeIcon,
   KeyIcon,
   ListUnorderedIcon,
@@ -95,6 +96,7 @@ export const BarChartOutlined = wrap(GraphIcon);
 export const CalendarOutlined = wrap(CalendarIcon);
 export const ScheduleOutlined = wrap(ClockIcon);
 export const ClockCircleOutlined = wrap(ClockIcon);
+export const HistoryOutlined = wrap(HistoryIcon);
 export const BookOutlined = wrap(BookIcon);
 export const ReadOutlined = wrap(BookIcon);
 export const TeamOutlined = wrap(PeopleIcon);

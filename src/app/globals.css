@@ -1281,3 +1281,154 @@ nav[aria-label="Menu chính"] ul ul li a, nav[aria-label="Menu chính"] ul ul li
   .lesson-when { flex-direction: row; gap: 8px; }
   .lesson-actions { justify-content: flex-start; }
 }
+
+/* E2: lịch sử học tập */
+.hist-page { width: 100%; max-width: 1040px; margin: 0 auto; }
+
+.hist-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  background: var(--bgColor-default);
+  border: 1px solid var(--borderColor-muted);
+  border-top: 3px solid var(--borderColor-accent-emphasis);
+  border-radius: var(--borderRadius-large);
+  box-shadow: var(--shadow-resting-xsmall);
+}
+
+.hist-title { font-size: 20px; font-weight: 600; line-height: 1.3; }
+
+.hist-course {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.hist-course-name { font-size: 16px; font-weight: 600; }
+
+.hist-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.hist-kpi {
+  padding: 12px 16px;
+  background: var(--bgColor-default);
+  border: 1px solid var(--borderColor-muted);
+  border-radius: var(--borderRadius-large);
+}
+
+.hist-kpi-value { font-size: 32px; font-weight: 600; line-height: 1.25; }
+
+.hist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.hist-card {
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  background: var(--bgColor-default);
+  border: 1px solid var(--borderColor-muted);
+  border-radius: var(--borderRadius-large);
+}
+
+.hist-grid .hist-card { margin-bottom: 0; }
+
+.hist-card h3 { font-size: 16px; font-weight: 600; margin: 0 0 12px; }
+
+.skill-row {
+  display: grid;
+  grid-template-columns: 56px 1fr 36px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.skill-label { color: var(--fgColor-muted); }
+.skill-label.strong { color: var(--fgColor-default); font-weight: 600; }
+.skill-value { text-align: right; font-weight: 600; }
+
+.skill-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--bgColor-neutral-muted);
+  overflow: hidden;
+}
+
+.skill-fill { display: block; height: 100%; border-radius: 999px; background: var(--bgColor-accent-emphasis); }
+
+.hist-quote {
+  margin: 8px 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--borderColor-accent-emphasis);
+  background: var(--bgColor-muted);
+  border-radius: 0 var(--borderRadius-medium) var(--borderRadius-medium) 0;
+  white-space: pre-wrap;
+}
+
+.hist-timeline { list-style: none; margin: 0; padding: 0; position: relative; }
+
+.hist-timeline::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--borderColor-muted);
+}
+
+.hist-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 12px;
+  padding: 10px 0 10px 24px;
+  border-bottom: 1px solid var(--borderColor-muted);
+}
+
+.hist-item:last-child { border-bottom: none; }
+
+.hist-dot {
+  position: absolute;
+  left: 0;
+  top: 14px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bgColor-neutral-emphasis);
+  box-shadow: 0 0 0 3px var(--bgColor-default);
+}
+
+.hist-item-when { display: flex; flex-direction: column; line-height: 1.4; }
+.hist-item-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+
+.hist-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 999px;
+}
+
+.hist-pill.score { color: var(--fgColor-default); background: var(--bgColor-muted); }
+
+.hist-comment { margin-top: 6px; color: var(--fgColor-default); }
+
+@media (max-width: 640px) {
+  .hist-item { grid-template-columns: 1fr; gap: 2px; }
+  .hist-item-when { flex-direction: row; gap: 8px; }
+  .hist-kpi-value { font-size: 20px; }
+}
