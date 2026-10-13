@@ -10,7 +10,7 @@ Làm theo thứ tự E1, E2, E3. Mỗi việc một commit `done(Ex)`. Dùng l�
 
 - [x] E1. Màn hình bài giảng và bài tập: tài liệu và bài tập theo từng buổi (link đính kèm), giáo viên thấy bài hôm nay và bài tập cần kiểm tra ngay trên trang điểm danh, chấm bài tập từng học sinh.
 - [x] E2. Màn hình lịch sử học tập: mỗi học sinh mỗi khóa một trang dễ đọc gồm các buổi đã học, bài học, điểm danh, bài tập, điểm, nhận xét của giáo viên.
-- [ ] E3. Làm mới giao diện cho riêng các màn hình E1, E2 theo Primer và `docs/DESIGN.md`.
+- [x] E3. Làm mới giao diện cho riêng các màn hình E1, E2 theo Primer và `docs/DESIGN.md`.
 
 ## Đã xong trước khi chuyển sang NOVA / Antigravity
 
@@ -84,3 +84,4 @@ Kiểm tra lại ngày 13/10/2026 (thread cloud): trên `common` lint (0 lỗi),
 | 13/10/2026 | Kiểm tra A1–A9, B1–B8; lập đợt D | Claude (cloud) | Lint, typecheck, test 194/194, build xanh trên `common`. SQL B1, B2, B4, B5 khớp schema. Mở lại B2 (thiếu màn hình và quyền cho trợ giảng theo buổi). Thêm D1–D13. |
 | 13/10/2026 | E1 | Claude (cloud) | Trang `/lessons` "Bài giảng & bài tập" (theo lớp: từng buổi bài gì, đã dạy gì, giao bài tập gì, kết quả chấm; theo khóa: khung chương trình, quản lý sửa). Trang điểm danh: khung kiểm tra bài tập buổi trước, chạm chấm bài tập từng học sinh, ô giao bài tập hôm nay. `src/server/lessons.ts`, route `api/classes/[id]/lessons`, cột `ClassSession.homework`, `Attendance.homework`, SQL `docs/sql/2026-10-13-E1-bai-tap-ve-nha.sql`, `tests/api-lessons-e1.test.ts`. Lint/typecheck/test xanh (202/202) trên dev.db đã áp SQL. |
 | 13/10/2026 | E2 | Claude (cloud) | Trang `/students/[id]/history?run=` "Lịch sử học tập": chọn khóa, ô tổng (chuyên cần, vắng, bài tập, điểm TB, buổi còn lại), điểm trung bình từng kỹ năng + bảng điểm, kết quả cuối khóa, dòng thời gian từng buổi (bài theo khung, điểm danh, bài tập, điểm, nhận xét). Nút "Xem lịch sử học tập" ở thẻ khóa trong hồ sơ. `src/server/history.ts`, route `api/students/[id]/history`, `skillAverages` và `homework` trong `src/lib/history.ts`, `tests/api-history-e2.test.ts`. Không đổi schema. Lint/typecheck/test xanh (205/205). |
+| 13/10/2026 | E3 | Claude (cloud) | Làm mới giao diện riêng cho trang Bài giảng và Lịch sử học tập theo DESIGN.md mục 3: số liệu căn thẳng (tabular-nums), bo góc và bóng đổ theo token Primer, cỡ tiêu đề 16/20px. `src/app/globals.css` (mục E1, E2, E3). Không đổi logic. Lint/typecheck/test xanh (205/205). |

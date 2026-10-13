@@ -1432,3 +1432,28 @@ nav[aria-label="Menu chính"] ul ul li a, nav[aria-label="Menu chính"] ul ul li
   .hist-item-when { flex-direction: row; gap: 8px; }
   .hist-kpi-value { font-size: 20px; }
 }
+
+/* E3: làm mới giao diện lịch sử học tập và bài giảng theo DESIGN.md mục 3 */
+.hist-kpi-value,
+.skill-value,
+.lesson-when b,
+.hist-item-when b { font-variant-numeric: tabular-nums; }
+
+.hist-kpi { box-shadow: var(--shadow-resting-xsmall); }
+.hist-kpi,
+.hist-card,
+.hist-hero { border-radius: var(--borderRadius-large); }
+
+.hist-card h3,
+.hist-course-name { font-size: 16px; font-weight: 600; }
+
+.hist-title { font-size: 20px; }
+
+.hist-pill { border-radius: 999px; }
+
+.lesson-row { border-radius: var(--borderRadius-large); transition: var(--transition-fast); }
+.lesson-row:hover { border-color: var(--borderColor-default); box-shadow: var(--shadow-resting-small); }
+.lesson-row.is-next:hover { box-shadow: var(--shadow-resting-small); }
+
+.lesson-line { font-size: 14px; }
+.lesson-detail .pre { font-size: 14px; }
