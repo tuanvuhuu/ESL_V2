@@ -4,6 +4,14 @@ Claude Code (NOVA) và Antigravity làm chung file này. Luật chung: `docs/RUL
 
 Trạng thái: `[ ]` chưa làm · `[~]` đang làm dở · `[x]` xong (lint, typecheck, test xanh, đã commit và push lên `common`)
 
+## Đợt E (ưu tiên hiện tại, Tuấn chốt 13/10/2026: làm trước đợt D)
+
+Làm theo thứ tự E1, E2, E3. Mỗi việc một commit `done(Ex)`. Dùng lại `CourseLesson` và `TestScore`, không tạo mô hình bài giảng thứ hai.
+
+- [ ] E1. Màn hình bài giảng và bài tập: tài liệu và bài tập theo từng buổi (link đính kèm), giáo viên thấy bài hôm nay và bài tập cần kiểm tra ngay trên trang điểm danh, chấm bài tập từng học sinh.
+- [ ] E2. Màn hình lịch sử học tập: mỗi học sinh mỗi khóa một trang dễ đọc gồm các buổi đã học, bài học, điểm danh, bài tập, điểm, nhận xét của giáo viên.
+- [ ] E3. Làm mới giao diện cho riêng các màn hình E1, E2 theo Primer và `docs/DESIGN.md`.
+
 ## Đã xong trước khi chuyển sang NOVA / Antigravity
 
 - [x] Đợt A (A1–A9): khung chương trình, tài liệu, buổi kiểm tra, điểm kỹ năng, mua thêm buổi, khóa tiếp theo, báo cáo học sinh, báo cáo phòng và lớp, nhập Excel. Ở PR #9. Chi tiết: `docs/KE_HOACH.md` mục 3. **Không làm lại.**
