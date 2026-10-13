@@ -1097,7 +1097,7 @@ nav[aria-label="Menu chính"] ul ul li a, nav[aria-label="Menu chính"] ul ul li
 .primer-drawer-backdrop {
   position: fixed;
   inset: 0;
-  background: var(--overlay-backdrop-bgColor);
+  background: var(--overlay-backdrop-bgColor, rgba(31, 35, 40, 0.4));
   backdrop-filter: blur(1.5px);
   animation: drawerBackdropFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -1105,9 +1105,9 @@ nav[aria-label="Menu chính"] ul ul li a, nav[aria-label="Menu chính"] ul ul li
 .primer-drawer {
   position: relative;
   height: 100vh;
-  background: var(--bgColor-default);
-  border-left: 1px solid var(--borderColor-default);
-  box-shadow: var(--shadow-floating-xlarge);
+  background: var(--bgColor-default, #ffffff);
+  border-left: 1px solid var(--borderColor-default, #d0d7de);
+  box-shadow: var(--shadow-floating-xlarge, -4px 0 24px rgba(31, 35, 40, 0.15));
   z-index: 1001;
   display: flex;
   flex-direction: column;
@@ -1134,8 +1134,8 @@ nav[aria-label="Menu chính"] ul ul li a, nav[aria-label="Menu chính"] ul ul li
   align-items: flex-start;
   justify-content: space-between;
   padding: 18px 22px;
-  background: var(--bgColor-muted);
-  border-bottom: 1px solid var(--borderColor-muted);
+  background: var(--bgColor-muted, #f6f8fa);
+  border-bottom: 1px solid var(--borderColor-muted, #d8dee4);
   flex-shrink: 0;
 }
 
@@ -1143,32 +1143,32 @@ nav[aria-label="Menu chính"] ul ul li a, nav[aria-label="Menu chính"] ul ul li
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: var(--fgColor-default);
+  color: var(--fgColor-default, #1f2328);
   line-height: 1.4;
 }
 
 .primer-drawer-subtitle {
   margin: 4px 0 0 0;
   font-size: 12px;
-  color: var(--fgColor-muted);
+  color: var(--fgColor-muted, #656d76);
   line-height: 1.4;
 }
 
 .primer-drawer-close {
-  color: var(--fgColor-muted) !important;
-  border-radius: var(--borderRadius-medium) !important;
+  color: var(--fgColor-muted, #656d76) !important;
+  border-radius: var(--borderRadius-medium, 6px) !important;
 }
 
 .primer-drawer-close:hover {
-  color: var(--fgColor-default) !important;
-  background: var(--borderColor-muted) !important;
+  color: var(--fgColor-default, #1f2328) !important;
+  background: var(--borderColor-muted, #eaeef2) !important;
 }
 
 .primer-drawer-body {
   flex: 1;
   overflow-y: auto;
   padding: 22px;
-  background: var(--bgColor-default);
+  background: var(--bgColor-default, #ffffff);
 }
 
 .primer-drawer-footer {
@@ -1177,8 +1177,8 @@ nav[aria-label="Menu chính"] ul ul li a, nav[aria-label="Menu chính"] ul ul li
   align-items: center;
   gap: 8px;
   padding: 14px 22px;
-  background: var(--bgColor-muted);
-  border-top: 1px solid var(--borderColor-muted);
+  background: var(--bgColor-muted, #f6f8fa);
+  border-top: 1px solid var(--borderColor-muted, #d8dee4);
   flex-shrink: 0;
 }
 

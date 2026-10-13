@@ -96,7 +96,13 @@ export function PrimerModal({
     );
 
   return createPortal(
-    <div className="primer-drawer-root" aria-modal="true" role="dialog">
+    <div
+      className="primer-drawer-root"
+      data-color-mode="light"
+      data-light-theme="light"
+      aria-modal="true"
+      role="dialog"
+    >
       <div className="primer-drawer-backdrop" onClick={onClose} />
       <div className="primer-drawer" style={{ width: drawerWidth }}>
         <div className="primer-drawer-header">
