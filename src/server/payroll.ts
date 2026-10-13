@@ -36,6 +36,12 @@ export const AddAdjustmentInput = z.object({
   note: z.string().trim().min(3, "Vui lòng nhập lý do điều chỉnh"),
 });
 
+/** B1: sửa tay số phút tính lương của một buổi; `minutes` = null là bỏ sửa tay, quay về theo giờ bắt đầu / kết thúc. */
+export const SetSessionPayrollInput = z.object({
+  minutes: z.number().int().min(0, "Số phút không được âm").max(960, "Tối đa 960 phút").nullable(),
+  note: z.string().trim().min(3, "Vui lòng nhập lý do sửa giờ").max(500),
+});
+
 /** Danh sách đơn giá giờ của giáo viên / trợ giảng */
 export async function listTeacherRates(teacherId?: number) {
   return prisma.teacherRate.findMany({
@@ -154,6 +160,7 @@ export async function generateOrGetMonthlyPayroll(params: {
         centerId: s.class.centerId,
         role,
         hourlyRate: rate,
+        durationMinutes: s.payrollMinutes ?? undefined,
       };
     });
 
@@ -400,6 +407,7 @@ export async function getTeacherMonthlyDetails(teacherId: number, month: string)
       centerId: s.class.center.id,
       role,
       hourlyRate: rate,
+      durationMinutes: s.payrollMinutes ?? undefined,
     };
   });
 
@@ -427,6 +435,8 @@ export async function getTeacherMonthlyDetails(teacherId: number, month: string)
       durationMinutes: duration,
       hours: duration / 60,
       isOverlapping,
+      isManual: s.payrollMinutes != null,
+      payrollNote: s.payrollNote,
       pay,
     };
   });
@@ -444,4 +454,38 @@ export async function getTeacherMonthlyDetails(teacherId: number, month: string)
     totalHours: detailedSessions.reduce((s, x) => s + x.hours, 0),
     totalTeachingPay: detailedSessions.reduce((s, x) => s + x.pay, 0),
   };
+}
+
+/**
+ * B1: sửa giờ tính lương của một buổi bằng tay, bắt buộc ghi lý do, ghi nhật ký thay đổi.
+ * Chỉ Quản lý. Tháng đã chốt của người dạy (hoặc trợ giảng của lớp) thì không sửa được.
+ */
+export async function setSessionPayrollMinutes(sessionId: number, input: z.infer<typeof SetSessionPayrollInput>, viewer: Viewer) {
+  allow(canManagePayroll(viewer), "Chỉ Quản lý mới có quyền sửa giờ tính lương");
+  const data = SetSessionPayrollInput.parse(input);
+
+  return prisma.$transaction(async (tx) => {
+    const s = await tx.classSession.findUnique({
+      where: { id: sessionId },
+      include: { class: { include: { assistants: true } } },
+    });
+    if (!s) throw notFound("Không tìm thấy buổi học");
+    if (s.status === "CANCELLED") throw badRequest("Buổi đã hủy không tính lương");
+
+    const teacherIds = [s.teacherId, ...s.class.assistants.map((a) => a.teacherId)];
+    const locked = await tx.payrollPeriod.findFirst({
+      where: { month: s.date.slice(0, 7), teacherId: { in: teacherIds }, status: { not: "DRAFT" } },
+    });
+    if (locked) throw badRequest("Tháng lương này đã chốt, không sửa được giờ tính lương");
+
+    const updated = await tx.classSession.update({
+      where: { id: sessionId },
+      data: { payrollMinutes: data.minutes, payrollNote: data.minutes == null ? null : data.note },
+    });
+    await logChange(tx, "Session", sessionId, "payroll-hours", {
+      payrollMinutes: [s.payrollMinutes, updated.payrollMinutes],
+      reason: [null, data.note],
+    });
+    return { id: updated.id, payrollMinutes: updated.payrollMinutes, payrollNote: updated.payrollNote };
+  });
 }

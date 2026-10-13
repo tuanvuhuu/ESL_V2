@@ -99,11 +99,25 @@ describe("Khung chương trình", () => {
     expect(bad.status).toBe(400);
   });
   it("trang điểm danh có bài của buổi theo khung chương trình", async () => {
-    const res = await call(getAttendance, "/x", "lan", {}, { id: String(sessionId) });
-    expect(res.status).toBe(200);
-    expect(res.data.lesson).toMatchObject({ index: res.data.session.index });
-    expect(Array.isArray(res.data.scores)).toBe(true);
+    // Không phụ thuộc dữ liệu mẫu: nếu khóa của lớp chưa có bài số này thì tự tạo rồi xóa sau.
+    const s = await prisma.classSession.findUniqueOrThrow({ where: { id: sessionId }, include: { class: true } });
+    let created: number | null = null;
+    if (s.class.courseId) {
+      const has = await prisma.courseLesson.findFirst({ where: { courseId: s.class.courseId, index: s.index } });
+      if (!has) {
+        created = (await prisma.courseLesson.create({ data: { courseId: s.class.courseId, index: s.index, title: "Bài thử" } })).id;
+      }
+    }
+    try {
+      const res = await call(getAttendance, "/x", "lan", {}, { id: String(sessionId) });
+      expect(res.status).toBe(200);
+      expect(res.data.lesson).toMatchObject({ index: res.data.session.index });
+      expect(Array.isArray(res.data.scores)).toBe(true);
+    } finally {
+      if (created) await prisma.courseLesson.delete({ where: { id: created } });
+    }
   });
+
 });
 
 describe("Điểm kiểm tra", () => {

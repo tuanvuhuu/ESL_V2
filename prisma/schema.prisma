@@ -241,6 +241,9 @@ model ClassSession {
   note              String?
   // Một dòng nội dung đã dạy, giáo viên ghi khi điểm danh.
   lessonContent     String?
+  // B1: số phút tính lương sửa tay (trống = theo giờ bắt đầu / kết thúc của buổi) và lý do bắt buộc.
+  payrollMinutes    Int?
+  payrollNote       String?
   // Lần điểm danh gần nhất; trống = chưa điểm danh.
   attendanceTakenAt DateTime?
   attendanceBy      String?

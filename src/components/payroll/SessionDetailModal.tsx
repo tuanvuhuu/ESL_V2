@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { DeleteOutlined } from "@/client/primer-icons";
-import { Button, Descriptions, Divider, Modal, Popconfirm, Table, Tag, message } from "@/client/primer-compat";
+import { Button, Descriptions, Divider, Input, InputNumber, Modal, Popconfirm, Table, Tag, message } from "@/client/primer-compat";
 import type { ColumnsType } from "@/client/primer-compat";
 import { api } from "@/client/api";
+import { useViewer } from "@/client/session";
 import { formatCurrency } from "@/lib/finance";
+import { canManagePayroll } from "@/lib/permissions";
 import { adjustmentTypeOption, formatHours, type AdjustmentType, type TeachingRole } from "@/lib/payroll";
 import { formatDateVN } from "@/lib/dates";
 
@@ -24,6 +26,9 @@ export type PayrollSessionRow = {
   durationMinutes: number;
   hours: number;
   isOverlapping: boolean;
+  /** B1: giờ tính lương đã sửa tay, kèm lý do. */
+  isManual?: boolean;
+  payrollNote?: string | null;
   pay: number;
 };
 
@@ -81,6 +86,12 @@ export function SessionDetailModal({
 }) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<PayrollDetail | null>(null);
+  const viewer = useViewer();
+  const canEditHours = canManagePayroll(viewer) && !isLocked;
+  const [editRow, setEditRow] = useState<PayrollSessionRow | null>(null);
+  const [editMinutes, setEditMinutes] = useState<number | null>(null);
+  const [editNote, setEditNote] = useState("");
+  const [savingHours, setSavingHours] = useState(false);
 
   const loadDetails = async () => {
     if (!teacherId) return;
@@ -109,6 +120,33 @@ export function SessionDetailModal({
       onAdjustmentChange();
     } catch (err) {
       message.error((err as Error).message || "Không thể xóa điều chỉnh");
+    }
+  };
+
+  const openEditHours = (row: PayrollSessionRow) => {
+    setEditRow(row);
+    setEditMinutes(row.durationMinutes);
+    setEditNote(row.payrollNote ?? "");
+  };
+
+  /** minutes = null: bỏ sửa tay, quay về theo giờ bắt đầu / kết thúc. */
+  const saveHours = async (minutes: number | null) => {
+    if (!editRow) return;
+    if (editNote.trim().length < 3) {
+      message.error("Vui lòng nhập lý do sửa giờ");
+      return;
+    }
+    setSavingHours(true);
+    try {
+      await api(`/api/sessions/${editRow.id}/payroll-hours`, { method: "PUT", body: { minutes, note: editNote.trim() } });
+      message.success(minutes == null ? "Đã bỏ sửa giờ, tính lại theo giờ của buổi" : "Đã sửa giờ tính lương");
+      setEditRow(null);
+      loadDetails();
+      onAdjustmentChange();
+    } catch (err) {
+      message.error((err as Error).message || "Không thể sửa giờ tính lương");
+    } finally {
+      setSavingHours(false);
     }
   };
 
@@ -161,6 +199,13 @@ export function SessionDetailModal({
               </Tag>
             </div>
           )}
+          {r.isManual && (
+            <div title={r.payrollNote ?? ""}>
+              <Tag color="blue" style={{ fontSize: 11 }}>
+                Sửa tay
+              </Tag>
+            </div>
+          )}
         </div>
       ),
     },
@@ -185,6 +230,17 @@ export function SessionDetailModal({
       ),
     },
   ];
+
+  const hoursActionColumn: ColumnsType<PayrollSessionRow>[number] = {
+    title: "",
+    key: "edit-hours",
+    align: "center",
+    render: (_, r) => (
+      <Button size="small" onClick={() => openEditHours(r)}>
+        Sửa giờ
+      </Button>
+    ),
+  };
 
   const adjustmentColumns: ColumnsType<PayrollAdjustmentRow> = [
     {
@@ -271,7 +327,7 @@ export function SessionDetailModal({
       </Divider>
       <Table<PayrollSessionRow>
         dataSource={data?.sessions ?? []}
-        columns={sessionColumns}
+        columns={canEditHours ? [...sessionColumns, hoursActionColumn] : sessionColumns}
         rowKey="id"
         loading={loading}
         minWidth={900}
@@ -297,6 +353,41 @@ export function SessionDetailModal({
           );
         }}
       />
+
+      <Modal
+        open={!!editRow}
+        title={editRow ? `Sửa giờ tính lương · ${formatDateVN(editRow.date)} · ${editRow.classCode}` : "Sửa giờ tính lương"}
+        onCancel={() => setEditRow(null)}
+        footer={[
+          editRow?.isManual ? (
+            <Button key="reset" disabled={savingHours} onClick={() => saveHours(null)}>
+              Bỏ sửa tay
+            </Button>
+          ) : null,
+          <Button key="cancel" onClick={() => setEditRow(null)}>
+            Hủy
+          </Button>,
+          <Button key="ok" type="primary" disabled={savingHours || editMinutes == null} onClick={() => saveHours(editMinutes)}>
+            Lưu
+          </Button>,
+        ]}
+      >
+        {editRow && (
+          <div style={{ display: "grid", gap: 12 }}>
+            <div style={{ color: "var(--fgColor-muted)" }}>
+              Giờ của buổi {editRow.startTime}–{editRow.endTime}. Số phút nhập ở đây thay cho số phút tính từ giờ đó khi tính lương.
+            </div>
+            <label>
+              Số phút tính lương
+              <InputNumber min={0} max={960} value={editMinutes} onChange={(v) => setEditMinutes(v == null ? null : Number(v))} style={{ width: 200 }} />
+            </label>
+            <label>
+              Lý do (bắt buộc)
+              <Input value={editNote} onChange={(e) => setEditNote(e.target.value)} placeholder="VD: Lớp kéo dài thêm 30 phút" />
+            </label>
+          </div>
+        )}
+      </Modal>
 
       {adjustments.length > 0 && (
         <>
