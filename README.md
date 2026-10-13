@@ -37,6 +37,7 @@ Kiểm tra trước khi đẩy code: `npm run lint && npm run typecheck && npm t
 | Số buổi còn lại | Ghi danh có số buổi đã mua và điều chỉnh tay (kèm lý do). Còn lại = đã mua − có mặt/muộn − vắng không phép ± điều chỉnh |
 | Học bù | Danh sách buổi vắng chưa bù; gợi ý buổi cùng khóa, cùng buổi số, còn chỗ, không trùng giờ, ưu tiên trung tâm chính; học sinh hiện trong danh sách điểm danh buổi đó với nhãn tím |
 | Giáo viên (điện thoại) | Hôm nay (thẻ buổi + nút Điểm danh, buổi tuần qua còn quên), Lịch tuần này / tuần sau, Lớp của tôi (chuyên cần, buổi còn lại từng em), Tài khoản (giờ dạy theo tháng, đổi mật khẩu) |
+| Cấp độ dạy được | Form giáo viên có ô cấp độ dạy được (ví dụ "Starters, Movers"); gợi ý dạy thay cộng điểm khi đúng cấp độ của khóa, trừ điểm khi khác, chưa khai thì không đổi |
 | Lịch rảnh | Hồ sơ giáo viên › Lịch rảnh và Tài khoản của giáo viên: lưới tuần 07:00–22:00, sửa dạng danh sách khung giờ (gắn trung tâm hoặc mọi trung tâm) |
 | Đăng ký nghỉ | Chọn khoảng ngày + lý do, không cần duyệt; hiện ngay các buổi bị ảnh hưởng, mỗi buổi có nút Tìm người dạy thay. Hôm nay có mục "Cần người dạy thay" (14 ngày tới) |
 | Dạy thay | Gợi ý người dạy thay sắp theo mức phù hợp, nhãn Rảnh / Ngoài lịch rảnh / Đang nghỉ / Đang dạy lớp khác / Chưa dạy khóa này; người bận ở trung tâm khác cùng giờ không chọn được |
@@ -50,8 +51,8 @@ Kiểm tra trước khi đẩy code: `npm run lint && npm run typecheck && npm t
 | Khung chương trình | Cài đặt › Khóa học › Khung chương trình: từng buổi có chủ đề, mục tiêu, nội dung, bài tập về nhà, link tài liệu, đánh dấu buổi kiểm tra (nhỏ / giữa khóa / cuối khóa). Buổi số N của lớp tự lấy bài số N, hiện trên trang điểm danh và thẻ buổi của giáo viên |
 | Điểm kiểm tra | Trang điểm danh của buổi kiểm tra có bảng nhập điểm Nghe, Nói, Đọc, Viết (thang 10), tổng tự tính trung bình nếu để trống; buổi thường có nút "Nhập điểm kiểm tra cho buổi này". Điểm hiện trong lịch sử học tập, sổ học tập in và tin nhắn gửi phụ huynh |
 | Học phí & công nợ | Ghi danh có giá gói, giảm giá (anh chị em, học sinh cũ, đóng sớm, học bổng, khuyến mãi), hạn đóng; phiếu thu in được, thu nhiều đợt, hủy kèm lý do; hoàn tiền (quản lý); **mua thêm buổi** cho ghi danh đang học; danh sách công nợ, quá hạn |
-| Chi phí, lương | Chi phí theo trung tâm và loại; đơn giá giờ theo người và vai trò, có ngày hiệu lực; bảng lương tháng chi tiết từng buổi, 3 cách tính khi đứng nhiều lớp trùng giờ, thưởng / phạt / phụ cấp, chốt lương, đã trả; giáo viên xem lương của mình |
-| Báo cáo | Tổng quan hôm nay, doanh thu, lãi lỗ theo trung tâm, giáo viên & giờ dạy, chuyên cần, **học sinh** (trạng thái, ghi danh mới, bảo lưu, nghỉ theo lý do, tỷ lệ học tiếp), **sử dụng phòng & lớp** (lấp đầy lớp, dùng phòng theo sáng / chiều / tối); xuất CSV mở bằng Excel |
+| Chi phí, lương | Chi phí theo trung tâm và loại; đơn giá giờ theo người và vai trò, có ngày hiệu lực; bảng lương tháng chi tiết từng buổi, 3 cách tính khi đứng nhiều lớp trùng giờ, thưởng / phạt / phụ cấp, chốt lương, đã trả; giáo viên xem lương của mình. Quản lý sửa tay giờ tính lương từng buổi (bắt buộc lý do, có nhật ký); trợ giảng gắn theo từng buổi kèm số phút có mặt riêng; cách tính trùng giờ đổi theo ngày hiệu lực (tháng đã chốt giữ cách cũ); lương tính vào chi phí của trung tâm nơi buổi dạy diễn ra |
+| Báo cáo | Tổng quan hôm nay, doanh thu (theo trung tâm thu, theo trung tâm học, theo ngày), lãi lỗ theo trung tâm, giáo viên & giờ dạy, chuyên cần, **học sinh** (trạng thái, ghi danh mới, bảo lưu, nghỉ theo lý do, tỷ lệ học tiếp), **sử dụng phòng & lớp** (lấp đầy lớp, dùng phòng theo sáng / chiều / tối); xuất file .xlsx |
 | Liên lạc phụ huynh | Nhật ký liên lạc trong hồ sơ học sinh, việc cần gọi lại (menu Cần gọi lại) |
 | Nhập từ Excel | Học sinh › Nhập từ Excel: tải file mẫu, chọn file .xlsx / .csv, hệ thống kiểm tra từng dòng (thiếu cột, sai ngày, trung tâm / lớp không có, trùng hồ sơ) rồi mới nhập. Có mã lớp thì xếp lớp từ hôm nay với số buổi còn lại; có "Còn nợ" thì hiện trong Công nợ |
 | Cài đặt | Trung tâm & màu, phòng học, ngày nghỉ lễ (chung hoặc từng trung tâm), khóa học (kèm khóa tiếp theo gợi ý và khung chương trình), tài khoản |
@@ -76,12 +77,13 @@ Quy tắc nằm ở `src/lib/permissions.ts`. Giáo vụ sửa được phụ hu
 - Chặn trùng phòng.
 - Chặn một người (giáo viên hoặc trợ giảng) dạy hai buổi trùng giờ ở hai trung tâm khác nhau; cùng trung tâm thì cho phép.
 - Chặn xếp học sinh vào lớp đã đủ chỗ (sĩ số tối đa hoặc sức chứa phòng, lấy số nhỏ hơn) và vào hai lớp trùng giờ.
+- Cảnh báo, không chặn: xếp lớp cho học sinh còn nợ khóa trước; mở lớp mà giáo viên dạy hai trung tâm cách nhau dưới 60 phút.
 - Học sinh, giáo viên, lớp không xóa; kết thúc bằng đổi trạng thái.
 - Thay đổi quan trọng được ghi nhật ký (ai, lúc nào, từ gì thành gì), ghi tên người đang đăng nhập.
 
 ## Chưa có
 
-Xem mục 2 của [docs/KE_HOACH.md](docs/KE_HOACH.md): sửa giờ tính lương từng buổi, trợ giảng theo từng buổi, lương chia theo trung tâm nơi dạy, cảnh báo ghi danh khi còn nợ, ảnh học sinh và file đính kèm; giai đoạn 2 (cổng phụ huynh, tuyển sinh).
+Xem mục 2 của [docs/KE_HOACH.md](docs/KE_HOACH.md): ảnh học sinh và file đính kèm (cần chốt nơi lưu file khi đưa lên mạng), quản lý bỏ qua lệnh chặn trong trường hợp đặc biệt (chờ trả lời câu hỏi mục 7 tài liệu yêu cầu); giai đoạn 2 (cổng phụ huynh, tuyển sinh).
 
 ## Cấu trúc
 
