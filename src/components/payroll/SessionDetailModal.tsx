@@ -5,7 +5,6 @@ import { DeleteOutlined } from "@/client/primer-icons";
 import { Button, Descriptions, Divider, Modal, Popconfirm, Table, Tag, message } from "@/client/primer-compat";
 import type { ColumnsType } from "@/client/primer-compat";
 import { api } from "@/client/api";
-import { DataGrid } from "@/components/DataGrid";
 import { formatCurrency } from "@/lib/finance";
 import { adjustmentTypeOption, formatHours, type AdjustmentType, type TeachingRole } from "@/lib/payroll";
 import { formatDateVN } from "@/lib/dates";
@@ -131,7 +130,7 @@ export function SessionDetailModal({
       render: (_, r) => (
         <span>
           <strong>{r.className}</strong>{" "}
-          <span style={{ fontSize: 12, color: "#8C959F" }}>
+          <span style={{ fontSize: 12, color: "var(--fgColor-muted)" }}>
             {r.classCode} · {r.roomName} ({r.centerName})
           </span>
         </span>
@@ -180,7 +179,7 @@ export function SessionDetailModal({
       key: "pay",
       align: "right",
       render: (pay: number) => (
-        <span style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700, color: "#2DA44E" }}>
+        <span style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700, color: "var(--fgColor-success)" }}>
           {formatCurrency(pay)}
         </span>
       ),
@@ -209,7 +208,7 @@ export function SessionDetailModal({
           style={{
             fontWeight: 700,
             fontVariantNumeric: "tabular-nums",
-            color: r.type === "PENALTY" ? "#CF222E" : "#2DA44E",
+            color: r.type === "PENALTY" ? "var(--fgColor-danger)" : "var(--fgColor-success)",
           }}
         >
           {r.type === "PENALTY" ? "-" : "+"}
@@ -257,10 +256,10 @@ export function SessionDetailModal({
             <strong>{formatHours(data?.totalHours ?? 0)}</strong>
           </Descriptions.Item>
           <Descriptions.Item label="Tiền dạy các buổi">
-            <strong style={{ color: "#2DA44E" }}>{formatCurrency(data?.totalTeachingPay ?? 0)}</strong>
+            <strong style={{ color: "var(--fgColor-success)" }}>{formatCurrency(data?.totalTeachingPay ?? 0)}</strong>
           </Descriptions.Item>
           <Descriptions.Item label="Tổng thực nhận">
-            <strong style={{ fontSize: 16, color: "#1F6FEB" }}>
+            <strong style={{ fontSize: 16, color: "var(--fgColor-accent)" }}>
               {formatCurrency(data?.period?.finalPay ?? data?.totalTeachingPay ?? 0)}
             </strong>
           </Descriptions.Item>
@@ -270,7 +269,7 @@ export function SessionDetailModal({
       <Divider orientation="left" style={{ margin: "16px 0 12px 0", fontSize: 14 }}>
         Danh sách buổi dạy ({data?.sessions?.length ?? 0} buổi)
       </Divider>
-      <DataGrid<PayrollSessionRow>
+      <Table<PayrollSessionRow>
         dataSource={data?.sessions ?? []}
         columns={sessionColumns}
         rowKey="id"
@@ -291,7 +290,7 @@ export function SessionDetailModal({
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={2} />
                 <Table.Summary.Cell index={3} align="right">
-                  <strong style={{ color: "#2DA44E" }}>{formatCurrency(pay)}</strong>
+                  <strong style={{ color: "var(--fgColor-success)" }}>{formatCurrency(pay)}</strong>
                 </Table.Summary.Cell>
               </Table.Summary.Row>
             </Table.Summary>

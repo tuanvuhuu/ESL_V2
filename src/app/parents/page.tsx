@@ -111,7 +111,7 @@ export default function ParentsPage() {
           toolbar={
             <Input
               allowClear
-              prefix={<SearchOutlined style={{ color: "#8c959f" }} />}
+              prefix={<SearchOutlined style={{ color: "var(--fgColor-muted)" }} />}
               placeholder="Tìm tên, SĐT, tên con"
               style={{ width: 280 }}
               value={q}

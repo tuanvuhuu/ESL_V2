@@ -55,7 +55,7 @@ export default function DebtsPage() {
       render: (_: any, row: any) => (
         <div>
           <div style={{ fontWeight: 600 }}>{row.student.fullName}</div>
-          <div style={{ fontSize: 12, color: "#8C959F" }}>
+          <div style={{ fontSize: 12, color: "var(--fgColor-muted)" }}>
             {row.student.code} {row.student.englishName ? `· ${row.student.englishName}` : ""}
           </div>
         </div>
@@ -67,7 +67,7 @@ export default function DebtsPage() {
       render: (_: any, row: any) => (
         <div>
           <div>{row.class.name}</div>
-          <div style={{ fontSize: 12, color: "#8C959F" }}>{row.class.code}</div>
+          <div style={{ fontSize: 12, color: "var(--fgColor-muted)" }}>{row.class.code}</div>
         </div>
       ),
     },
@@ -91,7 +91,7 @@ export default function DebtsPage() {
       key: "paidAmount",
       align: "right" as const,
       render: (val: number) => (
-        <span style={{ fontVariantNumeric: "tabular-nums", color: "#2DA44E" }}>
+        <span style={{ fontVariantNumeric: "tabular-nums", color: "var(--fgColor-success)" }}>
           {formatCurrency(val)}
         </span>
       ),
@@ -106,7 +106,7 @@ export default function DebtsPage() {
           style={{
             fontWeight: 700,
             fontVariantNumeric: "tabular-nums",
-            color: row.isOverdue ? "#CF222E" : val > 0 ? "#D29922" : "#2DA44E",
+            color: row.isOverdue ? "var(--fgColor-danger)" : val > 0 ? "var(--fgColor-attention)" : "var(--fgColor-success)",
           }}
         >
           {formatCurrency(val)}
@@ -157,7 +157,7 @@ export default function DebtsPage() {
             Thu tiền
           </Button>
         ) : (
-          <span style={{ color: "#2DA44E", fontSize: 13 }}>✓ Đã hoàn tất</span>
+          <span style={{ color: "var(--fgColor-success)", fontSize: 13 }}>✓ Đã hoàn tất</span>
         ),
     },
   ];
@@ -172,32 +172,32 @@ export default function DebtsPage() {
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col xs={24} sm={6}>
           <Card size="small" style={{ borderRadius: 8 }}>
-            <div style={{ color: "#59636E", fontSize: 13 }}>Tổng học phí</div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: "#1F2328", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Tổng học phí</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "var(--fgColor-default)", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(data.summary.totalFee)}
             </div>
           </Card>
         </Col>
         <Col xs={24} sm={6}>
           <Card size="small" style={{ borderRadius: 8 }}>
-            <div style={{ color: "#59636E", fontSize: 13 }}>Đã thu</div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Đã thu</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "var(--fgColor-success)", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(data.summary.totalPaid)}
             </div>
           </Card>
         </Col>
         <Col xs={24} sm={6}>
           <Card size="small" style={{ borderRadius: 8 }}>
-            <div style={{ color: "#59636E", fontSize: 13 }}>Còn phải thu (Nợ)</div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: "#D29922", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Còn phải thu (Nợ)</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "var(--fgColor-attention)", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(data.summary.totalDebt)}
             </div>
           </Card>
         </Col>
         <Col xs={24} sm={6}>
-          <Card size="small" style={{ borderRadius: 8, borderColor: data.summary.overdueCount > 0 ? "#CF222E" : undefined }}>
-            <div style={{ color: "#59636E", fontSize: 13 }}>Học sinh quá hạn</div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: "#CF222E", fontVariantNumeric: "tabular-nums" }}>
+          <Card size="small" style={{ borderRadius: 8, borderColor: data.summary.overdueCount > 0 ? "var(--borderColor-danger-emphasis)" : undefined }}>
+            <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Học sinh quá hạn</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "var(--fgColor-danger)", fontVariantNumeric: "tabular-nums" }}>
               {data.summary.overdueCount} học sinh
             </div>
           </Card>
@@ -207,7 +207,7 @@ export default function DebtsPage() {
       <div className="grid-toolbar">
         <Input
           placeholder="Tìm tên, mã học sinh hoặc lớp..."
-          prefix={<SearchOutlined style={{ color: "#8C959F" }} />}
+          prefix={<SearchOutlined style={{ color: "var(--fgColor-muted)" }} />}
           style={{ width: 260 }}
           value={search}
           onChange={(e) => setSearch(e.target.value)}

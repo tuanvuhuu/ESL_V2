@@ -95,7 +95,7 @@ export default function PayrollPage() {
       render: (_, row) => (
         <div>
           <div style={{ fontWeight: 600 }}>{row.teacher.fullName}</div>
-          <div style={{ fontSize: 12, color: "#8C959F" }}>
+          <div style={{ fontSize: 12, color: "var(--fgColor-muted)" }}>
             {row.teacher.displayName} ({row.teacher.code})
           </div>
         </div>
@@ -106,7 +106,7 @@ export default function PayrollPage() {
       dataIndex: ["teacher", "role"],
       key: "role",
       render: (role: string) => {
-        const color = role === "TEACHER" ? "#0969DA" : role === "ASSISTANT" ? "#8250DF" : "#1A7F37";
+        const color = role === "TEACHER" ? "var(--fgColor-accent)" : role === "ASSISTANT" ? "var(--fgColor-done)" : "var(--fgColor-success)";
         return (
           <DotLabel color={color}>
             {role === "TEACHER" ? "Giáo viên" : role === "ASSISTANT" ? "Trợ giảng" : "Cả hai"}
@@ -154,7 +154,7 @@ export default function PayrollPage() {
           <span
             style={{
               fontVariantNumeric: "tabular-nums",
-              color: net > 0 ? "#2DA44E" : net < 0 ? "#CF222E" : "#8C959F",
+              color: net > 0 ? "var(--fgColor-success)" : net < 0 ? "var(--fgColor-danger)" : "var(--fgColor-muted)",
             }}
           >
             {net > 0 ? `+${formatCurrency(net)}` : net < 0 ? `-${formatCurrency(Math.abs(net))}` : "0 ₫"}
@@ -172,7 +172,7 @@ export default function PayrollPage() {
             fontWeight: 800,
             fontSize: 14,
             fontVariantNumeric: "tabular-nums",
-            color: "#1F6FEB",
+            color: "var(--fgColor-accent)",
           }}
         >
           {formatCurrency(row.period?.finalPay ?? 0)}
@@ -186,10 +186,10 @@ export default function PayrollPage() {
         const opt = payrollStatusOption(row.period?.status ?? "DRAFT");
         const dotColor =
           row.period?.status === "PAID"
-            ? "#2DA44E"
+            ? "var(--fgColor-success)"
             : row.period?.status === "LOCKED"
-            ? "#1F6FEB"
-            : "#D29922";
+            ? "var(--fgColor-accent)"
+            : "var(--fgColor-attention)";
         return <DotLabel color={dotColor}>{opt?.label ?? row.period?.status}</DotLabel>;
       },
     },
@@ -268,8 +268,8 @@ export default function PayrollPage() {
       <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", marginBottom: 16 }}>
         <div
           style={{
-            background: "#fff",
-            border: "1px solid #d0d7de",
+            background: "var(--bgColor-default)",
+            border: "1px solid var(--borderColor-default)",
             borderRadius: 6,
             padding: "8px 14px",
             display: "inline-flex",
@@ -277,7 +277,7 @@ export default function PayrollPage() {
             gap: 8,
           }}
         >
-          <span style={{ fontSize: 13, color: "#59636E" }}>Tháng tính lương:</span>
+          <span style={{ fontSize: 13, color: "var(--fgColor-muted)" }}>Tháng tính lương:</span>
           <DatePicker
             picker="month"
             value={dayjs(month, "YYYY-MM")}
@@ -290,8 +290,8 @@ export default function PayrollPage() {
 
         <div
           style={{
-            background: "#fff",
-            border: "1px solid #d0d7de",
+            background: "var(--bgColor-default)",
+            border: "1px solid var(--borderColor-default)",
             borderRadius: 6,
             padding: "8px 14px",
             display: "inline-flex",
@@ -299,16 +299,16 @@ export default function PayrollPage() {
             gap: 8,
           }}
         >
-          <span style={{ color: "#59636E", fontSize: 13 }}>Tổng quỹ lương:</span>
-          <span style={{ fontSize: 15, fontWeight: 700, color: "#1F6FEB", fontVariantNumeric: "tabular-nums" }}>
+          <span style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Tổng quỹ lương:</span>
+          <span style={{ fontSize: 15, fontWeight: 700, color: "var(--fgColor-accent)", fontVariantNumeric: "tabular-nums" }}>
             {formatCurrency(totalPayroll)}
           </span>
         </div>
 
         <div
           style={{
-            background: "#fff",
-            border: "1px solid #d0d7de",
+            background: "var(--bgColor-default)",
+            border: "1px solid var(--borderColor-default)",
             borderRadius: 6,
             padding: "8px 14px",
             display: "inline-flex",
@@ -316,16 +316,16 @@ export default function PayrollPage() {
             gap: 8,
           }}
         >
-          <span style={{ color: "#59636E", fontSize: 13 }}>Tổng giờ dạy:</span>
-          <span style={{ fontSize: 15, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+          <span style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Tổng giờ dạy:</span>
+          <span style={{ fontSize: 15, fontWeight: 700, color: "var(--fgColor-success)", fontVariantNumeric: "tabular-nums" }}>
             {formatHours(totalHours)}
           </span>
         </div>
 
         <div
           style={{
-            background: "#fff",
-            border: "1px solid #d0d7de",
+            background: "var(--bgColor-default)",
+            border: "1px solid var(--borderColor-default)",
             borderRadius: 6,
             padding: "8px 14px",
             display: "inline-flex",
@@ -333,8 +333,8 @@ export default function PayrollPage() {
             gap: 8,
           }}
         >
-          <span style={{ color: "#59636E", fontSize: 13 }}>Đã thanh toán:</span>
-          <span style={{ fontSize: 15, fontWeight: 700, color: "#1F2328", fontVariantNumeric: "tabular-nums" }}>
+          <span style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Đã thanh toán:</span>
+          <span style={{ fontSize: 15, fontWeight: 700, color: "var(--fgColor-default)", fontVariantNumeric: "tabular-nums" }}>
             {paidCount} / {payrollList.length} người
           </span>
         </div>

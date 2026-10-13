@@ -69,22 +69,6 @@ export default function StudentsPage() {
                 type="button"
                 className="cell-main-btn"
                 onClick={() => setViewing(r)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  padding: 0,
-                  font: "inherit",
-                  fontWeight: 600,
-                  color: "var(--color-fg-default, #1f2328)",
-                  cursor: "pointer",
-                  textAlign: "left",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.color = "var(--color-accent-fg, #0969da)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.color = "var(--color-fg-default, #1f2328)";
-                }}
               >
                 {r.fullName}
               </button>
@@ -235,7 +219,7 @@ export default function StudentsPage() {
             <>
               <Input
                 allowClear
-                prefix={<SearchOutlined style={{ color: "#8c959f" }} />}
+                prefix={<SearchOutlined style={{ color: "var(--fgColor-muted)" }} />}
                 placeholder="Tìm mã, tên, SĐT"
                 style={{ width: 260 }}
                 value={q}

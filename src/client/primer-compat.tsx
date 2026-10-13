@@ -32,6 +32,7 @@ import {
   ToggleSwitch as PrimerToggleSwitch,
   Tooltip as PrimerTooltip,
   UnderlineNav,
+  useConfirm,
 } from "@primer/react";
 import { Blankslate, SkeletonText } from "@primer/react/experimental";
 import {
@@ -46,6 +47,7 @@ import {
 } from "@primer/octicons-react";
 import dayjs, { type Dayjs } from "dayjs";
 import { message } from "./toast";
+import { tint } from "@/lib/colors";
 import {
   PrimerGrid,
   type GridColumn,
@@ -56,6 +58,7 @@ import {
 import { PrimerModal } from "@/components/PrimerModal";
 
 export { message };
+export { IconButton } from "@primer/react";
 
 export type ThemeConfig = any;
 export type MenuProps = any;
@@ -79,8 +82,24 @@ export type ColumnType<T = any> = {
 };
 export type ColumnsType<T = any> = ColumnType<T>[];
 
+const BREAKPOINTS = { xs: 0, sm: 576, md: 768, lg: 992, xl: 1200, xxl: 1600 } as const;
+
+function readBreakpoints() {
+  const w = typeof window === "undefined" ? 1280 : window.innerWidth;
+  return Object.fromEntries(Object.entries(BREAKPOINTS).map(([k, min]) => [k, w >= min])) as Record<keyof typeof BREAKPOINTS, boolean>;
+}
+
 export const Grid = {
-  useBreakpoint: () => ({ xs: false, sm: true, md: true, lg: true, xl: true, xxl: true }),
+  useBreakpoint: function useBreakpoint() {
+    const [screens, setScreens] = useState(readBreakpoints);
+    useEffect(() => {
+      const onResize = () => setScreens(readBreakpoints());
+      onResize();
+      window.addEventListener("resize", onResize);
+      return () => window.removeEventListener("resize", onResize);
+    }, []);
+    return screens;
+  },
 };
 
 export function Result({ status = "info", title, subTitle, extra, style }: any) {
@@ -90,33 +109,40 @@ export function Result({ status = "info", title, subTitle, extra, style }: any) 
         style={{
           fontSize: 48,
           fontWeight: 700,
-          color: status === "404" ? "#8C959F" : status === "error" || status === "500" ? "#CF222E" : "#0969DA",
+          color: status === "404" ? "var(--fgColor-muted)" : status === "error" || status === "500" ? "var(--fgColor-danger)" : "var(--fgColor-accent)",
           marginBottom: 16,
         }}
       >
         {status}
       </div>
-      {title && <h2 style={{ fontSize: 20, fontWeight: 600, color: "#1F2328", margin: "0 0 8px 0" }}>{title}</h2>}
-      {subTitle && <p style={{ fontSize: 14, color: "#59636E", margin: "0 0 24px 0" }}>{subTitle}</p>}
+      {title && <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--fgColor-default)", margin: "0 0 8px 0" }}>{title}</h2>}
+      {subTitle && <p style={{ fontSize: 14, color: "var(--fgColor-muted)", margin: "0 0 24px 0" }}>{subTitle}</p>}
       {extra && <div>{extra}</div>}
     </div>
   );
 }
 
 export const App = {
-  useApp: () => ({
-    message,
-    modal: {
-      confirm: ({ title, content, onOk, onCancel }: any) => {
-        const text = [title, content].filter(Boolean).map(String).join("\n");
-        if (typeof window !== "undefined" && window.confirm(text || "Xác nhận thực hiện?")) {
-          onOk?.();
-        } else {
-          onCancel?.();
-        }
+  /** Gọi trong component như một hook. Hộp xác nhận dùng ConfirmationDialog của Primer. */
+  useApp: function useApp() {
+    const confirm = useConfirm();
+    return {
+      message,
+      modal: {
+        confirm: async ({ title, content, okText, cancelText, okType, onOk, onCancel }: any) => {
+          const ok = await confirm({
+            title: title ?? "Xác nhận",
+            content: content ?? null,
+            confirmButtonContent: okText ?? "Đồng ý",
+            cancelButtonContent: cancelText ?? "Hủy",
+            confirmButtonType: okType === "danger" ? "danger" : "normal",
+          });
+          if (ok) onOk?.();
+          else onCancel?.();
+        },
       },
-    },
-  }),
+    };
+  },
 };
 
 // ==========================================
@@ -568,7 +594,7 @@ export function Select({
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
-                  color: text ? undefined : "var(--fgColor-muted, #59636E)",
+                  color: text ? undefined : "var(--fgColor-muted)",
                 }}
               >
                 {text || (typeof placeholder === "string" ? placeholder : "Chọn...")}
@@ -1233,8 +1259,8 @@ export function Card({ title, extra, children, style, size = "default", classNam
   return (
     <div
       style={{
-        background: "#FFFFFF",
-        border: "1px solid #D0D7DE",
+        background: "var(--bgColor-default)",
+        border: "1px solid var(--borderColor-default)",
         borderRadius: 8,
         boxShadow: "0 1px 3px rgba(31, 35, 40, 0.04)",
         padding: size === "small" ? "12px 14px" : "16px 20px",
@@ -1250,10 +1276,10 @@ export function Card({ title, extra, children, style, size = "default", classNam
             alignItems: "center",
             paddingBottom: 10,
             marginBottom: 12,
-            borderBottom: "1px solid #EAEFF2",
+            borderBottom: "1px solid var(--borderColor-muted)",
           }}
         >
-          {title && <div style={{ fontWeight: 600, fontSize: 14, color: "#1F2328" }}>{title}</div>}
+          {title && <div style={{ fontWeight: 600, fontSize: 14, color: "var(--fgColor-default)" }}>{title}</div>}
           {extra && <div>{extra}</div>}
         </div>
       )}
@@ -1363,13 +1389,13 @@ export const Space: React.FC<SpaceProps> & {
 export function Divider({ style, orientation, children }: any) {
   if (children) {
     return (
-      <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "16px 0", color: "#59636E", fontSize: 13, ...style }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "16px 0", color: "var(--fgColor-muted)", fontSize: 13, ...style }}>
         <span style={{ fontWeight: 600 }}>{children}</span>
-        <hr style={{ flex: 1, border: 0, borderTop: "1px solid #D0D7DE", margin: 0 }} />
+        <hr style={{ flex: 1, border: 0, borderTop: "1px solid var(--borderColor-default)", margin: 0 }} />
       </div>
     );
   }
-  return <hr style={{ border: 0, borderTop: "1px solid #D0D7DE", margin: "16px 0", ...style }} />;
+  return <hr style={{ border: 0, borderTop: "1px solid var(--borderColor-default)", margin: "16px 0", ...style }} />;
 }
 
 // ==========================================
@@ -1529,7 +1555,8 @@ export const Tag: React.FC<TagProps> & { CheckableTag: React.FC<CheckableTagProp
   function Tag({ color, children, icon, style, className }: TagProps) {
     const key = typeof color === "string" ? color.toLowerCase() : "";
     const variant = TAG_VARIANTS[key];
-    const hex = !variant && typeof color === "string" && color.startsWith("#") ? color : undefined;
+    // Màu tự do: token Primer (var(--…)) hoặc màu trung tâm (hex)
+    const custom = !variant && typeof color === "string" && /^(#|var\()/.test(color) ? color : undefined;
     return (
       <Label
         variant={(variant as any) ?? "secondary"}
@@ -1537,7 +1564,7 @@ export const Tag: React.FC<TagProps> & { CheckableTag: React.FC<CheckableTagProp
         style={{
           marginRight: 4,
           gap: 4,
-          ...(hex ? { color: hex, borderColor: `${hex}66`, background: `${hex}14` } : {}),
+          ...(custom ? { color: custom, borderColor: tint(custom, 40), background: tint(custom, 8) } : {}),
           ...style,
         }}
       >
@@ -1559,9 +1586,9 @@ export const Tag: React.FC<TagProps> & { CheckableTag: React.FC<CheckableTagProp
             borderRadius: 12,
             fontSize: 12,
             fontWeight: 500,
-            background: checked ? "#0969DA" : "#F6F8FA",
-            border: checked ? "1px solid #0969DA" : "1px solid #D0D7DE",
-            color: checked ? "#FFFFFF" : "#59636E",
+            background: checked ? "var(--bgColor-accent-emphasis)" : "var(--bgColor-muted)",
+            border: checked ? "1px solid var(--borderColor-accent-emphasis)" : "1px solid var(--borderColor-default)",
+            color: checked ? "var(--fgColor-onEmphasis)" : "var(--fgColor-muted)",
             cursor: "pointer",
             marginRight: 6,
             marginBottom: 6,
@@ -1597,7 +1624,7 @@ export function Badge({ count, dot, children, color, style }: any) {
             width: 8,
             height: 8,
             borderRadius: "50%",
-            background: color || "var(--fgColor-danger, #CF222E)",
+            background: color || "var(--fgColor-danger)",
           }}
         />
       ) : count !== undefined ? (
@@ -1776,7 +1803,7 @@ export function Table<T extends object>(props: TableProps<T>) {
 
 Table.Summary = Object.assign(
   function Summary({ children }: TableSummaryProps) {
-    return <div style={{ borderTop: "1px solid #D0D7DE", background: "#F6F8FA", padding: "6px 12px" }}>{children}</div>;
+    return <div style={{ borderTop: "1px solid var(--borderColor-default)", background: "var(--bgColor-muted)", padding: "6px 12px" }}>{children}</div>;
   },
   {
     Row: function SummaryRow({ children }: { children?: ReactNode }) {
@@ -1854,8 +1881,8 @@ export const Descriptions: React.FC<any> & { Item: React.FC<any> } = Object.assi
     Item: function Item({ label, children }: any) {
       return (
         <div>
-          <div style={{ fontSize: 12, color: "#59636E" }}>{label}</div>
-          <div style={{ fontSize: 13, color: "#1F2328", marginTop: 2 }}>{children}</div>
+          <div style={{ fontSize: 12, color: "var(--fgColor-muted)" }}>{label}</div>
+          <div style={{ fontSize: 13, color: "var(--fgColor-default)", marginTop: 2 }}>{children}</div>
         </div>
       );
     },
@@ -1883,7 +1910,7 @@ export const List: (<T = any>(props: ListProps<T>) => React.ReactElement | null)
     if (dataSource.length === 0 && !children && locale?.emptyText) {
       return (
         <div
-          style={{ padding: "16px 0", color: "var(--fgColor-muted, #59636E)", fontSize: 13, textAlign: "center", ...style }}
+          style={{ padding: "16px 0", color: "var(--fgColor-muted)", fontSize: 13, textAlign: "center", ...style }}
           className={className}
         >
           {locale.emptyText}
@@ -1893,7 +1920,7 @@ export const List: (<T = any>(props: ListProps<T>) => React.ReactElement | null)
     return (
       <div
         style={{
-          ...(bordered ? { border: "1px solid var(--borderColor-default, #D0D7DE)", borderRadius: 6 } : {}),
+          ...(bordered ? { border: "1px solid var(--borderColor-default)", borderRadius: 6 } : {}),
           ...style,
         }}
         className={className}
@@ -1933,7 +1960,7 @@ export const List: (<T = any>(props: ListProps<T>) => React.ReactElement | null)
               <div>
                 {title && <div style={{ fontWeight: 600 }}>{title}</div>}
                 {description && (
-                  <div style={{ color: "var(--fgColor-muted, #59636E)", fontSize: 12 }}>{description}</div>
+                  <div style={{ color: "var(--fgColor-muted)", fontSize: 12 }}>{description}</div>
                 )}
               </div>
             </div>
@@ -1958,8 +1985,8 @@ export function Steps({ current = 0, items = [], style }: any) {
                   width: 22,
                   height: 22,
                   borderRadius: "50%",
-                  background: isDone ? "#1A7F37" : isCur ? "#0969DA" : "#EAEFF2",
-                  color: isDone || isCur ? "#fff" : "#59636E",
+                  background: isDone ? "var(--bgColor-success-emphasis)" : isCur ? "var(--bgColor-accent-emphasis)" : "var(--bgColor-neutral-muted)",
+                  color: isDone || isCur ? "var(--fgColor-onEmphasis)" : "var(--fgColor-muted)",
                   fontSize: 11,
                   fontWeight: 700,
                   display: "grid",
@@ -1968,12 +1995,12 @@ export function Steps({ current = 0, items = [], style }: any) {
               >
                 {isDone ? "✓" : idx + 1}
               </span>
-              <span style={{ fontSize: 13, fontWeight: isCur ? 600 : 400, color: isCur ? "#0969DA" : "#59636E" }}>
+              <span style={{ fontSize: 13, fontWeight: isCur ? 600 : 400, color: isCur ? "var(--fgColor-accent)" : "var(--fgColor-muted)" }}>
                 {it.title}
               </span>
             </div>
             {idx < items.length - 1 && (
-              <span style={{ flex: 1, height: 1, background: isDone ? "#1A7F37" : "#D0D7DE", margin: "0 4px" }} />
+              <span style={{ flex: 1, height: 1, background: isDone ? "var(--bgColor-success-emphasis)" : "var(--borderColor-default)", margin: "0 4px" }} />
             )}
           </React.Fragment>
         );
@@ -1985,8 +2012,8 @@ export function Steps({ current = 0, items = [], style }: any) {
 export function Statistic({ title, value, prefix, suffix, style }: any) {
   return (
     <div style={style}>
-      {title && <div style={{ fontSize: 12, color: "#59636E" }}>{title}</div>}
-      <div style={{ fontSize: 20, fontWeight: 700, color: "#1F2328", marginTop: 2 }}>
+      {title && <div style={{ fontSize: 12, color: "var(--fgColor-muted)" }}>{title}</div>}
+      <div style={{ fontSize: 20, fontWeight: 700, color: "var(--fgColor-default)", marginTop: 2 }}>
         {prefix} {value} {suffix}
       </div>
     </div>
@@ -2026,9 +2053,10 @@ export function ColorPicker({ value, onChange }: any) {
   return (
     <input
       type="color"
-      value={value || "#1F6FEB"}
+      // eslint-disable-next-line no-restricted-syntax -- ô chọn màu trung tâm cần giá trị hex
+      value={value || "#0969DA"}
       onChange={(e) => onChange?.(e.target.value)}
-      style={{ width: 32, height: 32, border: "1px solid #D0D7DE", borderRadius: 4, cursor: "pointer" }}
+      style={{ width: 32, height: 32, border: "1px solid var(--borderColor-default)", borderRadius: 4, cursor: "pointer" }}
     />
   );
 }
@@ -2053,7 +2081,7 @@ export function Collapse({ items = [] }: any) {
   return (
     <div>
       {items.map((it: any) => (
-        <details key={it.key} style={{ border: "1px solid #D0D7DE", borderRadius: 6, marginBottom: 8, padding: 8 }}>
+        <details key={it.key} style={{ border: "1px solid var(--borderColor-default)", borderRadius: 6, marginBottom: 8, padding: 8 }}>
           <summary style={{ fontWeight: 600, cursor: "pointer" }}>{it.label}</summary>
           <div style={{ marginTop: 8 }}>{it.children}</div>
         </details>
@@ -2100,14 +2128,14 @@ export function Popover({ content, title, children }: any) {
 export const Typography = {
   Title: function Title({ level = 4, children, style }: any) {
     const Tag = `h${level}` as any;
-    return <Tag style={{ margin: 0, color: "#1F2328", ...style }}>{children}</Tag>;
+    return <Tag style={{ margin: 0, color: "var(--fgColor-default)", ...style }}>{children}</Tag>;
   },
   Text: function Text({ children, style }: any) {
     return <span style={style}>{children}</span>;
   },
   Link: function LinkComp({ href, children, style }: any) {
     return (
-      <a href={href} style={{ color: "#0969DA", ...style }}>
+      <a href={href} style={{ color: "var(--fgColor-accent)", ...style }}>
         {children}
       </a>
     );

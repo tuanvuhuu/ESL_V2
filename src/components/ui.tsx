@@ -16,6 +16,7 @@ import type { ReactNode } from "react";
 import { CERT_WARN_DAYS, optionOf, type Option } from "@/lib/constants";
 import { addDays, formatDateVN, todayISO } from "@/lib/dates";
 import { initials } from "@/lib/text";
+import { tint } from "@/lib/colors";
 
 export function StatusTag({ options, value, sub }: { options: readonly Option[]; value: string; sub?: string | null }) {
   const opt = optionOf(options, value);
@@ -31,7 +32,7 @@ export function StatusTag({ options, value, sub }: { options: readonly Option[];
           fontWeight: 500,
           color: opt.color,
           border: `1px solid ${opt.color}`,
-          background: `${opt.color}12`,
+          background: tint(opt.color, 7),
         }}
       >
         {opt.label}
@@ -53,7 +54,7 @@ export function CenterTag({ center }: { center?: { name: string; color: string }
         fontWeight: 500,
         color: center.color,
         border: `1px solid ${center.color}`,
-        background: `${center.color}12`,
+        background: tint(center.color, 7),
       }}
     >
       {center.name}
@@ -74,9 +75,9 @@ export function CertTag({ expiry, always }: { expiry: string | null | undefined;
           borderRadius: 12,
           fontSize: 12,
           fontWeight: 500,
-          color: "#CF222E",
-          background: "#FFEBE9",
-          border: "1px solid #FF8182",
+          color: "var(--fgColor-danger)",
+          background: "var(--bgColor-danger-muted)",
+          border: "1px solid var(--borderColor-danger-muted)",
         }}
       >
         Hết hạn {formatDateVN(expiry)}
@@ -92,9 +93,9 @@ export function CertTag({ expiry, always }: { expiry: string | null | undefined;
           borderRadius: 12,
           fontSize: 12,
           fontWeight: 500,
-          color: "#9A6700",
-          background: "#FFF8C5",
-          border: "1px solid #D4A72C",
+          color: "var(--fgColor-attention)",
+          background: "var(--bgColor-attention-muted)",
+          border: "1px solid var(--borderColor-attention-emphasis)",
         }}
       >
         Hết hạn {formatDateVN(expiry)}
@@ -112,21 +113,21 @@ export function Dash() {
 export function DotLabel({ color, children }: { color?: string; children: ReactNode }) {
   return (
     <span className="dot-label">
-      <i style={{ background: color ?? "#8C959F" }} />
+      <i style={{ background: color ?? "var(--fgColor-muted)" }} />
       {children}
     </span>
   );
 }
 
 export function PersonAvatar({ name, color, size = 32 }: { name: string; color?: string; size?: number }) {
-  const c = color ?? "#8C959F";
+  const c = color ?? "var(--fgColor-muted)";
   return (
     <span
       style={{
         width: size,
         height: size,
         borderRadius: "50%",
-        background: `${c}2e`,
+        background: tint(c, 18),
         color: c,
         fontWeight: 600,
         fontSize: size >= 32 ? 13 : 11,
@@ -196,7 +197,7 @@ export function ActionMenu({ title, items }: { title: string; items?: (ActionMen
           {title && (
             <>
               <ActionList.Item disabled className="action-menu-title">
-                <span style={{ fontWeight: 600, color: "#59636e", fontSize: 12 }}>{title}</span>
+                <span style={{ fontWeight: 600, color: "var(--fgColor-muted)", fontSize: 12 }}>{title}</span>
               </ActionList.Item>
               <ActionList.Divider />
             </>

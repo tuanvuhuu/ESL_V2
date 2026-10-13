@@ -74,7 +74,7 @@ export function MakeupModal({ absence, onClose, onSaved }: { absence: AbsenceLit
         <Radio.Group value={picked} onChange={(e) => setPicked(e.target.value)} style={{ width: "100%" }}>
           <Space direction="vertical" style={{ width: "100%" }}>
             {data.map((o) => (
-              <Radio key={o.id} value={o.id} style={{ width: "100%", padding: "6px 0", borderBottom: "1px solid #eef1f4" }}>
+              <Radio key={o.id} value={o.id} style={{ width: "100%", padding: "6px 0", borderBottom: "1px solid var(--borderColor-muted)" }}>
                 <b>{formatDateVN(o.date, true)}</b> {o.startTime}–{o.endTime} · <b>{o.class.code}</b> buổi {o.index} · phòng {o.room.name} ·{" "}
                 {o.teacher.displayName} <CenterTag center={o.class.center} />
                 {o.sameIndex && <Tag color="green">Cùng bài</Tag>}

@@ -98,7 +98,7 @@ function SchedulePageInner() {
               const items = (data ?? []).filter((s) => s.date === d);
               return (
                 <div key={d}>
-                  <div style={{ fontWeight: 600, marginBottom: 6, color: d === todayISO() ? "#1F6FEB" : undefined }}>{formatDateVN(d, true)}</div>
+                  <div style={{ fontWeight: 600, marginBottom: 6, color: d === todayISO() ? "var(--fgColor-accent)" : undefined }}>{formatDateVN(d, true)}</div>
                   {items.length === 0 && <div className="muted">—</div>}
                   {items.map((s) => (
                     <div

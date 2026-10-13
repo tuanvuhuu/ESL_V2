@@ -1,7 +1,6 @@
 "use client";
 
-import { Button as PrimerButton } from "@primer/react";
-import { Descriptions, Divider, Tag } from "@/client/primer-compat";
+import { Button, Descriptions, Divider, Tag } from "@/client/primer-compat";
 import { PrimerModal } from "@/components/PrimerModal";
 import { formatCurrency, paymentOption } from "@/lib/finance";
 import { formatDateVN } from "@/lib/dates";
@@ -46,10 +45,10 @@ export function ReceiptModal({
       subtitle="Biên lai chứng từ thu tiền học phí của học sinh"
       footer={
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", width: "100%" }}>
-          <PrimerButton onClick={onClose}>Đóng</PrimerButton>
-          <PrimerButton variant="primary" onClick={handlePrint}>
+          <Button onClick={onClose}>Đóng</Button>
+          <Button type="primary" onClick={handlePrint}>
             In phiếu thu
-          </PrimerButton>
+          </Button>
         </div>
       }
     >
@@ -57,11 +56,11 @@ export function ReceiptModal({
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
           <div>
             <h2 style={{ margin: "0 0 4px 0", color: receipt.center.color }}>{receipt.center.name}</h2>
-            <div style={{ color: "#59636E", fontSize: 13 }}>{receipt.center.address || "Hệ thống Anh ngữ ESL"}</div>
+            <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>{receipt.center.address || "Hệ thống Anh ngữ ESL"}</div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "#1F2328" }}>{receipt.code}</div>
-            <div style={{ color: "#59636E", fontSize: 12 }}>Ngày: {formatDateVN(receipt.date)}</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--fgColor-default)" }}>{receipt.code}</div>
+            <div style={{ color: "var(--fgColor-muted)", fontSize: 12 }}>Ngày: {formatDateVN(receipt.date)}</div>
             {receipt.status === "CANCELLED" && (
               <Tag color="red" style={{ marginTop: 4 }}>
                 ĐÃ HỦY
@@ -92,7 +91,7 @@ export function ReceiptModal({
             <Tag color={methodOpt?.color}>{methodOpt?.label ?? receipt.method}</Tag>
           </Descriptions.Item>
           <Descriptions.Item label="Số tiền thu" span={2}>
-            <span style={{ fontSize: 20, fontWeight: 800, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+            <span style={{ fontSize: 20, fontWeight: 800, color: "var(--fgColor-success)", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(receipt.amount)}
             </span>
           </Descriptions.Item>
@@ -108,11 +107,11 @@ export function ReceiptModal({
         <div style={{ display: "flex", justifyContent: "space-around", textAlign: "center" }}>
           <div>
             <div style={{ fontWeight: 600, marginBottom: 48 }}>Người nộp tiền</div>
-            <div style={{ color: "#8C959F", fontSize: 12 }}>(Ký và ghi rõ họ tên)</div>
+            <div style={{ color: "var(--fgColor-muted)", fontSize: 12 }}>(Ký và ghi rõ họ tên)</div>
           </div>
           <div>
             <div style={{ fontWeight: 600, marginBottom: 48 }}>Người lập phiếu</div>
-            <div style={{ fontWeight: 600, color: "#1F2328" }}>{receipt.createdBy}</div>
+            <div style={{ fontWeight: 600, color: "var(--fgColor-default)" }}>{receipt.createdBy}</div>
           </div>
         </div>
       </div>

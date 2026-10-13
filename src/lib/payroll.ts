@@ -7,25 +7,26 @@
 
 import { sessionMinutes } from "./attendance";
 import { toMinutes } from "./dates";
+import { COLORS } from "./colors";
 
 /** Cách tính tiền cho các buổi trùng giờ trong cùng một ngày, cùng trung tâm. */
 export const OVERLAP_POLICIES = [
   {
     value: "SINGLE",
     label: "Tính 1 lần",
-    color: "#8250DF",
+    color: COLORS.done,
     hint: "Các buổi trùng nhau chia đều tiền của một buổi.",
   },
   {
     value: "FULL",
     label: "Tính đủ từng lớp",
-    color: "#1F6FEB",
+    color: COLORS.accent,
     hint: "Mỗi buổi trùng nhau đều tính đủ.",
   },
   {
     value: "RATIO",
     label: "Tính theo hệ số",
-    color: "#0E7490",
+    color: COLORS.teal,
     hint: "Nhân thêm hệ số rồi chia đều cho các buổi trùng nhau.",
   },
 ] as const;
@@ -39,9 +40,9 @@ export const DEFAULT_OVERLAP_RATIO = 1.5;
 
 /** Trạng thái bảng lương: nháp → chốt → đã thanh toán. */
 export const PAYROLL_STATUSES = [
-  { value: "DRAFT", label: "Bản nháp", color: "#8C959F" },
-  { value: "LOCKED", label: "Đã chốt", color: "#1F6FEB" },
-  { value: "PAID", label: "Đã thanh toán", color: "#2DA44E" },
+  { value: "DRAFT", label: "Bản nháp", color: COLORS.neutral },
+  { value: "LOCKED", label: "Đã chốt", color: COLORS.accent },
+  { value: "PAID", label: "Đã thanh toán", color: COLORS.success },
 ] as const;
 
 export type PayrollStatus = (typeof PAYROLL_STATUSES)[number]["value"];
@@ -50,9 +51,9 @@ export const payrollStatusOption = (v: string) => PAYROLL_STATUSES.find((o) => o
 
 /** Khoản điều chỉnh lương: thưởng và phụ cấp được cộng, phạt bị trừ. */
 export const ADJUSTMENT_TYPES = [
-  { value: "BONUS", label: "Thưởng", color: "#2DA44E" },
-  { value: "ALLOWANCE", label: "Phụ cấp", color: "#1F6FEB" },
-  { value: "PENALTY", label: "Phạt", color: "#CF222E" },
+  { value: "BONUS", label: "Thưởng", color: COLORS.success },
+  { value: "ALLOWANCE", label: "Phụ cấp", color: COLORS.accent },
+  { value: "PENALTY", label: "Phạt", color: COLORS.danger },
 ] as const;
 
 export type AdjustmentType = (typeof ADJUSTMENT_TYPES)[number]["value"];

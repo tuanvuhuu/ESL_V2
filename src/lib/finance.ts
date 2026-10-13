@@ -5,13 +5,14 @@
 // - Tiền hoàn chỉ mang tính tham khảo: đổi theo số buổi chưa học / số buổi đã mua.
 
 import { parseISODate } from "./dates";
+import { COLORS } from "./colors";
 
 export const DISCOUNT_TYPES = [
-  { value: "SIBLING", label: "Anh chị em ruột", color: "#8250DF" },
-  { value: "ALUMNI", label: "Học sinh cũ", color: "#1F6FEB" },
-  { value: "EARLY_BIRD", label: "Đóng sớm", color: "#0E7490" },
-  { value: "SCHOLARSHIP", label: "Học bổng", color: "#D29922" },
-  { value: "PROMOTION", label: "Khuyến mãi", color: "#8C959F" },
+  { value: "SIBLING", label: "Anh chị em ruột", color: COLORS.done },
+  { value: "ALUMNI", label: "Học sinh cũ", color: COLORS.accent },
+  { value: "EARLY_BIRD", label: "Đóng sớm", color: COLORS.teal },
+  { value: "SCHOLARSHIP", label: "Học bổng", color: COLORS.attention },
+  { value: "PROMOTION", label: "Khuyến mãi", color: COLORS.neutral },
 ] as const;
 
 export type DiscountType = (typeof DISCOUNT_TYPES)[number]["value"];
@@ -25,17 +26,17 @@ export const DISCOUNT_MODES = [
 export type DiscountMode = (typeof DISCOUNT_MODES)[number]["value"];
 
 export const PAYMENT_METHODS = [
-  { value: "CASH", label: "Tiền mặt", color: "#D29922" },
-  { value: "TRANSFER", label: "Chuyển khoản", color: "#1F6FEB" },
+  { value: "CASH", label: "Tiền mặt", color: COLORS.attention },
+  { value: "TRANSFER", label: "Chuyển khoản", color: COLORS.accent },
 ] as const;
 
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number]["value"];
 
 export const DEBT_STATUSES = [
-  { value: "PAID", label: "Đã hoàn tất", color: "#2DA44E" },
-  { value: "PARTIAL", label: "Đang nợ một phần", color: "#D29922" },
-  { value: "UNPAID", label: "Chưa đóng", color: "#8C959F" },
-  { value: "OVERDUE", label: "Quá hạn", color: "#CF222E" },
+  { value: "PAID", label: "Đã hoàn tất", color: COLORS.success },
+  { value: "PARTIAL", label: "Đang nợ một phần", color: COLORS.attention },
+  { value: "UNPAID", label: "Chưa đóng", color: COLORS.neutral },
+  { value: "OVERDUE", label: "Quá hạn", color: COLORS.danger },
 ] as const;
 
 export type DebtStatus = (typeof DEBT_STATUSES)[number]["value"];

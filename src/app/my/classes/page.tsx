@@ -86,7 +86,7 @@ export default function MyClassesPage() {
                         }
                         description={
                           total ? (
-                            <span style={{ color: rate! < 80 ? "#CF222E" : undefined }}>
+                            <span style={{ color: rate! < 80 ? "var(--fgColor-danger)" : undefined }}>
                               Chuyên cần {rate}% · có mặt {present}/{total}
                               {s.attendance.LATE ? ` · muộn ${s.attendance.LATE}` : ""}
                               {absent ? ` · vắng ${absent}` : ""}

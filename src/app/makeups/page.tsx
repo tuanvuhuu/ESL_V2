@@ -1,9 +1,8 @@
 "use client";
 
-import { App, Popconfirm } from "@/client/primer-compat";
+import { App, Button, Popconfirm } from "@/client/primer-compat";
 import Link from "next/link";
 import { useState } from "react";
-import { Button as PrimerButton } from "@primer/react";
 import { api, qs, useApi } from "@/client/api";
 import { useCenters } from "@/client/centers";
 import { useViewer } from "@/client/session";
@@ -47,10 +46,10 @@ export default function MakeupsPage() {
 
   const student = (s: StudentLite) => (
     <div>
-      <Link href={`/students/${s.id}`} style={{ fontWeight: 600, color: "#0969da" }}>
+      <Link href={`/students/${s.id}`} style={{ fontWeight: 600, color: "var(--fgColor-accent)" }}>
         {s.fullName}
       </Link>
-      <div style={{ fontSize: 12, color: "#8C959F" }}>
+      <div style={{ fontSize: 12, color: "var(--fgColor-muted)" }}>
         {s.code} · <DotLabel color={s.center.color}>{s.center.name}</DotLabel>
       </div>
     </div>
@@ -64,8 +63,8 @@ export default function MakeupsPage() {
       render: (_: any, a: Pending) => (
         <div>
           <b>{formatDateVN(a.session.date, true)}</b> {a.session.startTime}
-          <div style={{ fontSize: 12, color: "#8C959F" }}>
-            <Link href={`/classes/${a.session.class.id}`} style={{ color: "#0969da" }}>
+          <div style={{ fontSize: 12, color: "var(--fgColor-muted)" }}>
+            <Link href={`/classes/${a.session.class.id}`} style={{ color: "var(--fgColor-accent)" }}>
               {a.session.class.code}
             </Link>{" "}
             · buổi {a.session.index}
@@ -75,16 +74,15 @@ export default function MakeupsPage() {
     },
     { title: "Khóa", key: "course", render: (_: any, a: Pending) => a.session.class.course?.name ?? "—" },
     { title: "Trạng thái", key: "status", render: (_: any, a: Pending) => <AttendanceTag status={a.status} /> },
-    { title: "Ghi chú", key: "comment", render: (_: any, a: Pending) => a.comment ?? <span style={{ color: "#8C959F" }}>—</span> },
+    { title: "Ghi chú", key: "comment", render: (_: any, a: Pending) => a.comment ?? <span style={{ color: "var(--fgColor-muted)" }}>—</span> },
     {
       title: "Thao tác",
       key: "actions",
       align: "center" as const,
       render: (_: any, a: Pending) =>
         canEditCenter(viewer, a.student.centerId) && (
-          <PrimerButton
+          <Button
             size="small"
-            variant="default"
             onClick={() =>
               setAbsence({
                 id: a.id,
@@ -96,7 +94,7 @@ export default function MakeupsPage() {
             }
           >
             Xếp học bù
-          </PrimerButton>
+          </Button>
         ),
     },
   ];
@@ -121,8 +119,8 @@ export default function MakeupsPage() {
       render: (_: any, m: Booked) => (
         <div>
           <b>{formatDateVN(m.session.date, true)}</b> {m.session.startTime}–{m.session.endTime}
-          <div style={{ fontSize: 12, color: "#8C959F" }}>
-            <Link href={`/sessions/${m.session.id}`} style={{ color: "#0969da" }}>
+          <div style={{ fontSize: 12, color: "var(--fgColor-muted)" }}>
+            <Link href={`/sessions/${m.session.id}`} style={{ color: "var(--fgColor-accent)" }}>
               {m.session.class.code}
             </Link>{" "}
             buổi {m.session.index} · phòng {m.session.room.name} ·{" "}
@@ -145,9 +143,9 @@ export default function MakeupsPage() {
               borderRadius: 12,
               fontSize: 12,
               fontWeight: 500,
-              background: "#FBEFFF",
-              border: "1px solid #D1B8E8",
-              color: "#8250DF",
+              background: "var(--bgColor-done-muted)",
+              border: "1px solid var(--borderColor-done-muted)",
+              color: "var(--fgColor-done)",
             }}
           >
             Chờ học bù
@@ -163,9 +161,9 @@ export default function MakeupsPage() {
         !m.attendance &&
         canEditCenter(viewer, m.student.centerId) && (
           <Popconfirm title="Bỏ lịch học bù này?" okText="Bỏ" cancelText="Không" onConfirm={() => remove(m.id)}>
-            <PrimerButton size="small" variant="danger">
+            <Button size="small" danger>
               Bỏ
-            </PrimerButton>
+            </Button>
           </Popconfirm>
         ),
     },

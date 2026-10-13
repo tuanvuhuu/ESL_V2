@@ -5,11 +5,13 @@
 // - Giáo viên, trợ giảng chỉ xem lớp mình, không thấy SĐT / Zalo / email phụ huynh.
 // - Trợ giảng được điểm danh (dùng khi có màn hình điểm danh).
 
+import { COLORS } from "./colors";
+
 export const USER_ROLES = [
-  { value: "MANAGER", label: "Quản lý", color: "#CF222E" },
-  { value: "OFFICE", label: "Giáo vụ", color: "#1F6FEB" },
-  { value: "TEACHER", label: "Giáo viên", color: "#2DA44E" },
-  { value: "ASSISTANT", label: "Trợ giảng", color: "#8250DF" },
+  { value: "MANAGER", label: "Quản lý", color: COLORS.danger },
+  { value: "OFFICE", label: "Giáo vụ", color: COLORS.accent },
+  { value: "TEACHER", label: "Giáo viên", color: COLORS.success },
+  { value: "ASSISTANT", label: "Trợ giảng", color: COLORS.done },
 ] as const;
 
 export type Role = (typeof USER_ROLES)[number]["value"];

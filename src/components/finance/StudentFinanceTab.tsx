@@ -113,28 +113,28 @@ export function StudentFinanceTab({
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col xs={24} sm={8}>
           <Card size="small" style={{ borderRadius: 8 }}>
-            <div style={{ color: "#59636E", fontSize: 13 }}>Tổng học phí các khóa</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: "#1F2328", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Tổng học phí các khóa</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "var(--fgColor-default)", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(totalFee)}
             </div>
           </Card>
         </Col>
         <Col xs={24} sm={8}>
           <Card size="small" style={{ borderRadius: 8 }}>
-            <div style={{ color: "#59636E", fontSize: 13 }}>Đã đóng</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: "#2DA44E", fontVariantNumeric: "tabular-nums" }}>
+            <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Đã đóng</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "var(--fgColor-success)", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(totalPaid)}
             </div>
           </Card>
         </Col>
         <Col xs={24} sm={8}>
           <Card size="small" style={{ borderRadius: 8 }}>
-            <div style={{ color: "#59636E", fontSize: 13 }}>Còn nợ</div>
+            <div style={{ color: "var(--fgColor-muted)", fontSize: 13 }}>Còn nợ</div>
             <div
               style={{
                 fontSize: 20,
                 fontWeight: 700,
-                color: totalDebt > 0 ? "#CF222E" : "#2DA44E",
+                color: totalDebt > 0 ? "var(--fgColor-danger)" : "var(--fgColor-success)",
                 fontVariantNumeric: "tabular-nums",
               }}
             >
@@ -155,7 +155,7 @@ export function StudentFinanceTab({
               render: (_: any, r: any) => (
                 <div>
                   <div style={{ fontWeight: 600 }}>{r.className}</div>
-                  <div style={{ fontSize: 12, color: "#8C959F" }}>{r.classCode}</div>
+                  <div style={{ fontSize: 12, color: "var(--fgColor-muted)" }}>{r.classCode}</div>
                 </div>
               ),
             },
@@ -169,7 +169,7 @@ export function StudentFinanceTab({
               title: "Đã đóng",
               dataIndex: "paidAmount",
               align: "right" as const,
-              render: (v: number) => <span style={{ color: "#2DA44E" }}>{formatCurrency(v)}</span>,
+              render: (v: number) => <span style={{ color: "var(--fgColor-success)" }}>{formatCurrency(v)}</span>,
             },
             {
               title: "Còn nợ",
@@ -179,7 +179,7 @@ export function StudentFinanceTab({
                 <span
                   style={{
                     fontWeight: 700,
-                    color: r.isOverdue ? "#CF222E" : v > 0 ? "#D29922" : "#2DA44E",
+                    color: r.isOverdue ? "var(--fgColor-danger)" : v > 0 ? "var(--fgColor-attention)" : "var(--fgColor-success)",
                   }}
                 >
                   {formatCurrency(v)}
@@ -279,7 +279,7 @@ export function StudentFinanceTab({
                   style={{
                     fontWeight: 700,
                     fontVariantNumeric: "tabular-nums",
-                    color: row.status === "VALID" ? "#2DA44E" : "#8C959F",
+                    color: row.status === "VALID" ? "var(--fgColor-success)" : "var(--fgColor-muted)",
                     textDecoration: row.status === "CANCELLED" ? "line-through" : "none",
                   }}
                 >

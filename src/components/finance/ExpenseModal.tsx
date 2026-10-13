@@ -8,11 +8,11 @@ import { useCenters } from "@/client/centers";
 import { PrimerModal } from "@/components/PrimerModal";
 
 export const EXPENSE_CATEGORIES = [
-  { value: "RENT", label: "Mặt bằng", color: "#1F6FEB" },
-  { value: "UTILITIES", label: "Điện nước / Internet", color: "#0E7490" },
-  { value: "MARKETING", label: "Marketing / Tuyển sinh", color: "#8250DF" },
-  { value: "MATERIALS", label: "Giáo trình & Học liệu", color: "#2DA44E" },
-  { value: "OTHER", label: "Chi phí khác", color: "#8C959F" },
+  { value: "RENT", label: "Mặt bằng", color: "var(--fgColor-accent)" },
+  { value: "UTILITIES", label: "Điện nước / Internet", color: "var(--display-teal-fgColor)" },
+  { value: "MARKETING", label: "Marketing / Tuyển sinh", color: "var(--fgColor-done)" },
+  { value: "MATERIALS", label: "Giáo trình & Học liệu", color: "var(--fgColor-success)" },
+  { value: "OTHER", label: "Chi phí khác", color: "var(--fgColor-muted)" },
 ] as const;
 
 export function ExpenseModal({

@@ -133,7 +133,7 @@ export default function ClassesPage() {
             <>
               <Input
                 allowClear
-                prefix={<SearchOutlined style={{ color: "#8c959f" }} />}
+                prefix={<SearchOutlined style={{ color: "var(--fgColor-muted)" }} />}
                 placeholder="Tìm mã, tên lớp, GV"
                 style={{ width: 260 }}
                 value={q}

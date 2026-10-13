@@ -97,7 +97,7 @@ export function PaymentModal({
               </div>
               <div style={{ marginTop: 4 }}>
                 Học phí: {formatCurrency(target.finalFee)} · Đã đóng: {formatCurrency(target.paidAmount)} · Còn nợ:{" "}
-                <strong style={{ color: target.debtAmount > 0 ? "#CF222E" : "#2DA44E" }}>
+                <strong style={{ color: target.debtAmount > 0 ? "var(--fgColor-danger)" : "var(--fgColor-success)" }}>
                   {formatCurrency(target.debtAmount)}
                 </strong>
               </div>

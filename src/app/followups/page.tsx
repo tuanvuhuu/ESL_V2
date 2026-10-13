@@ -24,9 +24,9 @@ export default function FollowUpsPage() {
   const today = todayISO();
   const rows = data ?? [];
   const groups = [
-    { key: "overdue", title: "Quá hạn", color: "#CF222E", items: rows.filter((r) => r.followUpDate! < today) },
-    { key: "today", title: "Hôm nay", color: "#D29922", items: rows.filter((r) => r.followUpDate === today) },
-    { key: "soon", title: "Sắp tới", color: "#1F6FEB", items: rows.filter((r) => r.followUpDate! > today) },
+    { key: "overdue", title: "Quá hạn", color: "var(--fgColor-danger)", items: rows.filter((r) => r.followUpDate! < today) },
+    { key: "today", title: "Hôm nay", color: "var(--fgColor-attention)", items: rows.filter((r) => r.followUpDate === today) },
+    { key: "soon", title: "Sắp tới", color: "var(--fgColor-accent)", items: rows.filter((r) => r.followUpDate! > today) },
   ];
 
   const done = async (id: number) => {

@@ -1,62 +1,64 @@
 // Giá trị trạng thái và màu cố định theo DESIGN.md mục 3.3.
 
+import { COLORS } from "./colors";
+
 export type Option<T extends string = string> = { value: T; label: string; color: string };
 
 export const STUDENT_STATUSES = [
-  { value: "WAITING", label: "Chờ xếp lớp", color: "#8C959F" },
-  { value: "STUDYING", label: "Đang học", color: "#2DA44E" },
-  { value: "RESERVED", label: "Bảo lưu", color: "#8250DF" },
-  { value: "PAUSED", label: "Tạm nghỉ", color: "#D29922" },
-  { value: "FINISHED", label: "Đã kết thúc", color: "#1F6FEB" },
-  { value: "QUIT", label: "Đã nghỉ", color: "#CF222E" },
+  { value: "WAITING", label: "Chờ xếp lớp", color: COLORS.neutral },
+  { value: "STUDYING", label: "Đang học", color: COLORS.success },
+  { value: "RESERVED", label: "Bảo lưu", color: COLORS.done },
+  { value: "PAUSED", label: "Tạm nghỉ", color: COLORS.attention },
+  { value: "FINISHED", label: "Đã kết thúc", color: COLORS.accent },
+  { value: "QUIT", label: "Đã nghỉ", color: COLORS.danger },
 ] as const satisfies readonly Option[];
 
 export const CLASS_STATUSES = [
-  { value: "PLANNED", label: "Dự kiến", color: "#8C959F" },
-  { value: "ACTIVE", label: "Đang học", color: "#2DA44E" },
-  { value: "SUSPENDED", label: "Tạm dừng", color: "#D29922" },
-  { value: "FINISHED", label: "Đã kết thúc", color: "#1F6FEB" },
-  { value: "CANCELLED", label: "Đã hủy", color: "#CF222E" },
+  { value: "PLANNED", label: "Dự kiến", color: COLORS.neutral },
+  { value: "ACTIVE", label: "Đang học", color: COLORS.success },
+  { value: "SUSPENDED", label: "Tạm dừng", color: COLORS.attention },
+  { value: "FINISHED", label: "Đã kết thúc", color: COLORS.accent },
+  { value: "CANCELLED", label: "Đã hủy", color: COLORS.danger },
 ] as const satisfies readonly Option[];
 
 export const SESSION_STATUSES = [
-  { value: "SCHEDULED", label: "Theo lịch", color: "#1F6FEB" },
-  { value: "CANCELLED", label: "Đã hủy", color: "#CF222E" },
+  { value: "SCHEDULED", label: "Theo lịch", color: COLORS.accent },
+  { value: "CANCELLED", label: "Đã hủy", color: COLORS.danger },
 ] as const satisfies readonly Option[];
 
 export const TEACHER_STATUSES = [
-  { value: "ACTIVE", label: "Đang làm", color: "#2DA44E" },
-  { value: "PAUSED", label: "Tạm nghỉ", color: "#D29922" },
-  { value: "LEFT", label: "Đã nghỉ việc", color: "#8C959F" },
+  { value: "ACTIVE", label: "Đang làm", color: COLORS.success },
+  { value: "PAUSED", label: "Tạm nghỉ", color: COLORS.attention },
+  { value: "LEFT", label: "Đã nghỉ việc", color: COLORS.neutral },
 ] as const satisfies readonly Option[];
 
 export const TEACHER_ROLES = [
-  { value: "TEACHER", label: "Giáo viên", color: "#1F6FEB" },
-  { value: "ASSISTANT", label: "Trợ giảng", color: "#8250DF" },
-  { value: "BOTH", label: "GV & trợ giảng", color: "#0E7490" },
+  { value: "TEACHER", label: "Giáo viên", color: COLORS.accent },
+  { value: "ASSISTANT", label: "Trợ giảng", color: COLORS.done },
+  { value: "BOTH", label: "GV & trợ giảng", color: COLORS.teal },
 ] as const satisfies readonly Option[];
 
 export const TEACHER_ORIGINS = [
-  { value: "VN", label: "Việt Nam", color: "#59636E" },
-  { value: "FOREIGN", label: "Nước ngoài", color: "#59636E" },
+  { value: "VN", label: "Việt Nam", color: COLORS.neutral },
+  { value: "FOREIGN", label: "Nước ngoài", color: COLORS.neutral },
 ] as const satisfies readonly Option[];
 
 export const EMPLOYMENTS = [
-  { value: "FULL_TIME", label: "Toàn thời gian", color: "#59636E" },
-  { value: "PART_TIME", label: "Bán thời gian", color: "#59636E" },
+  { value: "FULL_TIME", label: "Toàn thời gian", color: COLORS.neutral },
+  { value: "PART_TIME", label: "Bán thời gian", color: COLORS.neutral },
 ] as const satisfies readonly Option[];
 
 export const GENDERS = [
-  { value: "MALE", label: "Nam", color: "#59636E" },
-  { value: "FEMALE", label: "Nữ", color: "#59636E" },
+  { value: "MALE", label: "Nam", color: COLORS.neutral },
+  { value: "FEMALE", label: "Nữ", color: COLORS.neutral },
 ] as const satisfies readonly Option[];
 
 export const AUDIENCES = [
-  { value: "KINDER", label: "Mầm non", color: "#59636E" },
-  { value: "PRIMARY", label: "Tiểu học", color: "#59636E" },
-  { value: "SECONDARY", label: "THCS", color: "#59636E" },
-  { value: "HIGH", label: "THPT", color: "#59636E" },
-  { value: "ADULT", label: "Người lớn", color: "#59636E" },
+  { value: "KINDER", label: "Mầm non", color: COLORS.neutral },
+  { value: "PRIMARY", label: "Tiểu học", color: COLORS.neutral },
+  { value: "SECONDARY", label: "THCS", color: COLORS.neutral },
+  { value: "HIGH", label: "THPT", color: COLORS.neutral },
+  { value: "ADULT", label: "Người lớn", color: COLORS.neutral },
 ] as const satisfies readonly Option[];
 
 export const RELATIONS = ["Bố", "Mẹ", "Ông", "Bà", "Anh/Chị", "Người giám hộ"] as const;
@@ -72,18 +74,18 @@ export const QUIT_REASONS = [
 
 /** Kết quả cuối khóa, giáo viên hoặc giáo vụ ghi khi khóa kết thúc (lịch sử học tập theo khóa). */
 export const COURSE_OUTCOMES = [
-  { value: "PROMOTED", label: "Đủ điều kiện lên khóa tiếp", color: "#2DA44E" },
-  { value: "COMPLETED", label: "Hoàn thành khóa", color: "#1F6FEB" },
-  { value: "REPEAT", label: "Nên học lại khóa này", color: "#D29922" },
-  { value: "DROPPED", label: "Dừng giữa khóa", color: "#8C959F" },
+  { value: "PROMOTED", label: "Đủ điều kiện lên khóa tiếp", color: COLORS.success },
+  { value: "COMPLETED", label: "Hoàn thành khóa", color: COLORS.accent },
+  { value: "REPEAT", label: "Nên học lại khóa này", color: COLORS.attention },
+  { value: "DROPPED", label: "Dừng giữa khóa", color: COLORS.neutral },
 ] as const satisfies readonly Option[];
 
 /** Kênh liên lạc với phụ huynh. */
 export const CONTACT_CHANNELS = [
-  { value: "CALL", label: "Gọi điện", color: "#1F6FEB" },
-  { value: "ZALO", label: "Zalo / tin nhắn", color: "#0E7490" },
-  { value: "MEET", label: "Gặp trực tiếp", color: "#8250DF" },
-  { value: "OTHER", label: "Khác", color: "#59636E" },
+  { value: "CALL", label: "Gọi điện", color: COLORS.accent },
+  { value: "ZALO", label: "Zalo / tin nhắn", color: COLORS.teal },
+  { value: "MEET", label: "Gặp trực tiếp", color: COLORS.done },
+  { value: "OTHER", label: "Khác", color: COLORS.neutral },
 ] as const satisfies readonly Option[];
 
 /** Chứng chỉ giáo viên hết hạn trong số ngày này thì cảnh báo (M8). */

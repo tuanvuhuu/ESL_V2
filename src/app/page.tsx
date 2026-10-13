@@ -15,6 +15,7 @@ import { SubstituteModal, type SubstituteTarget } from "@/components/staffing/Su
 import { PageHeader } from "@/components/ui";
 import { addDays, formatDateVN, todayISO } from "@/lib/dates";
 import { canEditCenter, isStaff } from "@/lib/permissions";
+import { tint } from "@/lib/colors";
 
 export default function TodayPage() {
   const viewer = useViewer();
@@ -41,7 +42,7 @@ function StaffToday() {
       ))}
       {missed.length > 0 && (
         <>
-          <div className="day-label" style={{ color: "#D29922" }}>
+          <div className="day-label" style={{ color: "var(--fgColor-attention)" }}>
             Buổi trước chưa điểm danh ({missed.length})
           </div>
           {missed.map((s) => (
@@ -101,10 +102,10 @@ function OfficeToday() {
   const now = nowVN();
   const notTakenToday = active.filter((s) => !s.attendanceTakenAt && s.endTime <= now).length;
   const stats = [
-    { title: "Buổi học hôm nay", value: active.length, icon: <CalendarOutlined />, color: "#1F6FEB" },
-    { title: "Chưa điểm danh", value: notTakenToday, icon: <CheckSquareOutlined />, color: "#D29922", alert: notTakenToday > 0 },
-    { title: "Buổi bị hủy", value: cancelled, icon: <StopOutlined />, color: "#CF222E", alert: cancelled > 0 },
-    { title: "Dạy thay", value: active.filter((s) => s.teacherId !== s.class.teacherId).length, icon: <SwapOutlined />, color: "#8250DF" },
+    { title: "Buổi học hôm nay", value: active.length, icon: <CalendarOutlined />, color: "var(--fgColor-accent)" },
+    { title: "Chưa điểm danh", value: notTakenToday, icon: <CheckSquareOutlined />, color: "var(--fgColor-attention)", alert: notTakenToday > 0 },
+    { title: "Buổi bị hủy", value: cancelled, icon: <StopOutlined />, color: "var(--fgColor-danger)", alert: cancelled > 0 },
+    { title: "Dạy thay", value: active.filter((s) => s.teacherId !== s.class.teacherId).length, icon: <SwapOutlined />, color: "var(--fgColor-done)" },
   ];
 
   const studentLink = (s: StudentLite) => (
@@ -120,7 +121,7 @@ function OfficeToday() {
         {stats.map((st) => (
           <Col key={st.title} xs={12} md={6}>
             <div className="panel stat-card">
-              <span className="stat-icon" style={{ color: st.color, background: `${st.color}14` }}>
+              <span className="stat-icon" style={{ color: st.color, background: tint(st.color, 8) }}>
                 {st.icon}
               </span>
               <Statistic title={st.title} value={st.value} valueStyle={st.alert ? { color: st.color } : undefined} />
@@ -176,7 +177,7 @@ function OfficeToday() {
             items={[
               {
                 key: "low",
-                label: <TabLabel text="Sắp hết buổi" count={att.lowBalance.length} color="#D29922" />,
+                label: <TabLabel text="Sắp hết buổi" count={att.lowBalance.length} color="var(--fgColor-attention)" />,
                 children: (
                   <List
                     size="small"
@@ -212,7 +213,7 @@ function OfficeToday() {
               },
               {
                 key: "absent",
-                label: <TabLabel text="Vắng nhiều" count={att.frequentAbsences.length} color="#D29922" />,
+                label: <TabLabel text="Vắng nhiều" count={att.frequentAbsences.length} color="var(--fgColor-attention)" />,
                 children: (
                   <List
                     size="small"
@@ -226,7 +227,7 @@ function OfficeToday() {
               },
               {
                 key: "nottaken",
-                label: <TabLabel text="Chưa điểm danh" count={att.notTakenCount} color="#D29922" />,
+                label: <TabLabel text="Chưa điểm danh" count={att.notTakenCount} color="var(--fgColor-attention)" />,
                 children: (
                   <List
                     size="small"
@@ -245,7 +246,7 @@ function OfficeToday() {
               },
               {
                 key: "substitute",
-                label: <TabLabel text="Cần người dạy thay" count={att.needSubstitute.length} color="#CF222E" />,
+                label: <TabLabel text="Cần người dạy thay" count={att.needSubstitute.length} color="var(--fgColor-danger)" />,
                 children: (
                   <List
                     size="small"
@@ -276,7 +277,7 @@ function OfficeToday() {
               },
               {
                 key: "reserve",
-                label: <TabLabel text="Bảo lưu đến hạn" count={att.reservationsDue.length} color="#8250DF" />,
+                label: <TabLabel text="Bảo lưu đến hạn" count={att.reservationsDue.length} color="var(--fgColor-done)" />,
                 children: (
                   <List
                     size="small"
@@ -300,7 +301,7 @@ function OfficeToday() {
               },
               {
                 key: "followups",
-                label: <TabLabel text="Cần gọi lại" count={att.followUpsDue} color="#CF222E" />,
+                label: <TabLabel text="Cần gọi lại" count={att.followUpsDue} color="var(--fgColor-danger)" />,
                 children: (
                   <div style={{ padding: "8px 0" }}>
                     {att.followUpsDue ? `${att.followUpsDue} việc hẹn gọi lại phụ huynh đã đến hạn. ` : "Không có việc gọi lại nào đến hạn. "}
@@ -310,7 +311,7 @@ function OfficeToday() {
               },
               {
                 key: "advise",
-                label: <TabLabel text="Tư vấn khóa tiếp" count={att.toAdvise.length} color="#1F6FEB" />,
+                label: <TabLabel text="Tư vấn khóa tiếp" count={att.toAdvise.length} color="var(--fgColor-accent)" />,
                 children: (
                   <List
                     size="small"
@@ -329,7 +330,7 @@ function OfficeToday() {
               },
               {
                 key: "makeup",
-                label: <TabLabel text="Vắng chưa bù" count={att.pendingMakeups} color="#8250DF" />,
+                label: <TabLabel text="Vắng chưa bù" count={att.pendingMakeups} color="var(--fgColor-done)" />,
                 children: (
                   <div style={{ padding: "8px 0" }}>
                     {att.pendingMakeups ? `${att.pendingMakeups} buổi vắng trong 60 ngày qua chưa xếp học bù. ` : "Không có buổi vắng nào chờ bù. "}
