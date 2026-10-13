@@ -13,7 +13,7 @@ import {
   values,
 } from "@/lib/constants";
 import { ATTENDANCE_STATUSES } from "@/lib/attendance";
-import { MAX_SCORE, TEST_KINDS } from "@/lib/curriculum";
+import { HOMEWORK_STATUSES, MAX_SCORE, TEST_KINDS } from "@/lib/curriculum";
 import { isValidISODate, isValidTime, todayISO } from "@/lib/dates";
 import { isValidPhone, normalizePhone } from "@/lib/text";
 
@@ -198,6 +198,14 @@ export const attendanceSchema = z.object({
     .optional()
     .nullable()
     .transform((v) => (v ? v : null)),
+  /** E1: bài tập giao ở buổi này. Không gửi = giữ nguyên; trống = theo khung chương trình. */
+  homework: z
+    .string()
+    .trim()
+    .max(1000, "Bài tập về nhà tối đa 1000 ký tự")
+    .nullable()
+    .optional()
+    .transform((v) => (v === undefined ? undefined : v || null)),
   items: z
     .array(
       z.object({
@@ -210,6 +218,8 @@ export const attendanceSchema = z.object({
           .optional()
           .nullable()
           .transform((v) => (v ? v : null)),
+        /** E1: chấm bài tập buổi trước. Không gửi = giữ nguyên; null = chưa chấm. */
+        homework: z.enum(values(HOMEWORK_STATUSES)).nullable().optional(),
       }),
     )
     .max(200),

@@ -96,6 +96,8 @@ export type RosterRow = {
   makeup: { id: number; fromClassCode: string; fromDate: string } | null;
   status: string | null;
   comment: string | null;
+  /** E1: kết quả chấm bài tập buổi trước. */
+  homework: string | null;
   balance: Balance | null;
 };
 
@@ -147,6 +149,7 @@ export async function rosterFor(tx: Tx, s: SessionWithClass): Promise<RosterRow[
       centerColor: st.center.color,
       status: a?.status ?? null,
       comment: a?.comment ?? null,
+      homework: a?.homework ?? null,
     };
   };
   for (const e of enrollments) {

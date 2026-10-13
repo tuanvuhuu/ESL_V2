@@ -4,6 +4,7 @@ import { assertCanTakeAttendance, assertCanViewAttendance, canTakeAttendanceFor,
 import { logChange } from "@/server/audit";
 import { currentActor } from "@/server/auth";
 import { prisma } from "@/server/db";
+import { homeworkToCheck } from "@/server/lessons";
 import { badRequest, body, idParam, route, type IdCtx } from "@/server/http";
 import { attendanceSchema } from "@/server/validators";
 
@@ -12,16 +13,18 @@ export const GET = route<IdCtx>(async (_req, { params }, viewer) => {
   const id = idParam((await params).id);
   const s = await loadSession(prisma, id);
   assertCanViewAttendance(viewer, s);
-  const [roster, lesson, scores] = await Promise.all([
+  const [roster, lesson, scores, toCheck] = await Promise.all([
     rosterFor(prisma, s),
     lessonFor(prisma, s),
     prisma.testScore.findMany({ where: { sessionId: id } }),
+    homeworkToCheck(prisma, s),
   ]);
   return {
     session: s,
     roster,
     lesson,
     scores,
+    homeworkToCheck: toCheck,
     role: staffRoleIn(viewer, s),
     canEdit: canTakeAttendanceFor(viewer, s) && s.status !== "CANCELLED" && s.date <= todayISO(),
   };
@@ -43,7 +46,8 @@ export const PUT = route<IdCtx>(async (req, { params }, viewer) => {
     for (const item of input.items) {
       const r = byStudent.get(item.studentId);
       if (!r) throw badRequest("Có học sinh không thuộc buổi học này, tải lại trang rồi điểm danh lại");
-      if (r.status === item.status && r.comment === item.comment) continue;
+      const homework = item.homework === undefined ? r.homework : item.homework;
+      if (r.status === item.status && r.comment === item.comment && r.homework === homework) continue;
       await tx.attendance.upsert({
         where: { sessionId_studentId: { sessionId: id, studentId: item.studentId } },
         create: {
@@ -52,10 +56,11 @@ export const PUT = route<IdCtx>(async (req, { params }, viewer) => {
           enrollmentId: r.enrollmentId,
           status: item.status,
           comment: item.comment,
+          homework,
           makeupId: r.makeup?.id ?? null,
           takenBy: actor,
         },
-        update: { status: item.status, comment: item.comment, takenBy: actor },
+        update: { status: item.status, comment: item.comment, homework, takenBy: actor },
       });
       // Sửa từ vắng thành có mặt: bỏ lịch học bù chưa diễn ra của buổi này.
       if (isAttended(item.status)) {
@@ -70,9 +75,15 @@ export const PUT = route<IdCtx>(async (req, { params }, viewer) => {
       }
     }
     if (s.lessonContent !== input.lessonContent) changes.lessonContent = [s.lessonContent, input.lessonContent];
+    if (input.homework !== undefined && s.homework !== input.homework) changes.homework = [s.homework, input.homework];
     await tx.classSession.update({
       where: { id },
-      data: { lessonContent: input.lessonContent, attendanceTakenAt: new Date(), attendanceBy: actor },
+      data: {
+        lessonContent: input.lessonContent,
+        ...(input.homework !== undefined ? { homework: input.homework } : {}),
+        attendanceTakenAt: new Date(),
+        attendanceBy: actor,
+      },
     });
     await logChange(tx, "Session", id, s.attendanceTakenAt ? "attendance-update" : "attendance", changes);
     if (!s.attendanceTakenAt) await logChange(tx, "Class", s.classId, "attendance", { session: [null, s.date] });

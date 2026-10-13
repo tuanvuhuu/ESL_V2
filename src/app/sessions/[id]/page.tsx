@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckOutlined, LeftOutlined, MessageOutlined } from "@/client/primer-icons";
+import { CheckOutlined, CheckSquareOutlined, LeftOutlined, MessageOutlined } from "@/client/primer-icons";
 import { Alert, App, Button, Empty, Input, Skeleton, Space, Tag } from "@/client/primer-compat";
 import dayjs from "dayjs";
 import Link from "next/link";
@@ -14,6 +14,7 @@ import { LessonCard, type Lesson } from "@/components/curriculum/LessonCard";
 import { ScoresPanel, type ScoreRow } from "@/components/curriculum/ScoresPanel";
 import { CenterTag, PersonAvatar } from "@/components/ui";
 import { ATTENDANCE_STATUSES, attendanceOption, nextAttendanceStatus, type AttendanceStatus } from "@/lib/attendance";
+import { homeworkOption, nextHomeworkStatus } from "@/lib/curriculum";
 import { formatDateVN } from "@/lib/dates";
 import { isStaff } from "@/lib/permissions";
 import { tint } from "@/lib/colors";
@@ -28,6 +29,7 @@ type Row = {
   makeup: { id: number; fromClassCode: string; fromDate: string } | null;
   status: string | null;
   comment: string | null;
+  homework: string | null;
   balance: Balance | null;
 };
 
@@ -40,6 +42,7 @@ type Data = {
     endTime: string;
     status: string;
     lessonContent: string | null;
+    homework: string | null;
     attendanceTakenAt: string | null;
     attendanceBy: string | null;
     teacherId: number;
@@ -50,13 +53,15 @@ type Data = {
   roster: Row[];
   lesson: Lesson | null;
   scores: ScoreRow[];
+  /** Bài tập giao ở buổi trước, chấm ở buổi này. */
+  homeworkToCheck: { sessionId: number; index: number; date: string; lessonTitle: string | null; text: string | null } | null;
   role: "teacher" | "assistant" | null;
   canEdit: boolean;
 };
 
 const QUICK_COMMENTS = ["Tích cực phát biểu", "Làm bài tốt", "Chưa làm bài tập", "Mất tập trung", "Cần ôn lại bài"];
 
-type Draft = { status: AttendanceStatus; comment: string };
+type Draft = { status: AttendanceStatus; comment: string; homework: string | null };
 
 /** Điểm danh một buổi (G2): mặc định có mặt, chạm để đổi trạng thái, nút Lưu cố định cuối màn hình. */
 export default function AttendancePage() {
@@ -67,6 +72,7 @@ export default function AttendancePage() {
   const { data, loading, error, reload } = useApi<Data>(`/api/sessions/${id}/attendance`);
   const [drafts, setDrafts] = useState<Record<number, Draft>>({});
   const [lesson, setLesson] = useState("");
+  const [homework, setHomework] = useState("");
   const [openComment, setOpenComment] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [showScores, setShowScores] = useState(false);
@@ -75,10 +81,11 @@ export default function AttendancePage() {
     if (!data) return;
     setDrafts(
       Object.fromEntries(
-        data.roster.map((r) => [r.studentId, { status: (r.status ?? "PRESENT") as AttendanceStatus, comment: r.comment ?? "" }]),
+        data.roster.map((r) => [r.studentId, { status: (r.status ?? "PRESENT") as AttendanceStatus, comment: r.comment ?? "", homework: r.homework }]),
       ),
     );
     setLesson(data.session.lessonContent ?? "");
+    setHomework(data.session.homework ?? "");
   }, [data]);
 
   const counts = useMemo(() => {
@@ -95,7 +102,13 @@ export default function AttendancePage() {
   const dirty =
     !taken ||
     lesson !== (s.lessonContent ?? "") ||
-    roster.some((r) => drafts[r.studentId] && (drafts[r.studentId].status !== r.status || drafts[r.studentId].comment !== (r.comment ?? "")));
+    homework !== (s.homework ?? "") ||
+    roster.some(
+      (r) =>
+        drafts[r.studentId] &&
+        (drafts[r.studentId].status !== r.status || drafts[r.studentId].comment !== (r.comment ?? "") || drafts[r.studentId].homework !== r.homework),
+    );
+  const toCheck = data.homeworkToCheck;
 
   const set = (studentId: number, patch: Partial<Draft>) => setDrafts((d) => ({ ...d, [studentId]: { ...d[studentId], ...patch } }));
 
@@ -106,7 +119,13 @@ export default function AttendancePage() {
         method: "PUT",
         body: {
           lessonContent: lesson,
-          items: roster.map((r) => ({ studentId: r.studentId, status: drafts[r.studentId].status, comment: drafts[r.studentId].comment })),
+          homework,
+          items: roster.map((r) => ({
+            studentId: r.studentId,
+            status: drafts[r.studentId].status,
+            comment: drafts[r.studentId].comment,
+            homework: drafts[r.studentId].homework,
+          })),
         },
       });
       message.success(taken ? "Đã cập nhật điểm danh" : "Đã lưu điểm danh");
@@ -166,6 +185,24 @@ export default function AttendancePage() {
         <Empty description="Buổi này chưa có học sinh nào." />
       ) : (
         <>
+          {toCheck && (
+            <div className="homework-check">
+              <div>
+                <CheckSquareOutlined /> <b>Kiểm tra bài tập buổi {toCheck.index}</b>
+                <span className="sub"> · {formatDateVN(toCheck.date).slice(0, 5)}{toCheck.lessonTitle ? ` · ${toCheck.lessonTitle}` : ""}</span>
+              </div>
+              <div className="pre">{toCheck.text ?? <span className="sub">Buổi trước không ghi bài tập.</span>}</div>
+              {canEdit && (
+                <Button
+                  size="small"
+                  style={{ marginTop: 6 }}
+                  onClick={() => setDrafts((ds) => Object.fromEntries(Object.entries(ds).map(([k, v]) => [k, { ...v, homework: v.homework ?? "DONE" }])))}
+                >
+                  Học sinh chưa chấm: đánh dấu đã làm
+                </Button>
+              )}
+            </div>
+          )}
           <div className="sub" style={{ marginBottom: 8 }}>
             {roster.length} học sinh ·{" "}
             {ATTENDANCE_STATUSES.filter((o) => counts[o.value])
@@ -239,6 +276,7 @@ export default function AttendancePage() {
                         </Button>
                       )
                     )}
+                    {toCheck && <HomeworkChip value={d.homework} disabled={!canEdit} onChange={(v) => set(r.studentId, { homework: v })} />}
                     <div className="sub" style={{ marginTop: 4 }}>
                       Còn lại: <BalanceCell balance={r.balance} />
                     </div>
@@ -256,6 +294,15 @@ export default function AttendancePage() {
               onChange={(e) => setLesson(e.target.value)}
               disabled={!canEdit}
               size="large"
+            />
+            <div style={{ fontWeight: 600, margin: "12px 0 6px" }}>Bài tập về nhà giao hôm nay</div>
+            <Input.TextArea
+              autoSize={{ minRows: 1, maxRows: 4 }}
+              maxLength={1000}
+              placeholder={data.lesson?.homework ? `Để trống thì theo khung: ${data.lesson.homework}` : "VD: Workbook trang 12, học thuộc 10 từ mới"}
+              value={homework}
+              onChange={(e) => setHomework(e.target.value)}
+              disabled={!canEdit}
             />
           </div>
           {(data.lesson?.testKind || data.scores.length > 0 || showScores) ? (
@@ -287,5 +334,21 @@ export default function AttendancePage() {
         </>
       )}
     </div>
+  );
+}
+
+/** Chạm để chấm bài tập: chưa chấm → đã làm → chưa đủ → không làm. */
+function HomeworkChip({ value, disabled, onChange }: { value: string | null; disabled: boolean; onChange: (v: string | null) => void }) {
+  const o = homeworkOption(value);
+  return (
+    <button
+      type="button"
+      className="homework-chip"
+      disabled={disabled}
+      onClick={() => onChange(nextHomeworkStatus(value))}
+      style={o ? { color: o.color, background: tint(o.color, 8), borderColor: tint(o.color, 40) } : undefined}
+    >
+      <CheckSquareOutlined /> Bài tập: {o ? o.short : "chưa chấm"}
+    </button>
   );
 }

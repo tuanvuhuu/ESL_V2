@@ -64,6 +64,7 @@ const NAV: NavGroup[] = [
     items: [
       { key: "/schedule", icon: <CalendarIcon size={16} />, label: "Lịch học" },
       { key: "/classes", icon: <BookIcon size={16} />, label: "Lớp học" },
+      { key: "/lessons", icon: <ChecklistIcon size={16} />, label: "Bài giảng & bài tập" },
       { key: "/makeups", icon: <ClockIcon size={16} />, label: "Học bù" },
     ],
   },
@@ -119,11 +120,12 @@ const NAV: NavGroup[] = [
   },
 ];
 
-/** Giáo viên, trợ giảng (DESIGN 4.2): 5 mục Hôm nay · Lịch · Lớp của tôi · Lương của tôi · Tài khoản. */
+/** Giáo viên, trợ giảng (DESIGN 4.2): Hôm nay · Lịch · Lớp của tôi · Bài giảng (E1) · Lương của tôi · Tài khoản. */
 const STAFF_NAV: NavItem[] = [
   { key: "/", icon: <HomeIcon size={16} />, label: "Hôm nay" },
   { key: "/my/schedule", icon: <CalendarIcon size={16} />, label: "Lịch" },
   { key: "/my/classes", icon: <BookIcon size={16} />, label: "Lớp của tôi" },
+  { key: "/lessons", icon: <ChecklistIcon size={16} />, label: "Bài giảng" },
   { key: "/my/payroll", icon: <CreditCardIcon size={16} />, label: "Lương của tôi" },
   { key: "/my/account", icon: <PersonIcon size={16} />, label: "Tài khoản" },
 ];

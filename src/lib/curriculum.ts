@@ -76,3 +76,36 @@ export function fillLessons<L extends { index: number; title: string }>(lessons:
   for (let i = 1; i <= total; i++) if (!have.has(i)) added.push(make(i));
   return [...lessons, ...added].sort((a, b) => a.index - b.index);
 }
+
+/** E1: kết quả chấm bài tập về nhà của một học sinh. Trống = chưa chấm. */
+export const HOMEWORK_STATUSES = [
+  { value: "DONE", label: "Đã làm", short: "Đã làm", color: COLORS.success },
+  { value: "PARTIAL", label: "Làm chưa đủ", short: "Chưa đủ", color: COLORS.attention },
+  { value: "MISSING", label: "Không làm", short: "Không làm", color: COLORS.danger },
+] as const;
+
+export type HomeworkStatus = (typeof HOMEWORK_STATUSES)[number]["value"];
+
+export const homeworkOption = (v: string | null | undefined) => HOMEWORK_STATUSES.find((o) => o.value === v);
+
+/** Chạm để đổi: chưa chấm → đã làm → chưa đủ → không làm → chưa chấm. */
+export function nextHomeworkStatus(v: string | null | undefined): HomeworkStatus | null {
+  const i = HOMEWORK_STATUSES.findIndex((o) => o.value === v);
+  return i === HOMEWORK_STATUSES.length - 1 ? null : HOMEWORK_STATUSES[i + 1].value;
+}
+
+export type HomeworkStats = { done: number; partial: number; missing: number; checked: number; rate: number | null };
+
+/** Đếm kết quả bài tập; tỉ lệ hoàn thành = (đã làm + nửa số làm chưa đủ) / số đã chấm, 0–100. */
+export function homeworkStats(values: (string | null | undefined)[]): HomeworkStats {
+  const done = values.filter((v) => v === "DONE").length;
+  const partial = values.filter((v) => v === "PARTIAL").length;
+  const missing = values.filter((v) => v === "MISSING").length;
+  const checked = done + partial + missing;
+  return { done, partial, missing, checked, rate: checked ? Math.round(((done + partial / 2) / checked) * 100) : null };
+}
+
+/** Bài tập giao ở một buổi: giáo viên ghi riêng thì lấy, không thì theo khung chương trình. */
+export function assignedHomework(sessionHomework: string | null | undefined, lessonHomework: string | null | undefined): string | null {
+  return sessionHomework?.trim() || lessonHomework?.trim() || null;
+}

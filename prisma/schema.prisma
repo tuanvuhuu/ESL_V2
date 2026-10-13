@@ -271,6 +271,8 @@ model ClassSession {
   note              String?
   // Một dòng nội dung đã dạy, giáo viên ghi khi điểm danh.
   lessonContent     String?
+  // E1: bài tập về nhà giao ở buổi này; trống = theo bài tập của khung chương trình.
+  homework          String?
   // B1: số phút tính lương sửa tay (trống = theo giờ bắt đầu / kết thúc của buổi) và lý do bắt buộc.
   payrollMinutes    Int?
   payrollNote       String?
@@ -391,6 +393,8 @@ model Attendance {
   enrollment   ClassEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
   status       String
   comment      String?
+  // E1: bài tập về nhà của buổi trước, giáo viên chấm khi điểm danh: DONE, PARTIAL, MISSING; trống = chưa chấm.
+  homework     String?
   // Có giá trị khi đây là buổi học bù: buổi vắng gốc được bù.
   makeupId     Int?            @unique
   makeup       Makeup?         @relation("MakeupAttendance", fields: [makeupId], references: [id])

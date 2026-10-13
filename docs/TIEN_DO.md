@@ -8,7 +8,7 @@ Trạng thái: `[ ]` chưa làm · `[~]` đang làm dở · `[x]` xong (lint, ty
 
 Làm theo thứ tự E1, E2, E3. Mỗi việc một commit `done(Ex)`. Dùng lại `CourseLesson` và `TestScore`, không tạo mô hình bài giảng thứ hai.
 
-- [ ] E1. Màn hình bài giảng và bài tập: tài liệu và bài tập theo từng buổi (link đính kèm), giáo viên thấy bài hôm nay và bài tập cần kiểm tra ngay trên trang điểm danh, chấm bài tập từng học sinh.
+- [x] E1. Màn hình bài giảng và bài tập: tài liệu và bài tập theo từng buổi (link đính kèm), giáo viên thấy bài hôm nay và bài tập cần kiểm tra ngay trên trang điểm danh, chấm bài tập từng học sinh.
 - [ ] E2. Màn hình lịch sử học tập: mỗi học sinh mỗi khóa một trang dễ đọc gồm các buổi đã học, bài học, điểm danh, bài tập, điểm, nhận xét của giáo viên.
 - [ ] E3. Làm mới giao diện cho riêng các màn hình E1, E2 theo Primer và `docs/DESIGN.md`.
 
@@ -62,6 +62,8 @@ Làm theo thứ tự nhóm. Mỗi việc một commit `done(Dx)`.
 
 ## Bàn giao
 
+**E1 (13/10/2026):** chạy `docs/sql/2026-10-13-E1-bai-tap-ve-nha.sql` lên `prisma/dev.db` (chỉ thêm 2 cột) rồi `npx prisma generate`. Chưa chạy thì trang điểm danh lỗi thiếu cột `homework`. Tài liệu theo buổi mới là link; đính kèm file chờ C1 (nơi lưu file).
+
 Kiểm tra lại ngày 13/10/2026 (thread cloud): trên `common` lint (0 lỗi), typecheck, test 194/194, build đều xanh; 4 file SQL trong `docs/sql/` áp lên schema cũ thì khớp đúng `schema.prisma`. A1–A9 và B1, B3–B8 có code và test đúng như ghi. **B2 mở lại thành `[~]`:** chưa có màn hình gắn trợ giảng theo buổi và trợ giảng theo buổi chưa có quyền xem / điểm danh buổi đó; việc còn lại chuyển thành D1. Đợt D đã lập, chưa bắt đầu.
 
 Đợt B (B1, B3–B8) đã xong. 4 file SQL của B1, B2, B4, B5 đã được chạy lên `prisma/dev.db` ngày 13/10/2026 (Tuấn đồng ý, có bản sao lưu `prisma/dev.db.bak-*`) và đã `npx prisma generate`. Lint, typecheck, test (194/194) xanh trên `dev.db` thật. Đợt C chờ Tuấn (C1 nơi lưu file, C2 câu hỏi mục 7).
@@ -80,3 +82,4 @@ Kiểm tra lại ngày 13/10/2026 (thread cloud): trên `common` lint (0 lỗi),
 | 13/10/2026 | B8 | Antigravity | `npm run build` xanh; cập nhật `README.md` và bảng mục 2, mục 4 của `docs/KE_HOACH.md`; ghi Bàn giao các file SQL cho Tuấn. |
 | 13/10/2026 | Sửa lỗi thiếu cột | Antigravity | `dev.db` thật thiếu cột / bảng của B1, B2, B4, B5 nên test và màn hình lỗi. Đã chạy 4 file SQL trong `docs/sql/` lên `prisma/dev.db` (được Tuấn cho phép, có sao lưu), generate lại, 194/194 test xanh. |
 | 13/10/2026 | Kiểm tra A1–A9, B1–B8; lập đợt D | Claude (cloud) | Lint, typecheck, test 194/194, build xanh trên `common`. SQL B1, B2, B4, B5 khớp schema. Mở lại B2 (thiếu màn hình và quyền cho trợ giảng theo buổi). Thêm D1–D13. |
+| 13/10/2026 | E1 | Claude (cloud) | Trang `/lessons` "Bài giảng & bài tập" (theo lớp: từng buổi bài gì, đã dạy gì, giao bài tập gì, kết quả chấm; theo khóa: khung chương trình, quản lý sửa). Trang điểm danh: khung kiểm tra bài tập buổi trước, chạm chấm bài tập từng học sinh, ô giao bài tập hôm nay. `src/server/lessons.ts`, route `api/classes/[id]/lessons`, cột `ClassSession.homework`, `Attendance.homework`, SQL `docs/sql/2026-10-13-E1-bai-tap-ve-nha.sql`, `tests/api-lessons-e1.test.ts`. Lint/typecheck/test xanh (202/202) trên dev.db đã áp SQL. |
